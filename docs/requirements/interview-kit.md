@@ -65,7 +65,8 @@ Close:
 3. ★ Has a board-only document ever been seen by someone outside the board? What happened?
 4. ★ Tell me about the last announcement the board wanted sent to residents. Who wrote it, who sent it, and how did you know residents got it?
 5. ★ Tell me about the last time a resident complained to you directly about a request that wasn't handled. What happened next?
-6. Who else should we talk to?
+6. ★ Think of the last time the board reviewed late or missing dues. What information did you have, and where did it come from?
+7. Who else should we talk to?
 
 ## Questions: resident
 
