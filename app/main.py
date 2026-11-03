@@ -43,6 +43,7 @@ def create_app(db_path: str, clock: Callable[[], datetime] | None = None) -> Fas
 
     @app.get("/communities/{community_id}/tickets")
     def list_tickets(community_id: int, user=Depends(current_user), conn=Depends(conn_dep)):
+        _check_id(community_id)
         role = require_member(conn, user["id"], community_id)
         return _tickets_visible(conn, user["id"], role, community_id)
 
@@ -56,6 +57,7 @@ def create_app(db_path: str, clock: Callable[[], datetime] | None = None) -> Fas
 
     @app.get("/communities/{community_id}/documents")
     def list_documents(community_id: int, user=Depends(current_user), conn=Depends(conn_dep)):
+        _check_id(community_id)
         require_member(conn, user["id"], community_id)
         rows = conn.execute(
             "SELECT * FROM documents WHERE community_id = ? AND folder = 'community' ORDER BY id",
@@ -71,6 +73,7 @@ def create_app(db_path: str, clock: Callable[[], datetime] | None = None) -> Fas
 
     @app.get("/communities/{community_id}/announcements")
     def list_announcements(community_id: int, user=Depends(current_user), conn=Depends(conn_dep)):
+        _check_id(community_id)
         require_member(conn, user["id"], community_id)
         rows = conn.execute(
             "SELECT * FROM announcements WHERE community_id = ? ORDER BY posted_at DESC, id ASC",
@@ -87,8 +90,18 @@ def create_app(db_path: str, clock: Callable[[], datetime] | None = None) -> Fas
     return app
 
 
+MAX_SQLITE_INT = 2**63 - 1
+
+
+def _check_id(value: int) -> None:
+    """D10: an ID that cannot exist is treated like any other missing ID."""
+    if not 1 <= value <= MAX_SQLITE_INT:
+        raise NotFound()
+
+
 def _load(conn, sql: str, item_id: int):
     """Load one item by ID or raise NotFound (D14: item first, then require_member)."""
+    _check_id(item_id)
     row = conn.execute(sql, (item_id,)).fetchone()
     if row is None:
         raise NotFound()
