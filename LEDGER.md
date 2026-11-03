@@ -69,7 +69,7 @@ prompts: `prompts/03-design-S-1.md`
 
 review: AI: checked the nine sections are present, with ≥ 3 rules, ≥ 3 edge cases, ≥ 3 decisions and ≥ 2 open questions each followed by the stop line. After the gap check, rewrote R2 because "before any community data is read" could not be checked from outside. Human: PENDING (Sandeep Garg).
 
-checks: Gap check (entry 6): 41 questions, 15 answered, 26 real gaps, all resolved in §8.
+checks: Gap check (entry 6): 41 questions, 14 answered, 27 real gaps, all resolved in §8.
 
 evidence: S-1; A-5, A-12; Q-3, Q-5, Q-7
 
@@ -85,7 +85,7 @@ prompts: `prompts/04-design-S-2.md`
 
 review: AI: the reopen window appears only as `REOPEN_WINDOW_DAYS`. D5 marks the value in `app/settings.py` as a placeholder pending Q-1. Q-6 (backward moves) is left open and listed as a non-goal. Human: PENDING (Matthew Belanger).
 
-checks: Gap check (entry 7): 43 questions, 25 answered, 18 real gaps, all resolved in §8.
+checks: Gap check (entry 7): 43 questions, 25 answered, 18 real gaps (one of them, #1, is part answered and part gap), all resolved in §8.
 
 evidence: S-2; A-6, A-7; Q-1, Q-6
 
@@ -245,7 +245,7 @@ prompts: user request (`prompts/00-session-request.md`); no separate prompt. The
 
 review: AI: checked every AC-1 … AC-28 has one row, and every S-1/S-2 test name in the matrix exists (`python -m pytest --collect-only -q`). Human: PENDING (Gustavo Abreu).
 
-checks: `python -m pytest --collect-only -q` lists every test name used in the matrix; fresh-clone run recorded in the report (6e).
+checks: `python -m pytest --collect-only -q` lists every test name used in the matrix. Fresh clone + new venv + `pip install -r requirements.txt` + `python -m pytest` → 70 passed, 7 skipped, plus 1 StarletteDeprecationWarning ("Using `httpx` with `starlette.testclient` is deprecated; install `httpx2`"), left alone because AGENTS.md forbids new dependencies without asking. Gap-check counts in entries 4–5 corrected after recounting the triage tables.
 
 evidence: all ACs
 
