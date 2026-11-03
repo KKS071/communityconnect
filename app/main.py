@@ -8,7 +8,7 @@ from fastapi import Depends, FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from app import db
-from app.access import NotFound, require_member
+from app.access import NotFound, communities_of, require_member
 from app.auth import make_current_user
 
 
@@ -38,12 +38,7 @@ def create_app(db_path: str, clock: Callable[[], datetime] | None = None) -> Fas
     @app.get("/me/communities")
     def my_communities(user=Depends(current_user), conn=Depends(conn_dep)):
         # D21: the client "switches" by choosing a community_id from this list.
-        rows = conn.execute(
-            "SELECT c.id, c.name FROM communities c"
-            " JOIN memberships m ON m.community_id = c.id"
-            " WHERE m.user_id = ? ORDER BY c.id",
-            (user["id"],),
-        ).fetchall()
+        rows = communities_of(conn, user["id"])
         return [{"id": r["id"], "name": r["name"]} for r in rows]
 
     @app.get("/communities/{community_id}/tickets")
