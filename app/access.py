@@ -8,5 +8,11 @@ class NotFound(Exception):
 
 
 def require_member(conn: sqlite3.Connection, user_id: int, community_id: int) -> str:
-    # Task 1: fail closed. Real check arrives in task 2.
-    raise NotFound()
+    """Return the caller's role in the community, or raise NotFound (R3)."""
+    row = conn.execute(
+        "SELECT role FROM memberships WHERE user_id = ? AND community_id = ?",
+        (user_id, community_id),
+    ).fetchone()
+    if row is None:
+        raise NotFound()
+    return row["role"]
