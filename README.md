@@ -43,15 +43,11 @@ with its AC ID in the skip reason.
 ## Run the API locally (optional)
 
 ```bash
-COMMUNITYCONNECT_DB=dev.db python -m app.seed      # creates dev.db with demo data and prints tokens
 COMMUNITYCONNECT_DB=dev.db uvicorn app.main:app --reload
 ```
 
-Then call it with a token from the seed output, for example:
-
-```bash
-curl -H "Authorization: Bearer <token>" http://127.0.0.1:8000/me/communities
-```
+Milestone 1 has no demo-data script (S-1 design doc, D13), so a fresh database has no users.
+The tests are the way to exercise the API.
 
 ## Layout
 
