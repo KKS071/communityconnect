@@ -1,28 +1,23 @@
-"""Test-only helpers (S-1 D13, D18). They open DATABASE_PATH directly because the API does
-not expose these operations. Column names are the ones in docs/design/S-1.md section 5."""
+"""Test-only helpers (S-1 D13, D18). They connect with DATABASE_URL and DATABASE_SCHEMA directly
+because the API does not expose these operations. Column names are the ones in
+docs/design/S-1.md section 5."""
 
-import sqlite3
+import psycopg
 
 from app import settings
 
 
 def _connect():
-    return sqlite3.connect(settings.DATABASE_PATH)
+    return psycopg.connect(settings.DATABASE_URL,
+                           options=f"-c search_path={settings.DATABASE_SCHEMA}")
 
 
 def set_status(request_id: int, status: str) -> None:
-    conn = _connect()
-    try:
-        cur = conn.execute("UPDATE requests SET status = ? WHERE id = ?", (status, request_id))
+    with _connect() as conn:
+        cur = conn.execute("UPDATE requests SET status = %s WHERE id = %s", (status, request_id))
         assert cur.rowcount == 1, f"no request with id {request_id}"
-        conn.commit()
-    finally:
-        conn.close()
 
 
 def count_requests() -> int:
-    conn = _connect()
-    try:
+    with _connect() as conn:
         return conn.execute("SELECT COUNT(*) FROM requests").fetchone()[0]
-    finally:
-        conn.close()

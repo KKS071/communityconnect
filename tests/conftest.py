@@ -3,9 +3,13 @@
 Sample data from docs/requirements/backlog.md: communities Mountain Ridge, Pine Hollow and
 Elm Court. R1 lives in unit 12 and R3 in unit 20 of Mountain Ridge; R2 lives in Pine Hollow;
 R4 lives in Elm Court. M1 manages Mountain Ridge and Pine Hollow; M2 manages only Elm Court.
-B1 is a board member of Mountain Ridge. Data is created with app/seed.py (S-1 D13, D17), and
-each test gets a new temporary database (S-1 D12, D18).
+B1 is a board member of Mountain Ridge. Data is created with app/seed.py (S-1 D13, D17).
+Each test gets a new, empty PostgreSQL schema in the test database, dropped afterwards
+(S-1 D12, D18).
 """
+
+import os
+import uuid
 
 from dataclasses import dataclass, field
 
@@ -43,17 +47,36 @@ class World:
         return self.get(f"/communities/{self.communities[community]}/requests", user)
 
 
+TEST_DATABASE_URL = os.environ.get(
+    "COMMUNITYCONNECT_TEST_DATABASE_URL",
+    "postgresql://postgres:postgres@localhost:5432/communityconnect_test",
+)
+
+
 @pytest.fixture
-def db_path(tmp_path, monkeypatch):
+def db_schema(monkeypatch):
+    """Point the app at a new schema in the test database; drop it after the test (D18)."""
+    import psycopg
+
     from app import settings
 
-    path = str(tmp_path / "test.db")
-    monkeypatch.setattr(settings, "DATABASE_PATH", path)
-    return path
+    schema = f"test_{uuid.uuid4().hex}"
+    try:
+        admin = psycopg.connect(TEST_DATABASE_URL, autocommit=True, connect_timeout=5)
+    except psycopg.OperationalError as exc:
+        pytest.fail(f"PostgreSQL test database not reachable at {TEST_DATABASE_URL}: {exc}",
+                    pytrace=False)
+    monkeypatch.setattr(settings, "DATABASE_URL", TEST_DATABASE_URL)
+    monkeypatch.setattr(settings, "DATABASE_SCHEMA", schema)
+    try:
+        yield schema
+    finally:
+        admin.execute(f'DROP SCHEMA IF EXISTS "{schema}" CASCADE')
+        admin.close()
 
 
 @pytest.fixture
-def world(db_path):
+def world(db_schema):
     from app import seed
     from app.main import create_app
 
