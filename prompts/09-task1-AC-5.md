@@ -1,4 +1,4 @@
-# Prompt 09: bounded task 1 (bounded-task prompt from lecture)
+# Prompt 09: bounded task 1
 
 Implement AC-5 from docs/design/S-1.md. Change only app/__init__.py, app/settings.py, app/db.py,
 app/auth.py, app/access.py, app/main.py (all new). Do not change tests/, docs/, AGENTS.md, README.md,

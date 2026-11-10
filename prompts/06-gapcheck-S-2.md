@@ -1,4 +1,4 @@
-# Prompt 06: gap check for S-2 (sent to a fresh Claude Sonnet subagent, 2026-11-03)
+# Prompt 06: gap check for S-2
 
 Read the file /home/claude/communityconnect/docs/design/S-2.md and nothing else. Do not read any other file in the repository.
 

@@ -1,4 +1,4 @@
-# Prompt 13: bounded task 4 (bounded-task prompt from lecture)
+# Prompt 13: bounded task 4
 
 Implement the AC-1/AC-2 hardening from docs/design/S-1.md: D10 (integer IDs outside 1..2^63-1 raise
 NotFound before reaching SQLite) and D17 (trailing slash gives 404). Change only app/main.py. Do not

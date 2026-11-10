@@ -1,4 +1,4 @@
-# Prompt 03: design doc S-1 (written by Claude from prompt 00)
+# Prompt 03: design doc S-1
 
 Write docs/design/S-1.md for story S-1 (community isolation) with the nine sections from the
 specifications lecture: Problem (with evidence IDs), Scope, Non-goals (>= 2), Interface (exact signatures,

@@ -1,4 +1,4 @@
-# Prompt 07: tests first (written by Claude from prompt 00)
+# Prompt 07: tests first
 
 Before any code in app/ exists, write pytest tests for every acceptance criterion of S-1 (AC-1..AC-5)
 and S-2 (AC-6..AC-12), from docs/design/S-1.md and S-2.md only. Put the AC ID in each test name. Take

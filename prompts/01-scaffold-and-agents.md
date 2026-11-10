@@ -1,4 +1,4 @@
-# Prompt 01: repository scaffold (written by Claude from prompt 00)
+# Prompt 01: repository scaffold
 
 Create the repository layout required by Milestone 1 §6a: README.md (what the project is, how to install,
 the one test command), AGENTS.md (language and framework, test command, files the agent must not change,

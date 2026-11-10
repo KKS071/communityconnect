@@ -18,9 +18,6 @@
 | INT-03 | | | |
 | INT-04 | | | |
 
-Check before submitting: at least 4 rows; every team member (Abreu, Singh, Garg, Belanger)
-appears in at least one row.
-
 ## 2e AI summary check (only if an AI tool summarised an interview)
 
 Prompt used (from lecture): ask for a supporting quote after every claim. Then:

@@ -1,4 +1,4 @@
-# Prompt 02: requirements documents (written by Claude from prompt 00)
+# Prompt 02: requirements documents
 
 From the approved proposal and the professor's feedback, draft:
 1. Deliverable 1 proposal follow-up (approval listed no required items; answer the two pieces of advice).

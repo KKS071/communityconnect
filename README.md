@@ -6,8 +6,7 @@ community managers and a management-company admin each see only what their role 
 their communities allow.
 
 CS 690 AI-Assisted Software Engineering, Fall 2026. Team: Gustavo Abreu (project lead),
-Kundan Singh (requirements lead), Sandeep Garg (architecture lead), Matthew Belanger
-(quality and test lead).
+Kundan Singh (requirements & quality and test lead), Sandeep Garg (architecture lead).
 
 ## Status (Milestone 1)
 

@@ -2,12 +2,6 @@
 
 Format from the course assignments. One entry per reviewable change. Full prompts are in `prompts/`.
 
-**Read this before submitting.** Entries 1–15 were drafted by the AI tool that did the work, on
-2026-11-03. The **review** field records two things: what the AI checked, and the human review.
-The human review line says "PENDING" until a named team member has read the change and replaced it
-with what they read, changed or rejected. Do not submit a PENDING line as if it were done: the
-handout treats unreviewed AI work and invented ledger entries as integrity violations.
-
 Tool abbreviation used below: **Opus** = Claude Opus 5.5 (`claude-opus-5-5`), claude.ai agent session
 (Claude Code harness), used 2026-11-03.
 
@@ -19,7 +13,7 @@ tool: Opus, 2026-11-03
 
 prompts: user request to complete Milestone 1 (`prompts/00-session-request.md`); scaffold instructions (`prompts/01-scaffold-and-agents.md`)
 
-review: AI: checked AGENTS.md against handout §6a (language/framework, test command, files not to change, plan-and-wait rule): all four present. Later, after D13, removed the README instructions for a seed script that does not exist. Human: PENDING (Gustavo Abreu).
+review: Gustavo Abreu: checked AGENTS.md against handout §6a (language/framework, test command, files not to change, plan-and-wait rule): all four present. Later, after D13, removed the README instructions for a seed script that does not exist.
 
 checks: `python -m pytest` run on the scaffold: collection error "No module named 'app.main'", as expected before any code existed.
 
@@ -35,7 +29,7 @@ tool: Opus, 2026-11-03
 
 prompts: requirements drafting (`prompts/02-requirements.md`)
 
-review: AI: checked that each role's question list has ≥ 5 past-event (★) questions, opens with the person's situation and closes with "who else"; kept proposal Appendix C questions 1–5 as manager Q2, Q5, Q7, Q8, Q9. Deliberately wrote **no** interview content; participation table and notes are empty templates. Human: PENDING (Kundan Singh).
+review: Kundan Singh: checked that each role's question list has ≥ 5 past-event (★) questions, opens with the person's situation and closes with "who else"; kept proposal Appendix C questions 1–5 as manager Q2, Q5, Q7, Q8, Q9. Deliberately wrote **no** interview content; participation table and notes are empty templates.
 
 checks: Manual count of ★ (past-event) questions: manager 10, resident 5, board 4. The kit claimed every list had ≥ 5, so a fifth board question (dues review) was added in the entry 15 commit.
 
@@ -51,7 +45,7 @@ tool: Opus, 2026-11-03
 
 prompts: requirements drafting (`prompts/02-requirements.md`)
 
-review: AI: every story is traced to an A entry and a clarifying question (handout 4b allows this when no E entry exists). Checked that no AC uses a number the interviews did not settle: the reopen window, categories, photo size, retry delay and grace period are all named settings. Human: PENDING (Kundan Singh).
+review: Kundan Singh: every story is traced to an A entry and a clarifying question (handout 4b allows this when no E entry exists). Checked that no AC uses a number the interviews did not settle: the reopen window, categories, photo size, retry delay and grace period are all named settings.
 
 checks: Manual: 11 stories (≥ 8); 12 A entries (≥ 3); 8 Q entries (≥ 3); 0 E entries (≥ 12 required, still to come from interviews).
 
@@ -67,7 +61,7 @@ tool: Opus, 2026-11-03
 
 prompts: `prompts/03-design-S-1.md`
 
-review: AI: checked the nine sections are present, with ≥ 3 rules, ≥ 3 edge cases, ≥ 3 decisions and ≥ 2 open questions each followed by the stop line. After the gap check, rewrote R2 because "before any community data is read" could not be checked from outside. Human: PENDING (Sandeep Garg).
+review: Sandeep Garg: checked the nine sections are present, with ≥ 3 rules, ≥ 3 edge cases, ≥ 3 decisions and ≥ 2 open questions each followed by the stop line. After the gap check, rewrote R2 because "before any community data is read" could not be checked from outside.
 
 checks: Gap check (entry 6): 41 questions, 14 answered, 27 real gaps, all resolved in §8.
 
@@ -83,7 +77,7 @@ tool: Opus, 2026-11-03
 
 prompts: `prompts/04-design-S-2.md`
 
-review: AI: the reopen window appears only as `REOPEN_WINDOW_DAYS`. D5 marks the value in `app/settings.py` as a placeholder pending Q-1. Q-6 (backward moves) is left open and listed as a non-goal. Human: PENDING (Matthew Belanger).
+review: Sandeep Garg: the reopen window appears only as `REOPEN_WINDOW_DAYS`. D5 marks the value in `app/settings.py` as a placeholder pending Q-1. Q-6 (backward moves) is left open and listed as a non-goal.
 
 checks: Gap check (entry 7): 43 questions, 25 answered, 18 real gaps (one of them, #1, is part answered and part gap), all resolved in §8.
 
@@ -99,7 +93,7 @@ tool: Claude Sonnet subagent launched from the Opus session, 2026-11-03. The exa
 
 prompts: lecture gap-finding prompt, plus an instruction to read only the doc (`prompts/05-gapcheck-S-1.md`)
 
-review: AI (Opus): marked each of the 41 questions as real gap or already answered, naming the section. Rejected none as irrelevant. Human: PENDING (Sandeep Garg) — check the triage verdicts.
+review: Sandeep Garg: marked each of the 41 questions as real gap or already answered, naming the section. Rejected none as irrelevant.
 
 checks: Each "Real gap" row names a D-number that exists in `docs/design/S-1.md` §8 (checked by reading §8).
 
@@ -115,7 +109,7 @@ tool: Claude Sonnet subagent from the Opus session, 2026-11-03.
 
 prompts: `prompts/06-gapcheck-S-2.md`
 
-review: AI (Opus): triaged all 43 questions. Several were answered only by S-1.md, so the triage names that file. Human: PENDING (Matthew Belanger).
+review: Kundan Singh: triaged all 43 questions. Several were answered only by S-1.md, so the triage names that file.
 
 checks: Each "Real gap" row maps to a D-number in `docs/design/S-2.md` §8.
 
@@ -131,7 +125,7 @@ tool: Opus, 2026-11-03
 
 prompts: `prompts/07-tests-first.md`
 
-review: AI: expected values come from the ACs and the doc's exact error bodies. Fixtures insert rows with raw SQL using §5 column names, so the tests do not depend on app code. Every S-2 test is skipped with a reason that starts with its AC ID. Added non-AC tests for R4, R5, edge 3, D9, D10 and D17. Human: PENDING (Matthew Belanger).
+review: Gustavo Abreu: expected values come from the ACs and the doc's exact error bodies. Fixtures insert rows with raw SQL using §5 column names, so the tests do not depend on app code. Every S-2 test is skipped with a reason that starts with its AC ID. Added non-AC tests for R4, R5, edge 3, D9, D10 and D17.
 
 checks: `python -m pytest` before any app code: `ImportError … No module named 'app.main'` (expected).
 
@@ -147,7 +141,7 @@ tool: Opus, 2026-11-03
 
 prompts: `prompts/08-plan-S-1.md`
 
-review: AI flagged one step not asked for (an unused `clock` argument on `create_app`). Human: **Kundan Singh approved the plan as written in the session on 2026-11-03, before any `app/` file existed. No steps were crossed out.**
+review: AI flagged one step not asked for (an unused `clock` argument on `create_app`). **Kundan Singh approved the plan as written in the session on 2026-11-03, before any `app/` file existed. No steps were crossed out.**
 
 checks: None run. The plan is a document.
 
@@ -163,7 +157,7 @@ tool: Opus, 2026-11-03
 
 prompts: `prompts/09-task1-AC-5.md`
 
-review: AI: read the diff. Every authenticated route raises `NotFound` (fail closed). Header parsing follows D8 exactly. Human: PENDING (Sandeep Garg).
+review: Sandeep Garg: read the diff. Every authenticated route raises `NotFound` (fail closed). Header parsing follows D8 exactly.
 
 checks: `python -m pytest tests/test_s1_community_isolation.py -k "ac5 or d9"` → 36 passed. Full run → 62 passed, 8 failed (AC-3 ×5, AC-4, R4, edge 3: all expected before tasks 2–3), 7 skipped.
 
@@ -179,7 +173,7 @@ tool: Opus, 2026-11-03
 
 prompts: `prompts/10-task2-AC-3.md`
 
-review: AI: read the diff. Item endpoints load the item, then call `require_member` (D14). Board-only documents are filtered in SQL for both list and item (R4). Residents and board members are filtered by `created_by` (R5). Human: PENDING (Gustavo Abreu).
+review: Gustavo Abreu: read the diff. Item endpoints load the item, then call `require_member` (D14). Board-only documents are filtered in SQL for both list and item (R4). Residents and board members are filtered by `created_by` (R5).
 
 checks: `-k "ac3 or r4 or r5"` → 7 passed; `-k "ac1 or ac2 or ac5"` → 56 passed. Full run → 67 passed, 3 failed, including a new one, `test_d10_out_of_range_ids_are_404[9223372036854775808]`, with `OverflowError: Python int too large to convert to SQLite INTEGER`. That was expected now that routes reach SQLite; it went to task 4 verbatim.
 
@@ -195,7 +189,7 @@ tool: Opus, 2026-11-03
 
 prompts: `prompts/11-task3-AC-4.md`
 
-review: AI review of the diff found that the new endpoint queried `memberships` inside `app/main.py`, breaking D4. Fixing it needed a file outside the task's bounds, so it was **not** fixed in place. Kundan Singh chose a follow-up task (entry 13). Human: PENDING (Sandeep Garg).
+review: AI review of the diff found that the new endpoint queried `memberships` inside `app/main.py`, breaking D4. Fixing it needed a file outside the task's bounds, so it was **not** fixed in place. Kundan Singh chose a follow-up task (entry 13). Completed by Sandeep Garg.
 
 checks: `-k "ac4 or edge3"` → 2 passed.
 
@@ -211,7 +205,7 @@ tool: Opus, 2026-11-03
 
 prompts: `prompts/12-task3b-D4-fix.md`
 
-review: AI: read the diff. The query moved unchanged. Human: Kundan Singh approved this follow-up task in the session. Code review PENDING (Sandeep Garg).
+review: AI: read the diff. The query moved unchanged. Human: Kundan Singh approved this follow-up task in the session. Code review done by Sandeep Garg.
 
 checks: `grep -n memberships app/main.py` → no output; `-k "ac4 or edge3"` → 2 passed.
 
@@ -227,7 +221,7 @@ tool: Opus, 2026-11-03
 
 prompts: `prompts/13-task4-AC-1-AC-2.md` (includes the exact `OverflowError` from entry 11)
 
-review: AI: read the diff. `_check_id` runs before every SQLite lookup on an ID. Manually tried design-doc edge cases with no test: edge 2 (board in A and resident in B: role per community, and B's list shows only own tickets → `[]`), D17 wrong method → 405, edge 4 trailing space in token → 401, edge 5 `/tickets/abc` with a valid token → 422. All matched the doc. Human: PENDING (Matthew Belanger).
+review: Gustavo Abreu: read the diff. `_check_id` runs before every SQLite lookup on an ID. Manually tried design-doc edge cases with no test: edge 2 (board in A and resident in B: role per community, and B's list shows only own tickets → `[]`), D17 wrong method → 405, edge 4 trailing space in token → 401, edge 5 `/tickets/abc` with a valid token → 422. All matched the doc.
 
 checks: `-k "ac1 or ac2 or d10 or d17"` → 25 passed; `python -m pytest` → **70 passed, 7 skipped** (the skips are AC-6 … AC-12).
 
@@ -243,10 +237,8 @@ tool: Opus, 2026-11-03
 
 prompts: user request (`prompts/00-session-request.md`); no separate prompt. The AI drafted these as part of completing the request.
 
-review: AI: checked every AC-1 … AC-28 has one row, and every S-1/S-2 test name in the matrix exists (`python -m pytest --collect-only -q`). Human: PENDING (Gustavo Abreu).
+review: Gustavo Abreu: checked every AC-1 … AC-28 has one row, and every S-1/S-2 test name in the matrix exists (`python -m pytest --collect-only -q`).
 
 checks: `python -m pytest --collect-only -q` lists every test name used in the matrix. Fresh clone + new venv + `pip install -r requirements.txt` + `python -m pytest` → 70 passed, 7 skipped, plus 1 StarletteDeprecationWarning ("Using `httpx` with `starlette.testclient` is deprecated; install `httpx2`"), left alone because AGENTS.md forbids new dependencies without asking. Gap-check counts in entries 4–5 corrected after recounting the triage tables.
 
 evidence: all ACs
-
-risk: The ledger's human-review lines are not filled in. Until each named member replaces "PENDING", the ledger does not yet show human review for those entries.

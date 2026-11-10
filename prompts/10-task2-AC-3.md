@@ -1,4 +1,4 @@
-# Prompt 10: bounded task 2 (bounded-task prompt from lecture)
+# Prompt 10: bounded task 2 
 
 Implement AC-3 from docs/design/S-1.md (with rules R1, R4, R5 and decisions D4, D14, D15). Change only
 app/access.py and app/main.py. Do not change tests/, docs/, app/db.py, app/auth.py, app/settings.py,

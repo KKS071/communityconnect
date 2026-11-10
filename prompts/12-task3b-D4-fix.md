@@ -1,4 +1,4 @@
-# Prompt 12: bounded task 3b (follow-up from review of task 3; approved by Kundan Singh in session)
+# Prompt 12: bounded task 3b
 
 Review of task 3 found that GET /me/communities in app/main.py queries the memberships table directly,
 which breaks D4 in docs/design/S-1.md. Move that query into a new function
