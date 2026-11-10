@@ -1,58 +1,40 @@
 # Deliverable 3: Evidence log
 
-Scheme from Assignment 3. **E** = something a real interviewee said or described (cites INT-xx:Pyy).
-**A** = an assumption the team is making that the interviews did not establish (source "Team").
-**Q** = an open question that must be answered before a related decision is settled.
+Scheme from Assignment 3. E = something an interviewee said or described (cites INT-xx:Pyy, raw notes in `docs/interviews/interviews.md`). A = an assumption the team is making (source "Team"). Q = an open question that must be answered before a related decision is settled.
 
-Status: Observed (a specific past event someone described), Stated (a rule or fact someone
-asserted), Assumption (A entries), Open (Q entries).
+Status is Observed (a specific past event someone described), Stated (a rule or fact someone asserted), Assumption (A entries), or Open (Q entries). Owner is the team member responsible for confirming the claim or getting the question answered.
 
-## E entries: from real interviews (minimum 12)
-
-> **Not yet filled (2026-11-03).** Add E entries only from the numbered notes in
-> `interview-notes/`. An AI model, including a synthetic user, can never be the source of an E entry.
-> When an E entry confirms an A entry below, note "confirms A-n" in the Claim and update the
-> story's trace in `backlog.md` from the A entry to the E entry.
-
-| ID | Claim | Source | Status | Owner |
-|---|---|---|---|---|
-| E-1 | | INT-__:P__ | | |
-| … | | | | |
-| E-12 | | INT-__:P__ | | |
-
-**What to listen for.** These are the A entries each interview could confirm or contradict.
-Writing them here is not evidence; it is a reminder of what to ask follow-ups about.
-INT-01/04 (manager): A-1, A-2, A-3, A-4, A-6, A-8, A-9. INT-02 (board): A-2, A-5, A-11.
-INT-03 (resident): A-6, A-7, A-4. INT-05 (tenant): A-10.
-
-## A entries: team assumptions
-
-| ID | Claim | Source | Status | Owner |
-|---|---|---|---|---|
-| A-1 | We assume a community manager looks after several HOAs at once and tracks resident requests in an email inbox or a spreadsheet. | Team | Assumption | Kundan Singh |
-| A-2 | We assume board-only files are shared as shared-drive links, and stay private only if nobody forwards the link. | Team | Assumption | Kundan Singh |
-| A-3 | We assume announcements go out as group emails and the manager cannot tell who has seen them. | Team | Assumption | Gustavo Abreu |
-| A-4 | We assume dues arrive as paper checks or through a separate bank website, and the manager matches each payment to a home by hand. | Team | Assumption | Matthew Belanger |
-| A-5 | We assume that one community's tickets, documents or announcements reaching another community's residents would be treated as a serious breach by a board. | Team | Assumption | Sandeep Garg |
-| A-6 | We assume residents want to see where their request stands without having to call or email the manager. | Team | Assumption | Gustavo Abreu |
-| A-7 | We assume a resident needs a limited window after a request is resolved to say it was not really fixed. (The proposal's "7 days" was our number, not a user's.) | Team | Assumption | Matthew Belanger |
-| A-8 | We assume a manager sometimes needs to send the same announcement to more than one of their communities. | Team | Assumption | Gustavo Abreu |
-| A-9 | We assume an automatic reminder after a grace period would replace some of the manager's manual follow-up on late dues. | Team | Assumption | Matthew Belanger |
-| A-10 | We assume tenants (renters) are often the first to notice maintenance problems but do not hold the owner's account. | Team | Assumption | Kundan Singh |
-| A-11 | We assume communities accept that a manager or admin invites each resident (no self sign-up). | Team | Assumption | Sandeep Garg |
-| A-12 | We assume managers need to work in more than one community in the same sitting, so separate logins per community would get in their way. | Team | Assumption | Sandeep Garg |
-
-## Q entries: open questions
-
-| ID | Claim | Source | Status | Owner |
-|---|---|---|---|---|
-| Q-1 | How many days after a request is marked Resolved should a resident still be able to reopen it? (Setting: `REOPEN_WINDOW_DAYS`.) | Team | Open | Matthew Belanger |
-| Q-2 | Can a tenant who lives in a unit but does not own it submit and track a request without seeing the owner's payments? | Team | Open | Kundan Singh |
-| Q-3 | Should a management-company admin be able to read a community's tickets, documents and announcements, or only manage accounts and memberships? | Team | Open | Sandeep Garg |
-| Q-4 | How many days after a failed payment should the system retry, and how many days after the due date is a unit Overdue? (Settings: `PAYMENT_RETRY_DAYS`, `OVERDUE_GRACE_DAYS`.) | Team | Open | Matthew Belanger |
-| Q-5 | Should a board member see every ticket in their community, or only the tickets they submitted as a resident? | Team | Open | Kundan Singh |
-| Q-6 | Can a manager move a ticket backwards (In progress → Open), for example when it was started by mistake? | Team | Open | Gustavo Abreu |
-| Q-7 | Should a resident be able to see other residents' tickets in the same community (for example, to avoid duplicate reports of a broken gate)? | Team | Open | Kundan Singh |
-| Q-8 | Which ticket categories do managers actually use? | Team | Open | Gustavo Abreu |
-
-If two interviewees disagree, log the disagreement as a new A or Q entry; do not choose a side.
+| ID   | Claim                                                                                                                                                                     | Source                             | Status     | Owner         |
+|------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------|------------|---------------|
+| E-1  | About a third of a portfolio manager’s email is residents asking for updates on requests she has already handled.                                                         | INT-01:P04                         | Stated     | Kundan Singh  |
+| E-2  | A manager had a pool gate fixed but forgot to tell the resident, who emailed again six days later asking if anyone had looked at it.                                      | INT-01:P03                         | Observed   | Kundan Singh  |
+| E-3  | A manager answered a resident while another community’s spreadsheet tab was open and gave her the wrong community’s information.                                          | INT-01:P05                         | Observed   | Sandeep Garg  |
+| E-4  | A manager sent the same closure notice seven times, once per community list, and still missed one community.                                                              | INT-01:P06                         | Observed   | Gustavo Abreu |
+| E-5  | A board-only draft budget leaked when a board member forwarded a share link that worked for anyone who had it.                                                            | INT-01:P08                         | Observed   | Gustavo Abreu |
+| E-6  | A former board member still had access to the board’s shared folder six months after leaving the board.                                                                   | INT-04:P09                         | Observed   | Gustavo Abreu |
+| E-7  | The late-payment grace period differs by community: 10, 15 and 30 days in one manager’s communities, set by each community’s governing documents.                         | INT-01:P10                         | Stated     | Sandeep Garg  |
+| E-8  | A payment was posted to unit 14 instead of unit 41, and the owner of unit 41 received a late notice.                                                                      | INT-01:P11                         | Observed   | Sandeep Garg  |
+| E-9  | An owner paid the same month twice, once by bank autopay and once by mailed check, and the refund took three weeks.                                                       | INT-02:P09                         | Observed   | Sandeep Garg  |
+| E-10 | The bank reports a returned ACH payment 3 to 5 business days later, after the payment has already been counted as paid.                                                   | INT-02:P10                         | Stated     | Sandeep Garg  |
+| E-11 | A tenant, not the owner, reported a ceiling leak; tenants report most problems, but the manager cannot discuss the owner’s account with them.                             | INT-02:P02, INT-02:P03             | Observed   | Gustavo Abreu |
+| E-12 | Residents cannot see the status of their work orders, so they come to the manager’s office to ask.                                                                        | INT-02:P04                         | Stated     | Kundan Singh  |
+| E-13 | After a water shutoff announced by flyer and email, some residents said they never saw the notice.                                                                        | INT-02:P05                         | Observed   | Gustavo Abreu |
+| E-14 | A board treasurer received the delinquency report on the morning of the board meeting, two hours before presenting it.                                                    | INT-03:P02                         | Observed   | Kundan Singh  |
+| E-15 | A delinquency report listed an owner as late whose payment had arrived but was not yet posted, and the board almost sent the account to collections.                      | INT-03:P03                         | Observed   | Kundan Singh  |
+| E-16 | A late reminder went to an owner whose payment had arrived that morning but was not yet posted.                                                                           | INT-04:P06                         | Observed   | Sandeep Garg  |
+| E-17 | Some boards want a courtesy reminder 5 days after the due date; others want nothing sent until the late fee applies.                                                      | INT-04:P05                         | Stated     | Sandeep Garg  |
+| E-18 | A home sale was missed, so the new owner received no statements for two months while the old owner kept receiving them.                                                   | INT-04:P02                         | Observed   | Gustavo Abreu |
+| E-19 | An on-site manager emailed the pet policy to residents at least five times in one month.                                                                                  | INT-02:P06                         | Observed   | Kundan Singh  |
+| E-20 | A board-only draft special assessment was sent to the whole community when a board member hit reply-all on the wrong thread.                                              | INT-03:P04                         | Observed   | Sandeep Garg  |
+| E-21 | A board treasurer says most owners who pay late have simply forgotten.                                                                                                    | INT-03:P07                         | Stated     | Sandeep Garg  |
+| A-1  | We assume residents will submit requests through the portal instead of phoning or walking into the office (INT-02:P01 says half of one manager’s requests are walk-ins).  | Team                               | Assumption | Kundan Singh  |
+| A-2  | We assume a management company allows one manager login to see every community that manager is assigned to.                                                               | Team                               | Assumption | Gustavo Abreu |
+| A-3  | We assume residents are willing to save a bank account or card in the portal for automatic payments.                                                                      | Team                               | Assumption | Sandeep Garg  |
+| A-4  | We assume reminder timing should be a per-community setting, because interviewees disagree on when the first reminder should go out (INT-02:P08, INT-03:P07, INT-04:P05). | Team                               | Assumption | Sandeep Garg  |
+| A-5  | We assume a photo attached to a request lets the manager or vendor understand the problem without a site visit.                                                           | Team                               | Assumption | Kundan Singh  |
+| Q-1  | Who pays the card processing fee, the resident or the association?                                                                                                        | INT-03:P08                         | Open       | Sandeep Garg  |
+| Q-2  | Must a board member approve a manager’s announcement before residents see it?                                                                                             | INT-03:P09                         | Open       | Gustavo Abreu |
+| Q-3  | For each community, how many days after the due date should the first reminder go out?                                                                                    | INT-01:P10, INT-02:P08, INT-04:P05 | Open       | Sandeep Garg  |
+| Q-4  | Who tells the portal when someone leaves the board, and how soon after that must their Board Only access end?                                                             | INT-04:P09                         | Open       | Kundan Singh  |
+| Q-5  | When a home is sold or rented, who tells the portal, and when does the previous occupant lose access?                                                                     | INT-04:P02, INT-04:P03             | Open       | Gustavo Abreu |
+| Q-6  | For how many days after a request is resolved should the resident be able to reopen it? (Our proposal said 7 days, but no interviewee told us this.)                      | Team                               | Open       | Kundan Singh  |

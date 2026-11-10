@@ -1,191 +1,146 @@
 # Deliverable 4: Backlog
 
-Roles come from the stakeholder grid in the proposal (Appendix B). Evidence IDs refer to
-`evidence-log.md`.
+Evidence IDs refer to `evidence-log.md`. Named settings in capitals are defined in `app/settings.py` once a story that uses them is built.
 
-> **Trace status on 2026-11-03.** No interviews have been held yet, so every story below is
-> marked **Assumption**, with the A entry it rests on and the clarifying question we will ask a
-> real user. After the interviews, replace "Assumption: A-n" with the E entry that supports the
-> story, or move the story below the cut line if the interviews contradict it.
+## 4a, 4b, 4d. Stories, evidence trace and acceptance criteria
 
-Settings used by acceptance criteria (values not settled by interviews; defined in `app/settings.py`):
-`REOPEN_WINDOW_DAYS` (Q-1), `TICKET_CATEGORIES` (Q-8), `MAX_PHOTO_MB`, `PAYMENT_RETRY_DAYS` and
-`OVERDUE_GRACE_DAYS` (Q-4).
+Values the interviews did not settle are written as named settings in capitals, such as GRACE_PERIOD_DAYS. The sample data uses three communities: Mountain Ridge, Pine Hollow and Elm Court. Manager M1 manages Mountain Ridge and Pine Hollow; manager M2 manages only Elm Court.
 
----
+### S-1: Submit and track a maintenance request
 
-## S-1 Community isolation
+As a resident, I want to submit a maintenance request and see its current status in the portal, so that I do not have to email or visit the office to ask for updates.
 
-**As a** resident or board member of a community, **I want** the portal to show me only my own
-community's tickets, documents and announcements, **so that** our community's information never
-reaches people in another community.
+**Evidence:** E-1, E-2, E-12
 
-- **Trace:** Assumption: A-5, A-12. Clarifying question: "Has one community's information ever reached someone in another community? What happened the last time?" (interview-kit manager Q8, board Q3)
-- **INVEST:** I pass · N pass · V pass · E pass · S pass (read endpoints only; writes come with later stories) · T pass
+- **AC-1** Given resident R1 of unit 12 in Mountain Ridge is signed in, When R1 submits a request with category “Plumbing” and description “Kitchen sink leaks”, Then R1’s request list shows that request with status Open and today’s date.
+- **AC-2** Given R1 is signed in, When R1 submits a request whose description is empty or only spaces, Then the portal shows “Description is required” and R1’s request list is unchanged.
+- **AC-3** Given R1 has an Open request in Mountain Ridge and resident R2 of Pine Hollow is signed in, When R2 opens the Pine Hollow request list, Then R1’s request is not listed.
+- **AC-4** Given R2 of Pine Hollow is signed in, When R2 opens R1’s request directly by its ID, Then the portal shows “Not found” and none of the request’s details.
+- **AC-5** Given R1 has an Open request and resident R3 of unit 20 in Mountain Ridge is signed in, When R3 opens the Mountain Ridge request list, Then R1’s request is not listed.
+- **AC-6** Given R1’s request has status In progress, When R1 opens the request, Then the portal shows status In progress.
 
-| AC | Given | When | Then |
-|---|---|---|---|
-| AC-1 | A resident, a board member and a manager who have no membership in community B, and B has a ticket, a Community-folder document and an announcement | each of them requests one of those items by its ID | the API answers 404 Not Found and the response contains none of B's titles or text |
-| AC-2 | The same three users and community B | each of them requests B's list of tickets, documents or announcements | the API answers 404 Not Found and the response contains none of B's titles or text |
-| AC-3 | A resident, a board member and a manager of community A; A has an announcement, a Community-folder document and a ticket the resident submitted; community B has its own items | each of them lists A's announcements and documents, and the resident and manager list A's tickets | each list contains A's items and no item from B; the resident's ticket list includes the ticket they submitted; the manager's ticket list includes every ticket in A |
-| AC-4 | A manager assigned to communities A and C (not B), using one sign-in token | they list their communities, then list A's tickets, then C's tickets | the community list shows exactly A and C; each ticket list shows only that community's tickets |
-| AC-5 | A request with no token, or with a token that belongs to nobody | it calls any community endpoint | the API answers 401 and the response contains no community data |
+### S-2: Manager updates a request’s status
 
-## S-2 Ticket status lifecycle
+As a community manager, I want to move a request from Open to In progress to Resolved, so that the resident can see progress without contacting me.
 
-**As a** resident, **I want** to see my request move from Open to In progress to Resolved, and
-to reopen it if it was not really fixed, **so that** I know where it stands without calling the manager.
+**Evidence:** E-1, E-2, E-12
 
-- **Trace:** Assumption: A-6, A-7. Clarifying question: "Tell me about the last time you asked for an update on a request. How did you find out?" (resident Q2, Q3; manager Q3, Q4)
-- **INVEST:** I pass (tests seed tickets directly, so it does not need S-5 built first) · N pass · V pass · E pass (reopen window is a named setting) · S pass · T pass
+- **AC-7** Given R1’s request in Mountain Ridge is Open and M1 manages Mountain Ridge, When M1 sets it to In progress, Then R1’s request list shows In progress.
+- **AC-8** Given R1’s request is Open, When M1 sets it straight to Resolved, Then the portal shows “Status must move to In progress first” and the request stays Open.
+- **AC-9** Given R1’s request was Resolved less than REOPEN_WINDOW_DAYS ago, When R1 reopens it, Then the request shows status Open.
+- **AC-10** Given M2 manages only Elm Court, When M2 tries to change the status of R1’s Mountain Ridge request, Then the portal shows “Not found” and the status is unchanged.
 
-| AC | Given | When | Then |
-|---|---|---|---|
-| AC-6 | An Open ticket in community A, submitted by a resident of A | A's manager moves it to In progress | the resident's view of the ticket shows In progress, and its history lists Open → In progress with the time of the change |
-| AC-7 | An In progress ticket in A | A's manager moves it to Resolved | the resident's view shows Resolved and its history lists In progress → Resolved |
-| AC-8 | An Open ticket in A | A's manager tries to move it straight to Resolved | the API answers 409 Conflict and the resident still sees Open |
-| AC-9 | An Open ticket in A | the resident who submitted it tries to move it to In progress | the API answers 403 Forbidden and the ticket still shows Open |
-| AC-10 | A ticket resolved less than `REOPEN_WINDOW_DAYS` days ago | the resident who submitted it reopens it | the ticket shows Open, and its history lists Resolved → Open as a reopen by the resident |
-| AC-11 | A ticket resolved `REOPEN_WINDOW_DAYS` days ago or more | the resident who submitted it tries to reopen it | the API answers 409 Conflict and the ticket still shows Resolved |
-| AC-12 | An Open ticket in A and a manager assigned only to community C | that manager tries to move it to In progress | the API answers 404 Not Found and the ticket still shows Open to A's manager |
+### S-3: Manager switches between communities
 
-## S-3 Admin assigns a manager to communities
+As a community manager, I want to switch between my communities from one login and see only the selected community’s requests, so that I never answer a resident with another community’s information.
 
-**As a** management-company admin, **I want** to give a manager access to another community,
-**so that** the manager can take over a community without a second account.
+**Evidence:** E-3
 
-- **Trace:** Assumption: A-12, A-11. Clarifying question: "Tell me about the last time a community was handed from one manager to another. What had to be set up?"
-- **INVEST:** I pass · N pass · V pass · E pass · S pass · T pass
+- **AC-11** Given M1 manages Mountain Ridge and Pine Hollow and each has one Open request, When M1 selects Pine Hollow, Then the request list shows only the Pine Hollow request.
+- **AC-12** Given M2 manages only Elm Court, When M2 opens the community selector, Then only Elm Court is offered.
 
-| AC | Given | When | Then |
-|---|---|---|---|
-| AC-13 | An admin, and a manager assigned only to community A | the admin assigns the manager to community C | the manager's community list shows A and C |
-| AC-14 | A manager assigned only to A | a non-admin user tries to assign that manager to C | the API answers 403 and the manager's community list still shows only A |
+### S-4: Board Only folder
 
-## S-4 Board Only folder
+As a board member, I want to upload files to a Board Only folder that residents cannot open, even with a direct link, so that draft budgets stay private until the board votes.
 
-**As a** board member, **I want** to put files in a Board Only folder that residents cannot open,
-even with a direct link, **so that** board files stay private without relying on nobody forwarding a link.
+**Evidence:** E-5, E-6, E-20
 
-- **Trace:** Assumption: A-2. Clarifying question: "When did a board member last ask you for a document? Where was it kept, and who else could open it?"
-- **INVEST:** I fail: depends on S-1's membership check being built first · N pass · V pass · E pass · S pass · T pass
+- **AC-13** Given board member B1 of Mountain Ridge uploaded “Draft budget 2027.pdf” to the Board Only folder, When resident R1 opens the Documents page, Then that file is not listed.
+- **AC-14** Given R1 has the direct link to that file, When R1 opens the link, Then the portal shows “Not found” and no file is downloaded.
+- **AC-15** Given an admin has removed B1’s board member role, When B1 opens the Board Only folder, Then the portal shows “Not found”.
 
-| AC | Given | When | Then |
-|---|---|---|---|
-| AC-15 | A file in community A's Board Only folder | a resident of A opens its direct link | the API answers 404 and no file content is returned |
-| AC-16 | A board member of A has uploaded a file to the Board Only folder | the server is restarted | the board member can still open the file, and it does not appear in a resident's document list |
+### S-5: Announcement to several communities
 
-## S-5 Submit a request with a category and a photo
+As a community manager, I want to post one announcement to several of my communities at once, so that I do not send the same email once per community and miss one.
 
-**As a** resident, **I want** to send a maintenance request with a category and a photo, **so that**
-the manager knows what is wrong and where without a back-and-forth.
+**Evidence:** E-4, E-13
 
-- **Trace:** Assumption: A-1. Clarifying question: "Tell me about the last maintenance request a resident sent you. How did it reach you?"
-- **INVEST:** I pass · N pass · V pass · E fail: the category list is not known yet (Q-8) · S pass · T pass
+- **AC-16** Given M1 manages Mountain Ridge and Pine Hollow, When M1 posts “Office closed November 26” to both, Then every resident of both communities sees it at the top of their feed and receives one email about it.
+- **AC-17** Given resident R4 lives in Elm Court, which M1 does not manage, When M1 posts that announcement, Then R4 does not see it and receives no email.
 
-| AC | Given | When | Then |
-|---|---|---|---|
-| AC-17 | A resident of A | they submit a request with a category from `TICKET_CATEGORIES` and a photo under `MAX_PHOTO_MB` | A's manager sees the request in A's ticket list as Open, with its category and photo |
-| AC-18 | A resident of A | they submit a request with a category not in `TICKET_CATEGORIES` | the API answers 422, says the category is not allowed, and no new ticket appears in the manager's list |
+### S-6: Scheduled monthly dues payment
 
-## S-6 Manager posts one announcement to several communities
+As a resident, I want my monthly HOA fee paid automatically by ACH, debit card or credit card on a day I choose, so that I do not miss a due date.
 
-**As a** community manager, **I want** to post one announcement to several of my communities at
-once, **so that** I do not send the same group email several times.
+**Evidence:** E-9, E-21
 
-- **Trace:** Assumption: A-3, A-8. Clarifying question: "Have you ever sent the same notice to more than one of your communities? Tell me about the last time."
-- **INVEST:** I fail: needs the email sender that S-9 also uses · N pass · V pass · E pass · S fail: feed fan-out plus email may need to be split into two stories · T pass
+- **AC-18** Given R1 has saved a test bank account, When R1 schedules payment on day 5 of each month by ACH, Then R1’s Payments page shows “Scheduled: day 5 of each month, ACH”.
+- **AC-19** Given R1’s payment is scheduled for day 5 and unit 12 has no payment for the month, When the daily payment run happens on day 5, Then R1’s payment history shows exactly one payment for that month, marked Paid, for Mountain Ridge’s DUES_AMOUNT_CENTS.
+- **AC-20** Given the payment run on day 5 is interrupted and restarted after R1 was charged, When the restarted run finishes, Then R1’s payment history still shows exactly one payment for that month.
+- **AC-21** Given the manager recorded a check payment for unit 12 for this month, When the payment run happens on day 5, Then no scheduled charge is made and the history shows one payment for the month.
+- **AC-22** Given the test processor declines R1’s charge on day 5, When RETRY_DELAY_DAYS have passed, Then R1’s payment history shows the first attempt as Failed and one retry attempt.
 
-| AC | Given | When | Then |
-|---|---|---|---|
-| AC-19 | A manager of A and C; residents in A, B and C | the manager posts one announcement to A and C | every resident of A and C sees it at the top of their feed and receives exactly one email; no resident of B sees it or receives an email |
+### S-7: Overdue flag and automatic reminder
 
-## S-7 Board member posts to their own community
+As a community manager, I want overdue units flagged and a reminder sent automatically after each community’s grace period, so that I do not chase late payers by hand.
 
-**As a** board member, **I want** to post an announcement to my own community, **so that** board
-news reaches residents without waiting for the manager.
+**Evidence:** E-7, E-16, E-17; rests on A-4
 
-- **Trace:** Assumption: A-3. Clarifying question: "Tell me about the last announcement the board wanted sent. Who wrote it and who sent it?"
-- **INVEST:** I pass · N pass · V pass · E pass · S pass · T pass
+- **AC-23** Given unit 12 in Mountain Ridge has no payment for the month, When GRACE_PERIOD_DAYS for Mountain Ridge have passed after the due date, Then the manager’s dues page shows unit 12 as Overdue and R1 receives one reminder in the portal and one by email.
+- **AC-24** Given unit 14’s payment for the month was recorded before the reminder run, When the reminder run happens, Then unit 14 is not shown as Overdue and its resident receives no reminder.
+- **AC-25** Given R1 already received the automatic reminder for this month, When the reminder run happens again in the same month, Then R1 receives no second automatic reminder.
 
-| AC | Given | When | Then |
-|---|---|---|---|
-| AC-20 | A board member of A | they post an announcement to A | every resident of A sees it at the top of their feed |
-| AC-21 | A board member of A only | they try to post an announcement to B | the API answers 404 and no resident of B sees it |
+### S-8: Treasurer’s dues report
 
-## S-8 Scheduled monthly dues payment
+As a board treasurer, I want to see each unit’s dues status for the month, so that I can report at board meetings without waiting for a spreadsheet.
 
-**As a** resident, **I want** my monthly HOA fee charged on a day of the month I choose, by ACH,
-debit or credit card, **so that** I do not have to mail a check or use a separate bank website.
+**Evidence:** E-14, E-15
 
-- **Trace:** Assumption: A-4. Clarifying question: "Think of how you paid your last HOA dues. Walk me through what you did."
-- **INVEST:** I pass · N pass · V pass · E fail: Stripe test-mode ACH timing is new to us · S fail: scheduling, charging, retry and restart safety are a lot for one story; may split into charge (S-8a) and retry (S-8b) · T pass
+- **AC-26** Given Mountain Ridge has units with Paid, Failed and Overdue payments for October, When board member B2 opens the October dues report, Then each unit appears exactly once with its status.
 
-| AC | Given | When | Then |
-|---|---|---|---|
-| AC-22 | A resident has scheduled their monthly fee for day *d*, and the simulated clock reaches day *d* | the payment worker runs | the unit's payment history shows exactly one Paid payment for that month, to both the resident and the manager |
-| AC-23 | 50 units scheduled for the same day | the payment worker is restarted part-way through the batch and then finishes | every unit has exactly one payment for that month |
-| AC-24 | A resident whose test card is declined | the payment worker runs on the due day, and again `PAYMENT_RETRY_DAYS` days later | the first attempt shows as Failed, exactly one retry is made, and its result appears in the payment history |
+### S-9: Tenant submits a request
 
-## S-9 Automatic overdue status and reminder
+As a tenant, I want to submit a maintenance request for the unit I rent without seeing the owner’s payments, so that the person who notices a problem can report it.
 
-**As a** community manager, **I want** a unit that is still unpaid `OVERDUE_GRACE_DAYS` after the
-due date to be marked Overdue and reminded once, automatically, **so that** I do not chase late dues by hand.
+**Evidence:** E-11
 
-- **Trace:** Assumption: A-9, A-4. Clarifying question: "Tell me about the last late payment you followed up on. How many days after the due date was that, and what did you send?"
-- **INVEST:** I fail: depends on S-8, or on the manual balance from the cut line · N pass · V pass · E fail: grace period unknown (Q-4) · S pass · T pass
+- **AC-27** Given tenant T1 rents unit 7 in Mountain Ridge, When T1 signs in, Then T1 sees the Requests page and no Payments page.
 
-| AC | Given | When | Then |
-|---|---|---|---|
-| AC-25 | A unit unpaid `OVERDUE_GRACE_DAYS` days after its due date | the daily job runs twice | the unit shows Overdue to the manager, and the resident has exactly one automatic reminder in the portal and one email |
-| AC-26 | A unit that paid on time | the daily job runs | the unit is not Overdue and the resident has no reminder |
+### S-10: Community documents
 
----- **CUT LINE** ----
+As a resident, I want to read my community’s rules and policies in the portal, so that I do not have to email the manager for them.
 
-## S-11 Manager sends another reminder with one click
+**Evidence:** E-19
 
-**As a** community manager, **I want** to send an overdue unit another reminder with one click,
-**so that** I can follow up without writing an email.
+- **AC-28** Given M1 uploaded “Pet policy.pdf” to the Mountain Ridge Community folder, When R1 opens the Documents page, Then R1 sees and can open “Pet policy.pdf”.
 
-- **Trace:** Assumption: A-9. Clarifying question: "After the first late notice, what did you do the last time a resident still had not paid?"
-- **INVEST:** I fail: depends on S-9 being built first · N pass · V pass · E pass · S pass · T pass
+### S-11: Photo on a request
 
-| AC | Given | When | Then |
-|---|---|---|---|
-| AC-27 | An Overdue unit | the manager clicks Send reminder | the resident gets one more reminder in the portal and by email, and the manager sees the time of the latest reminder |
+As a resident, I want to attach a photo to a maintenance request, so that the manager or vendor can see the problem without a site visit.
 
-## S-10 Tenant submits and tracks a request
+**Evidence:** Assumption, rests on A-5. Clarifying question for a user: “Tell me about the last request where you or a vendor had to visit just to see what the problem was.”
 
-**As a** tenant renting a unit, **I want** to submit and track a maintenance request, **so that**
-problems I notice first get reported without going through the owner. This story exists only if
-Q-2 is answered "yes".
+- **AC-29** Given R1 attaches a JPEG photo no larger than MAX_PHOTO_MB to a new request, When R1 submits it, Then the request’s detail page shows the photo.
 
-- **Trace:** Assumption: A-10. Clarifying question: "The last time a tenant reported a problem, how did it reach you and what happened?" Related open question: Q-2.
-- **INVEST:** I fail: depends on S-5 · N pass · V fail: value unproven until A-10 is checked · E fail: depends on Q-2 · S pass · T pass
+## 4c. INVEST check
 
-| AC | Given | When | Then |
-|---|---|---|---|
-| AC-28 | A tenant account linked to a unit in A | the tenant submits a request and then opens the unit's payment history | the request appears in the tenant's ticket list, and the payment history answers 404 |
+| Story | I    | N    | V    | E    | S    | T    | Problems for each fail                                                                                                                                                         |
+|-------|------|------|------|------|------|------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| S-1   | Pass | Pass | Pass | Pass | Pass | Pass | None                                                                                                                                                                           |
+| S-2   | Fail | Pass | Pass | Fail | Pass | Pass | I: depends on S-1 being built first, because there are no requests to update. E: the reopen window is unknown until Q-6 is answered.                                           |
+| S-3   | Fail | Pass | Pass | Pass | Pass | Pass | I: depends on S-1 being built first, because the selector filters S-1’s request list.                                                                                          |
+| S-4   | Pass | Pass | Pass | Fail | Pass | Pass | E: how quickly board access must end is unknown until Q-4 is answered.                                                                                                         |
+| S-5   | Pass | Pass | Pass | Fail | Pass | Pass | E: whether a board member must approve announcements first is unknown until Q-2 is answered.                                                                                   |
+| S-6   | Pass | Pass | Pass | Fail | Fail | Pass | E: who pays the card fee is unknown until Q-1 is answered. S: covers scheduling, charging and retrying; the retry (AC-22) may need its own story.                              |
+| S-7   | Fail | Pass | Pass | Fail | Pass | Pass | I: depends on S-6’s payment records being built first (or the manual balance from the proposal’s cut line). E: each community’s grace period is unknown until Q-3 is answered. |
+| S-8   | Fail | Pass | Pass | Pass | Pass | Pass | I: depends on S-6 and S-7 producing the Paid, Failed and Overdue statuses.                                                                                                     |
+| S-9   | Pass | Pass | Pass | Fail | Pass | Pass | E: how a tenant is linked to a unit, and when they lose access, is unknown until Q-5 is answered.                                                                              |
+| S-10  | Pass | Pass | Pass | Pass | Pass | Pass | None                                                                                                                                                                           |
+| S-11  | Fail | Pass | Fail | Pass | Pass | Pass | I: depends on S-1 being built first. V: the benefit rests on A-5, which no interviewee confirmed.                                                                              |
 
----
+## 4e. Ranking and cut line
 
-## 4e Ranking and cut line
-
-| Rank | Story | Why it is above the line |
-|---|---|---|
-| 1 | S-1 | Every other story relies on the community boundary, and the approval told us to run these access tests from week one. |
-| 2 | S-2 | Tickets are the manager's highest-volume job, and the status rules are the clearest invariant we can test early. |
-| 3 | S-5 | Without a way to submit a request, the ticket lifecycle has nothing to act on in real use. |
-| 4 | S-4 | The Board Only folder is the boards' main privacy need, and it reuses S-1's membership check. |
-| 5 | S-3 | Managers cover several communities, so access must be grantable without a second account. |
-| 6 | S-6 | One post to several communities replaces repeated group emails, and the delivery test also checks the boundary. |
-| 7 | S-7 | Lets boards post without the manager, at small cost once S-6's posting path exists. |
-| 8 | S-8 | Scheduled dues are in the proposal's scope, but they carry the most risk, so they come after the access work. |
-| 9 | S-9 | Overdue status and one automatic reminder complete the dues capability. |
-| — | **Cut line** | |
-| 10 | S-11 | Below: a nice-to-have once S-9 works. |
-| 11 | S-10 | Below: depends on Q-2 and an unproven assumption (A-10). |
-
-**Conditional cut (from the approved proposal):** if S-1's access tests are not all passing by
-Milestone 2, S-8 and S-9 move below the line. Residents would then see a dues balance the manager
-types in, and S-9's reminders would be based on that balance.
+| Rank | Story        | Why it is above the cut line                                                                                                       |
+|------|--------------|------------------------------------------------------------------------------------------------------------------------------------|
+| 1    | S-1          | It is the core resident task, and it carries the cross-community access checks our approval asked us to run from the first week.   |
+| 2    | S-3          | A manager answering with the wrong community’s information is an observed failure (E-3) that only one-login switching fixes.       |
+| 3    | S-2          | Residents can only stop asking for updates (E-1, E-12) once managers can change a request’s status.                                |
+| 4    | S-4          | Two board-only leaks were observed (E-5, E-20), and privacy failures are the hardest to undo.                                      |
+| 5    | S-10         | It is small, and it removes repeated emails for the same documents (E-19).                                                         |
+| 6    | S-5          | It fixes the observed missed-community notice (E-4) with little new logic.                                                         |
+| 7    | S-6          | It is the proposal’s highest-risk capability, so it sits after the safer stories, where the proposal’s cut line can still drop it. |
+| 8    | S-7          | It depends on S-6’s payment records and fixes the observed reminders sent to people who had paid (E-16).                           |
+| 9    | S-11         | It completes the request capability promised in our proposal, and it is small once S-1 exists.                                     |
+| —    | **Cut line** | Stories below this line will not be in our final release.                                                                          |
+| 10   | S-8          |                                                                                                                                    |
+| 11   | S-9          |                                                                                                                                    |
