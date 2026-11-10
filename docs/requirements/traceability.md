@@ -1,41 +1,35 @@
 # Deliverable 7: Traceability matrix
 
-One row per acceptance criterion. **Evidence IDs are A entries until the interviews are logged.**
-After the interviews, replace each A ID with the E ID that supports the story (see `backlog.md`).
-Test names for S-1 and S-2 exist in the repository at the submitted commit. S-2 tests are skipped
-until S-2 is built.
+The test names for S-1 and S-6 are the names in each design doc’s section 9. All eleven exist in the repository at the submitted commit (checked with `python -m pytest --collect-only -q`).
 
-| Evidence ID | Story | AC | Test name |
-|---|---|---|---|
-| A-5, A-12 | S-1 | AC-1 | `tests/test_s1_community_isolation.py::test_ac1_outsider_item_read_blocked`, `::test_ac1_blocked_item_is_indistinguishable_from_missing` |
-| A-5, A-12 | S-1 | AC-2 | `tests/test_s1_community_isolation.py::test_ac2_outsider_list_read_blocked` |
-| A-5, A-12 | S-1 | AC-3 | `tests/test_s1_community_isolation.py::test_ac3_member_lists_announcements_and_documents`, `::test_ac3_resident_sees_own_ticket`, `::test_ac3_manager_sees_all_community_tickets` |
-| A-5, A-12 | S-1 | AC-4 | `tests/test_s1_community_isolation.py::test_ac4_manager_switches_communities_with_one_token` |
-| A-5, A-12 | S-1 | AC-5 | `tests/test_s1_community_isolation.py::test_ac5_unauthenticated_request_blocked` |
-| A-6, A-7 | S-2 | AC-6 | `tests/test_s2_ticket_status.py::test_ac6_manager_starts_ticket_resident_sees_in_progress` (skipped) |
-| A-6, A-7 | S-2 | AC-7 | `tests/test_s2_ticket_status.py::test_ac7_manager_resolves_ticket_resident_sees_resolved` (skipped) |
-| A-6, A-7 | S-2 | AC-8 | `tests/test_s2_ticket_status.py::test_ac8_skipping_in_progress_is_refused` (skipped) |
-| A-6, A-7 | S-2 | AC-9 | `tests/test_s2_ticket_status.py::test_ac9_resident_cannot_advance_ticket` (skipped) |
-| A-6, A-7 | S-2 | AC-10 | `tests/test_s2_ticket_status.py::test_ac10_reopen_within_window` (skipped) |
-| A-6, A-7 | S-2 | AC-11 | `tests/test_s2_ticket_status.py::test_ac11_reopen_after_window_refused` (skipped) |
-| A-6, A-7 | S-2 | AC-12 | `tests/test_s2_ticket_status.py::test_ac12_manager_of_other_community_gets_404` (skipped) |
-| A-12, A-11 | S-3 | AC-13 | Not yet written |
-| A-12, A-11 | S-3 | AC-14 | Not yet written |
-| A-2 | S-4 | AC-15 | Not yet written |
-| A-2 | S-4 | AC-16 | Not yet written |
-| A-1 | S-5 | AC-17 | Not yet written |
-| A-1 | S-5 | AC-18 | Not yet written |
-| A-3, A-8 | S-6 | AC-19 | Not yet written |
-| A-3 | S-7 | AC-20 | Not yet written |
-| A-3 | S-7 | AC-21 | Not yet written |
-| A-4 | S-8 | AC-22 | Not yet written |
-| A-4 | S-8 | AC-23 | Not yet written |
-| A-4 | S-8 | AC-24 | Not yet written |
-| A-9, A-4 | S-9 | AC-25 | Not yet written |
-| A-9, A-4 | S-9 | AC-26 | Not yet written |
-| A-9 | S-11 | AC-27 | Not yet written |
-| A-10 | S-10 | AC-28 | Not yet written |
-
-Tests from the design docs that are not AC tests (rules and edge cases): `test_r4_board_only_document_never_returned`,
-`test_r5_resident_cannot_read_neighbours_ticket`, `test_edge3_admin_without_membership`,
-`test_d10_out_of_range_ids_are_404`, `test_d9_auth_checked_before_path_validation`, `test_d17_trailing_slash_is_404`.
+| Evidence ID      | Story ID | AC ID | Test name                                                                           |
+|------------------|----------|-------|-------------------------------------------------------------------------------------|
+| E-1, E-2, E-12   | S-1      | AC-1  | tests/test_s1_requests.py::test_ac1_resident_submits_request_shown_as_open          |
+| E-1, E-12        | S-1      | AC-2  | tests/test_s1_requests.py::test_ac2_blank_description_rejected_and_list_unchanged   |
+| E-1, E-12        | S-1      | AC-3  | tests/test_s1_requests.py::test_ac3_other_community_resident_does_not_see_request   |
+| E-1, E-12        | S-1      | AC-4  | tests/test_s1_requests.py::test_ac4_other_community_direct_id_returns_not_found     |
+| E-1, E-12        | S-1      | AC-5  | tests/test_s1_requests.py::test_ac5_neighbor_in_same_community_does_not_see_request |
+| E-2, E-12        | S-1      | AC-6  | tests/test_s1_requests.py::test_ac6_resident_sees_in_progress_status                |
+| E-1, E-12        | S-2      | AC-7  | Not yet written                                                                     |
+| E-2              | S-2      | AC-8  | Not yet written                                                                     |
+| E-1              | S-2      | AC-9  | Not yet written                                                                     |
+| E-3              | S-2      | AC-10 | Not yet written                                                                     |
+| E-3              | S-3      | AC-11 | Not yet written                                                                     |
+| E-3              | S-3      | AC-12 | Not yet written                                                                     |
+| E-5, E-20        | S-4      | AC-13 | Not yet written                                                                     |
+| E-5              | S-4      | AC-14 | Not yet written                                                                     |
+| E-6              | S-4      | AC-15 | Not yet written                                                                     |
+| E-4, E-13        | S-5      | AC-16 | Not yet written                                                                     |
+| E-4              | S-5      | AC-17 | Not yet written                                                                     |
+| E-21             | S-6      | AC-18 | tests/test_s6_payments.py::test_ac18_schedule_shown_on_payments_page                |
+| E-21             | S-6      | AC-19 | tests/test_s6_payments.py::test_ac19_due_day_charges_exactly_once                   |
+| E-9              | S-6      | AC-20 | tests/test_s6_payments.py::test_ac20_restart_mid_run_keeps_one_payment              |
+| E-9              | S-6      | AC-21 | tests/test_s6_payments.py::test_ac21_manual_payment_prevents_scheduled_charge       |
+| E-21             | S-6      | AC-22 | tests/test_s6_payments.py::test_ac22_declined_charge_retried_after_delay            |
+| E-7, E-17        | S-7      | AC-23 | Not yet written                                                                     |
+| E-16             | S-7      | AC-24 | Not yet written                                                                     |
+| E-7              | S-7      | AC-25 | Not yet written                                                                     |
+| E-14, E-15       | S-8      | AC-26 | Not yet written                                                                     |
+| E-11             | S-9      | AC-27 | Not yet written                                                                     |
+| E-19             | S-10     | AC-28 | Not yet written                                                                     |
+| A-5 (Assumption) | S-11     | AC-29 | Not yet written                                                                     |

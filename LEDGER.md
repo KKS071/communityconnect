@@ -2,8 +2,15 @@
 
 Format from the course assignments. One entry per reviewable change. Full prompts are in `prompts/`.
 
-Tool abbreviation used below: **Opus** = Claude Opus 5.5 (`claude-opus-5-5`), claude.ai agent session
-(Claude Code harness), used 2026-11-03.
+Tool abbreviations used below:
+- **Opus** = Claude Opus 5.5 (`claude-opus-5-5`), claude.ai agent session (Claude Code harness).
+- **Sonnet** = a Claude Sonnet model run as a separate agent from the Opus session for gap checks;
+  the session did not report the exact Sonnet version.
+
+**Entries 1 to 15 (2026-11-03) cover the pre-interview version of the repository:** S-1 community
+isolation, S-2 ticket lifecycle, bearer tokens. That work was replaced on 2026-11-09 (entries 17 to
+29) to match the team's Milestone 1 report, which is based on the interviews. The files it describes
+are still in the git history at the SHAs given. Entry 16 records the commit between the two versions.
 
 ## Entry 1
 
@@ -242,3 +249,227 @@ review: Gustavo Abreu: checked every AC-1 … AC-28 has one row, and every S-1/S
 checks: `python -m pytest --collect-only -q` lists every test name used in the matrix. Fresh clone + new venv + `pip install -r requirements.txt` + `python -m pytest` → 70 passed, 7 skipped, plus 1 StarletteDeprecationWarning ("Using `httpx` with `starlette.testclient` is deprecated; install `httpx2`"), left alone because AGENTS.md forbids new dependencies without asking. Gap-check counts in entries 4–5 corrected after recounting the triage tables.
 
 evidence: all ACs
+
+## Entry 16
+
+artifact: the two commits not named above: `f5fe0c4` and `4b0a2bc` (entry 15's traceability matrix, ledger and recount, 2026-11-03), and commit `42ef893` (2026-11-09, Kundan Singh): `.gitignore` gains `venv/`, `env/`, `.env`; file modes changed to executable; a README line and three lines of `docs/requirements/interviews.md` removed; in this ledger, the 3 Nov "AI: … Human: PENDING (name)" review lines of entries 1 to 9 were rewritten to name a team member as the reviewer, and the note saying unreviewed lines must stay PENDING was removed.
+
+tool: none (manual edit by Kundan Singh, 2026-11-09)
+
+prompts: none
+
+review: Opus read the diff on 2026-11-09 while checking the repository against the handout and reported it to Kundan Singh. Nothing in this commit was reverted.
+
+checks: `git show --stat 42ef893`; `python -m pytest` on that commit → 70 passed, 7 skipped.
+
+evidence: none (housekeeping)
+
+risk: The repository cannot show whether each member named in the review fields of entries 1 to 9 actually did the review recorded under their name; the 3 Nov text had marked those reviews as still pending. The team should confirm each one or restore "PENDING".
+
+## Entry 17
+
+artifact: Deliverables 1 to 4 copied from the team's Milestone 1 report into the repository: `docs/requirements/proposal-followup.md`, `docs/interviews/interviews.md` (questions, participation table, raw notes INT-01 to INT-04, compliments and predictions, AI summaries "None", what we learned), `docs/requirements/evidence-log.md` (E-1 to E-21, A-1 to A-5, Q-1 to Q-6) and `docs/requirements/backlog.md` (S-1 to S-11, AC-1 to AC-29, INVEST, ranking, cut line). The pre-interview kit, empty note templates and old drafts were deleted. Commit `e9ff9d7`.
+
+tool: Opus, 2026-11-09
+
+prompts: session request (`prompts/14-session-request-2026-11-09.md`); copy instruction (`prompts/15-docs-from-report.md`)
+
+review: Kundan Singh decided in the session that the report is the final version and the repository must match it. The AI copied the text without changing any interview note, quote, evidence entry or criterion; it did not write interview content. AI check of the copied content against the handout: 8 past-event questions (2 to 9; ≥ 5 required); 4 interviews; every note paragraph has an INT:P ID; 21 E entries (≥ 12), 5 A (≥ 3), 6 Q (≥ 3), each Q written as a question; 11 stories (≥ 8), each with an E trace or, for S-11, "Assumption, rests on A-5" plus a clarifying question; every INVEST fail names a problem; every value not settled by an interview is a named setting.
+
+checks: A script compared every line of the four files (after the heading the AI added) with the report's text converted by `pandoc`: 0 lines differ. One reference was changed afterwards: `interviews.md` now points to "LEDGER.md Entry 17" (this entry) instead of "Entry 1", because entry 1 is the 3 Nov scaffold. Counts above made with `grep -c`.
+
+evidence: INT-01 to INT-04; E-1 to E-21
+
+risk: The report says the interviews were held 2026-10-31 and 2026-11-01, but this ledger's entry 2 (2026-11-03) says no interview had been held yet. Which is right is not shown by the repository; the team must reconcile the dates or say how the notes were produced (handout 2b allows AI-model interviews if they are reviewed).
+
+## Entry 18
+
+artifact: design docs `docs/design/S-1.md` (submit and track a maintenance request) and `docs/design/S-6.md` (scheduled monthly dues payment), copied from section 5 of the report; `docs/design/S-2.md` and its gap check deleted. Commit `36926c7`.
+
+tool: Opus, 2026-11-09
+
+prompts: `prompts/15-docs-from-report.md`
+
+review: AI check against handout §5: both stories are above the cut line (ranks 1 and 7); S-6 holds an invariant (R1: at most one Paid payment per unit per month); each doc has the nine sections, ≥ 2 non-goals, ≥ 3 rules written as checkable statements, ≥ 3 edge cases, ≥ 3 decisions and ≥ 2 open questions, each followed by "Do not build anything that depends on this. Stop and ask."
+
+checks: Manual read of each section against the handout list.
+
+evidence: S-1 (E-1, E-2, E-12); S-6 (E-9, E-21)
+
+risk: The report's S-1 and S-6 section 8 claimed gap checks had already been done, but no gap-check file existed for these docs in the repository; entries 19 and 20 are the first gap checks on record for them.
+
+## Entry 19
+
+artifact: gap check of S-1: `docs/design/S-1-gapcheck.md` (full reply and triage) and decisions D14 to D21 plus a §9 pointer added to `docs/design/S-1.md`. Commit `2a2f114`.
+
+tool: Sonnet (gap check) and Opus (triage), 2026-11-09
+
+prompts: lecture gap-finding prompt, given only `S-1.md` (`prompts/16-gapcheck-S-1.md`); triage instruction (`prompts/18-gap-triage.md`)
+
+review: AI (Opus) marked each of the 42 questions as answered (17, naming the section) or real gap (25), and decided every real gap in §8 without answering OQ1 or OQ2. D19 sets the default while OQ2 is open: a board member who is not a resident gets 404, the narrowest rule. Human review of the triage verdicts: PENDING (assign a team member before submitting).
+
+checks: Every "Real gap" row names a D-number or §9, and each one exists in `S-1.md` (checked with `grep -n "D1[4-9]\|D2[01]" docs/design/S-1.md`).
+
+evidence: S-1
+
+risk: The checking model is from the same vendor as the drafting model, so they may share blind spots; no other vendor's model was used. With D14 to D21, S-1.md is about 1,340 words; it has not been measured on the PDF page, and the handout limit is two pages.
+
+## Entry 20
+
+artifact: gap check of S-6: `docs/design/S-6-gapcheck.md` (full reply and triage) and decisions D21 to D34 plus a §9 pointer added to `docs/design/S-6.md`. Commit `2a2f114`.
+
+tool: Sonnet (gap check) and Opus (triage), 2026-11-09
+
+prompts: lecture gap-finding prompt, given `S-6.md` and, only for its cross-references, `S-1.md` (`prompts/17-gapcheck-S-6.md`); triage instruction (`prompts/18-gap-triage.md`)
+
+review: AI (Opus) marked 48 questions: 10 answered, 38 real gaps, all decided in §8. Question 48 showed that AC-19 expects a Paid payment for R1, whose schedule in AC-18 is ACH, which quietly settles OQ2 (handout 4d). D34 keeps OQ2 open: the tests for AC-19 to AC-22 use debit schedules. D27 makes `record_manual_payment` refuse while a charge is Pending instead of choosing an answer to OQ5. Human review of the triage verdicts: PENDING (assign a team member before submitting).
+
+checks: Every "Real gap" row names a D-number or §9 that exists in `S-6.md`.
+
+evidence: S-6; AC-18 to AC-22; OQ2, OQ5
+
+risk: S-6.md is now about 1,940 words, very likely over the handout's two-page limit; it has not been shortened. No S-6 code exists, so none of D21 to D34 has been tried in code, and `StripeTestProcessor` (D33) has never called Stripe.
+
+## Entry 21
+
+artifact: tests written before the code: `tests/conftest.py`, `tests/helpers.py`, `tests/__init__.py`, `tests/test_s1_requests.py` (AC-1 to AC-6 plus tests for R1 to R5 and decisions D1, D4 to D6, D9 to D12, D14, D15, D17, D19 to D21), `tests/test_s6_payments.py` (AC-18 to AC-22, each skipped with a reason starting with its AC ID). The pre-interview `app/` and tests were deleted. `AGENTS.md` and `README.md` were updated for the new design. Commit `e7f9eaa`.
+
+tool: Opus, 2026-11-09
+
+prompts: `prompts/19-tests-first.md`
+
+review: AI: every expected value comes from the criterion text in `backlog.md` or an exact message in the design doc; values the interviews did not settle are read from `app.settings` (REQUEST_CATEGORIES, MAX_DESCRIPTION_CHARS, RETRY_DELAY_DAYS, MAX_PAYMENT_ATTEMPTS). Sample data follows the backlog (R1 unit 12 and R3 unit 20 in Mountain Ridge, R2 Pine Hollow, M1, M2). Before writing the D1 header tests, the AI checked with a throwaway FastAPI app that `TestClient` passes header whitespace and repeated headers through unchanged, so those tests can fail for the right reason. Human review: PENDING (assign a team member before submitting).
+
+checks: `python -m pytest` before any app code: 2 collection errors, `ModuleNotFoundError: No module named 'app'` (expected).
+
+evidence: AC-1 to AC-6, AC-18 to AC-22
+
+risk: The S-6 tests have never run, because they are skipped and no S-6 module exists; a mistake in them (for example the `FakeProcessor` subclass in AC-20) will show only when S-6 is built.
+
+## Entry 22
+
+artifact: `docs/plans/S-1-plan.md` (How section, six tasks each tied to one AC) and the task 1 prompt. Commit `19e9ef6`.
+
+tool: Opus, 2026-11-09
+
+prompts: `prompts/20-plan-S-1.md`
+
+review: **Kundan Singh approved the plan as written in the session on 2026-11-09, before any `app/` file existed. No steps were crossed out; the AI proposed none that were not asked for.** Before task 1 started, and before the commit was pushed, the AI noticed that its task 1 check named two tests (`d12`, `d5`) that need `GET /requests/{id}` from task 4. It moved them to task 4's check and made task 1 create that route fail-closed. No step was added or removed.
+
+checks: None run. The plan is a document.
+
+evidence: S-1, AC-1 to AC-6
+
+risk: The approval was given in the chat session by one member; the other members have not reviewed the plan.
+
+## Entry 23
+
+artifact: S-1 task 1 (AC-1): new `app/__init__.py`, `app/settings.py`, `app/db.py`, `app/seed.py`, `app/auth.py`, `app/access.py`, `app/main.py`; check selectors in `docs/plans/S-1-plan.md`. Undo point `19e9ef6`, result commit **`fa7b712`**.
+
+tool: Opus, 2026-11-09
+
+prompts: `prompts/21-task1-AC-1.md`
+
+review: AI read the diff: only the seven named files plus the plan's selectors changed; `GET /requests/{id}` always answers 404 (fail closed); `memberships` is read only in `app/access.py`. The first check run reported `5 failed, 47 passed` because `pytest -k "d1"` also selects `d10`, `d12` and `d15` (substring match): the failures were later tasks' tests, not task 1 code. The plan's selectors were changed to end in `_`, and the check was rerun. Human review of the diff: PENDING (assign a team member before submitting).
+
+checks: `python -m pytest tests/test_s1_requests.py -k "ac1_ or d1_ or d14_ or d17_"` → 38 passed. Full run → 16 failed (later tasks), 74 passed, 5 skipped.
+
+evidence: S-1 AC-1; D1, D5, D8, D12 to D17
+
+risk: Importing `app.main` builds the module-level `app`, which creates `communityconnect.db` in the current folder on every test run (git-ignored).
+
+## Entry 24
+
+artifact: S-1 task 2 (AC-2): `app/main.py`. Undo point `d003bad`, result commit **`7c5bf42`**.
+
+tool: Opus, 2026-11-09
+
+prompts: `prompts/22-task2-AC-2.md`
+
+review: AI read the diff: the checks run in the D6 order (body shape, then description required and too long, then category), and the description is stored trimmed (D9). Human review of the diff: PENDING (assign a team member before submitting).
+
+checks: `-k "ac2_ or r5_ or d15_ or d4_ or d9_ or d6_"` → 27 passed.
+
+evidence: S-1 AC-2; R5; D4, D6, D7, D9, D15
+
+risk: Descriptions are checked with Python's `str.strip()` and `len()` (D9); no test uses non-ASCII whitespace or combining characters.
+
+## Entry 25
+
+artifact: S-1 task 3 (AC-3): `app/main.py` (the list now calls `require_resident`). Undo point `20dc028`, result commit **`5fdd3a0`**.
+
+tool: Opus, 2026-11-09
+
+prompts: `prompts/23-task3-AC-3.md`
+
+review: AI read the diff: one line changed, plus the import. The AC-3 test already passed after task 1, because the list query filters by `community_id`; this task made managers, board members and admins get 404 on the list (D10, D19). Human review of the diff: PENDING (assign a team member before submitting).
+
+checks: `-k "ac3_ or d10_ or r3_ or r1_"` → 13 passed.
+
+evidence: S-1 AC-3; R1, R3; D10, D19
+
+risk: The board-member result (404) is only the default chosen while OQ2 is open; it will change if the team answers OQ2.
+
+## Entry 26
+
+artifact: S-1 task 4 (AC-4): `app/main.py` (`GET /requests/{id}` built; handler for framework HTTP errors). Undo point `f67f6e8`, result commit **`0bbd3fc`**.
+
+tool: Opus, 2026-11-09
+
+prompts: `prompts/24-task4-AC-4.md`
+
+review: AI read the diff: a missing id, another community's id and a neighbour's id all raise the same `NotFound` (R2, D3); unknown paths get `{"detail": "Not found"}` and wrong methods keep Starlette's `{"detail": "Method Not Allowed"}` (D21). The full run after this task showed exactly one failure, AC-5, which is task 5. Human review of the diff: PENDING (assign a team member before submitting).
+
+checks: `-k "ac4_ or r2_ or d21_ or d5_ or d12_"` → 12 passed. Full run → 1 failed (`test_ac5_neighbor_in_same_community_does_not_see_request`), 89 passed, 5 skipped.
+
+evidence: S-1 AC-4; R1, R2; D3, D5, D12, D21
+
+risk: R2 is checked on status and body only; response headers and timing for hidden and missing records are not compared.
+
+## Entry 27
+
+artifact: S-1 task 5 (AC-5): `app/main.py` (the list filters by `submitted_by`). Undo point `cf58209`, result commit **`229f127`**.
+
+tool: Opus, 2026-11-09
+
+prompts: `prompts/25-task5-AC-5.md`, which quotes the failing test from entry 26
+
+review: AI: the exact error before the change was `assert 1 not in [1]` (R3 saw R1's request id 1 in the Mountain Ridge list). The diff adds `AND submitted_by = ?` to the list query, keeping the D11 order. Human review of the diff: PENDING (assign a team member before submitting).
+
+checks: `-k "ac5_ or d11_ or d20_ or r4_"` → 5 passed.
+
+evidence: S-1 AC-5; R4; D2, D11, D20
+
+risk: D11's tie-break by id is checked only for requests made within the same second in one test run; there is no test with equal `created_at` values set on purpose.
+
+## Entry 28
+
+artifact: S-1 task 6 (AC-6) and the manual check of the built story. No code changed: the AC-6 test already passed after task 4. Prompt commit **`ac93726`** (also the result).
+
+tool: Opus, 2026-11-09
+
+prompts: `prompts/26-task6-AC-6.md`
+
+review: AI walked through the story on a running server (`uvicorn app.main:app`, a seeded resident): submitted a request with padded spaces (stored trimmed, status Open, `created_at` in the D5 format); listed it; opened it by id; tried a lower-case category (`422 "Unknown category"`), an unknown user on a non-numeric id (`401 "Unknown user"`, D6), a missing id (`404 "Not found"`) and a trailing slash (`404 "Not found"`, D21). The server log showed no errors or tracebacks. Human review: PENDING (assign a team member before submitting).
+
+checks: `-k "ac6_"` → 1 passed. `python -m pytest` → 90 passed, 5 skipped (AC-18 to AC-22), 1 warning (StarletteDeprecationWarning about `httpx`).
+
+evidence: S-1 AC-6; AC-1 to AC-6
+
+risk: Only the API was checked; there is no web client yet. The manual walk-through used one resident and did not repeat the cross-community cases by hand.
+
+## Entry 29
+
+artifact: `docs/requirements/traceability.md` (29 rows, AC-1 to AC-29), entries 16 to 29 of this ledger, and the updated report. Commit: the one that adds this entry (its SHA is in the report's table of contents).
+
+tool: Opus, 2026-11-09
+
+prompts: `prompts/14-session-request-2026-11-09.md`; no separate prompt
+
+review: AI checked that every AC has one row, that the eleven S-1 and S-6 test names in the matrix exist, and that every commit since entry 15 is named in an entry. Human review: PENDING (assign a team member before submitting).
+
+checks: `python -m pytest --collect-only -q` lists all eleven matrix test names. Fresh clone, new venv, `pip install -r requirements.txt`, `python -m pytest` → result in the report's section 6e.
+
+evidence: all ACs
+
+risk: The report's evidence and backlog sections were copied from the team's document; if the team edits the report again, the repository copies must be updated by hand, because nothing checks that they match.

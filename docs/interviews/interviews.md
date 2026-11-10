@@ -2,7 +2,7 @@
 
 Interview IDs are INT-01 to INT-04 and paragraph IDs are P01, P02 and so on, so a claim is cited as INT-02:P04. No names or identifying details are kept; people are referred to by interview ID and role.
 
-All four interviews were conducted virtually by the respective team members with participants relevant to our target role. The team collectively reviewed the interview notes prior to incorporating any observations into the evidence log. Documentation of the interview process and related records is maintained in LEDGER.md Entry 1.
+All four interviews were conducted virtually by the respective team members with participants relevant to our target role. The team collectively reviewed the interview notes prior to incorporating any observations into the evidence log. Documentation of the interview process and related records is maintained in LEDGER.md Entry 17.
 
 ## 2a. Interview questions
 
