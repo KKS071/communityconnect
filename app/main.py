@@ -78,10 +78,17 @@ def create_app() -> FastAPI:
             category, description = body.get("category"), body.get("description")
             if not isinstance(category, str) or not isinstance(description, str):
                 raise Invalid("Invalid request body")
+            description = description.strip()  # D9
+            if len(description) == 0:
+                raise Invalid("Description is required")
+            if len(description) > settings.MAX_DESCRIPTION_CHARS:
+                raise Invalid("Description is too long")
+            if category not in settings.REQUEST_CATEGORIES:  # D4: exact, case-sensitive
+                raise Invalid("Unknown category")
             cur = conn.execute(
                 "INSERT INTO requests (community_id, unit_id, submitted_by, category, description,"
                 " status, created_at) VALUES (?, ?, ?, ?, ?, 'Open', ?)",
-                (cid, membership["unit_id"], user, category, description.strip(), _now()),
+                (cid, membership["unit_id"], user, category, description, _now()),
             )
             conn.commit()
             row = conn.execute("SELECT * FROM requests WHERE id = ?", (cur.lastrowid,)).fetchone()
