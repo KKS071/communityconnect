@@ -9,7 +9,7 @@ from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
 
 from app import db, settings
-from app.access import NotFound, require_member, require_resident
+from app.access import NotFound, require_resident
 from app.auth import current_user
 
 _ID = re.compile(r"[1-9][0-9]*")
@@ -101,7 +101,7 @@ def create_app() -> FastAPI:
         cid = _parse_id(community_id)
         conn = db.connect()
         try:
-            require_member(conn, user, cid)
+            require_resident(conn, user, cid)  # D10, D19
             rows = conn.execute(
                 "SELECT * FROM requests WHERE community_id = ? ORDER BY created_at DESC, id DESC",
                 (cid,),
