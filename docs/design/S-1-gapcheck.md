@@ -1,98 +1,101 @@
-# Gap check: S-1 design doc
+# S-1 gap check
 
-- Doc checked: `docs/design/S-1.md` at commit `8b3e8f0` (draft before gap check)
-- Model: Claude Sonnet (subagent launched from a Claude Opus 5.5 session), 2026-11-03. The subagent was told to read only `docs/design/S-1.md`.
-- Prompt (from lecture, verbatim plus output-format line): see `prompts/05-gapcheck-S-1.md`
+**Model:** Claude Sonnet, run as a separate agent from the Claude Opus 5.5 session on 2026-11-09. It was given only `docs/design/S-1.md` at commit `36926c7` (the version copied from the Milestone 1 report).
+
+**Prompt** (`prompts/16-gapcheck-S-1.md`): "You are the engineer who must build this. List every question you would have to guess the answer to. Do not answer them."
 
 ## Full reply
 
-1. What hashing or storage format applies to tokens? The doc says `users.token` is stored as plain text, unique and at least 32 chars, but it doesn't say how tokens are compared.
-2. Which web framework features apply? Specifically, how should the 401 body be forced to exactly `{"detail": "Not authenticated"}`, given that FastAPI's default security helpers return different wording and status codes?
-3. How should the 404 body be made byte-for-byte identical (R3) across the "no membership" and "does not exist" cases? That covers whitespace, key order, content-type header and any other headers.
-4. Does a 401 for a malformed header (edge case 4) need the same body as a missing header? Is the scheme match `Bearer` case-sensitive?
-5. What exactly counts as "extra spaces" in a token? Should leading or trailing whitespace be trimmed, or rejected outright?
-6. What is the order of checks when a request has both a bad token and a non-integer or nonexistent ID? Does the 422 for a non-integer path ID come before or after the 401? R2 says 401 comes before any community data is read, but edge case 5 doesn't say whether 422 can leak to unauthenticated callers.
-7. Do integer IDs that are zero, negative or larger than SQLite's integer range return 404 or 422? The data section says IDs are ≥ 1.
-8. What should the 404 be for `GET /tickets/{id}` when the ticket exists in the caller's community but belongs to someone else? It is described only as 404 in R5, so is its body the same as the standard one?
-9. How should the sqlite3 connection be created and managed? Per request, pooled, or on a dependency? Are foreign keys enabled with `PRAGMA foreign_keys`? Thread-safety settings (`check_same_thread`) are not specified for FastAPI's threadpool.
-10. What does `create_app` do when the schema exists but differs from §5? "Creates the schema if missing" doesn't say whether it checks, migrates or ignores the difference.
-11. Are the §5 constraints (length limits, enums, the ≥ 1 and ≥ 32 checks, `is_admin` 0 or 1) enforced as SQLite `CHECK` constraints, in application code, or only documented?
-12. What are the full column types, NOT NULL constraints, indexes and ON DELETE behaviour for each foreign key?
-13. Where does the `COMMUNITYCONNECT_DB` environment variable get read? Does `create_app(db_path)` ignore it, and who reads it for the production entry point? What is the ASGI entry module for running the app?
-14. What are the seed script's name, location, data and invocation? D2 and the non-goals mention a "seed script" that creates tokens, but the doc never defines it, and nothing says whether it is in scope.
-15. How are tokens generated in the seed script and tests (length, alphabet, source of randomness)?
-16. What is `NotFound`? Where is it defined (module, base class)? How is it mapped to the 404 response? Is it raised by `require_member` only, or also for missing items?
-17. What does `require_member` do for a non-existent community, or a non-existent `user_id`? It should presumably raise `NotFound`, but this is unstated.
-18. How do item endpoints (`/tickets/{id}`, `/documents/{id}`, `/announcements/{id}`) find the community? D4 says endpoints never query `memberships`, so does the endpoint look up the item first and then call `require_member`? The doc doesn't say whether the lookup and the membership check are sequenced to avoid timing differences, and whether timing parity matters for D1.
-19. For the item endpoints, what happens with a document whose `folder` is `board_only` (R4)? Is it 404 for everyone, including members of that community? Does `GET /documents/{id}` on a board_only document return the same 404 as non-existent?
-20. Does the documents list filter `board_only` out in SQL, or in the application? What if the list ends up with zero items: 200 with `[]`?
-21. Does a member of a community with no tickets, documents or announcements get 200 with `[]`? The doc implies it but doesn't state it.
-22. What is the tie-break ordering for announcements with equal `posted_at`? What is the ordering of the documents list, since no order is given? Is `posted_at` compared as text, given that formats like "Z" vs "+00:00" could break sorting?
-23. What exactly is the ISO-8601 UTC format for `created_at`, `uploaded_at` and `posted_at` (suffix `Z` or `+00:00`, fractional seconds, precision)? Does the API emit the stored string unchanged?
-24. Are response models strict, meaning extra fields such as `token` or `is_admin` can never appear? Is `Community` expected to carry the caller's role? The shape says only `{id, name}`.
-25. What are the field types in the JSON shapes: are `created_by` and `posted_by` just user integer IDs, and may display names be exposed? Does that leak other members' identity, for example a manager seeing resident names?
-26. What does `GET /me/communities` return for users whose membership rows reference deleted communities? Is there any referential cleanup?
-27. Does a user with multiple roles in one community exist? The primary key forbids it, but how is the DB error handled in tests and seed data?
-28. What is the status code for unsupported methods such as POST or DELETE on these paths (405, or 404 to avoid leaking)? What about HEAD and OPTIONS, and does CORS matter given there is no web client?
-29. What happens on trailing slashes (`/me/communities/`)? FastAPI's default redirect is 307, which may bypass the 401/404 rules.
-30. What does the 401 do when the token is valid but belongs to a user whose row is later deleted mid-request? Is there a requirement on transactional consistency?
-31. R1 says "every item's `community_id`" is one the caller is a member of. For a manager token, does R1 hold across all communities, or only the requested one? How is R1 checked in tests: per item or per response?
-32. Is the AC-3 requirement for `resident sees own ticket` also meant to cover a `board` member? The AC list has a single test for "resident", though R5 treats board the same way.
-33. What are the AC-1 and AC-2 definitions of "outsider" in the parametrisation? Is the outsider a member of another community, a member of none, or an admin with no memberships (edge case 3)? Does "3 roles" mean the caller's role in their own community or in the target one?
-34. For AC-5, "every endpoint × missing/unknown token": which token variants from edge case 4 are included? Do the tests also need to assert that no DB read happened (R2's "before any community data is read")? How would that be observed?
-35. Are the tests expected to use `fastapi.testclient.TestClient` or `httpx`? What are the fixtures for seeding data, and who owns the test helpers? Are the minimum Python, FastAPI and SQLite versions specified, and how are dependencies declared (pyproject, requirements.txt)?
-36. What is the repository layout beyond `app/main.py`, `app/access.py`, `app/auth.py` and `tests/test_s1_community_isolation.py`? Where do models, DB helpers and routers go?
-37. What do Q-3 and Q-5/Q-7 imply for admin users and for board/resident ticket visibility? Currently both are "stop and ask", so is it acceptable that admin gets 404 everywhere (edge case 3), or does that count as depending on Q-3? Likewise, is R5's narrow rule itself "building something that depends on Q-5/Q-7"?
-38. The doc says "Evidence IDs (A-2, A-5, A-12) are assumptions until the interviews are logged; see backlog.md". Are these assumptions safe to build on, and is backlog.md required reading? Who resolves them?
-39. Are there performance, pagination or limit requirements for list endpoints? There are none stated, so are all rows always returned?
-40. Is there any logging or audit requirement for denied requests? Should logs avoid recording tokens?
-41. Does the manager "work in every community they are assigned to with one token" imply anything beyond multiple membership rows, such as a default or "current" community, or a switching endpoint? AC-4's test name says "switches", but the interface has no switch operation.
+1. What is the exact JSON shape of the "Invalid request body" 422 versus the other 422s, and does a framework (FastAPI/Pydantic) validation error need to be intercepted globally to produce `{"detail": <message>}` as a string rather than the default list?
+2. What is the exact `created_at` format when several requests are created within the same second, and does the `created_at` then `id` ordering (D11) make the "appears first" guarantee in R4 hold?
+3. What does `X-User-Id` with leading or trailing whitespace, a plus sign, leading zeros, a very large integer, or duplicate header values do, beyond the regex in D1?
+4. What is the status code and body when `X-User-Id` is missing entirely: does it follow `401 "Unknown user"` rather than the framework's default 422?
+5. How is a non-numeric or out-of-range `community_id` or `request_id` handled (negative, zero, huge integers, floats, overflow beyond SQLite's int range), given D7 says non-numeric returns 404?
+6. What is the precedence when the caller is unknown (401) and the path id is also non-numeric (404), given D6's order?
+7. For POST, does the body-shape check (422 "Invalid request body") run before or after the membership check, and what happens when the body is invalid and the caller is not a resident (D6 says 404 first)?
+8. Is an empty or non-JSON body, a JSON body that is not an object (array, string, null), or a wrong Content-Type treated as "Invalid request body"?
+9. Does a `description` of only whitespace return "Description is required", and does an empty string do the same?
+10. What counts as whitespace for `strip()` on unusual Unicode characters, and should length be counted in code points rather than grapheme clusters or bytes?
+11. Is the order of the description checks fixed (required before too long), and what happens when the description is invalid and the category is also invalid: which error is returned first, given D6 lists description before category?
+12. What happens with a boolean, number, null or object for `category` or `description`: is each "Invalid request body"?
+13. What happens when `category` is an empty string or has surrounding whitespace: "Unknown category" and is it trimmed?
+14. How are the settings in `app/settings.py` read by the app: at import time or per request, and how do tests override REQUEST_CATEGORIES and MAX_DESCRIPTION_CHARS?
+15. Where is DATABASE_PATH defined, how is it configured per test (environment variable, setting, dependency override), and what is the default value?
+16. What is the database schema, including constraints, indexes, foreign keys (is PRAGMA foreign_keys enabled), and who creates the tables and when (at app startup, in the seed, or in a test fixture)?
+17. How are concurrent requests and SQLite connections handled (connection per request, check_same_thread, write locking), and what ensures id assignment is unique and R4's "grown by exactly 1" holds under concurrency?
+18. What are the signatures, parameters and return values of the functions in `app/seed.py`, and does the seed create data on startup or only when tests call it?
+19. What is the interface of `tests/helpers.py::set_status`: does it open the same database through DATABASE_PATH, and who writes it, given the API does not expose status changes?
+20. Do I write the six acceptance tests myself, and what exact setup, fixtures and test client (TestClient vs real server) do they use?
+21. What exactly should AC-2's test assert (which blank descriptions, and that the list is unchanged and not just the count)?
+22. Should the test for R5 be checked for every rejection type (401, 404, 422), and how is "total number of requests" observed, since there is no endpoint for it?
+23. What is the data of a resident whose Membership has `unit_id` null or pointing to a unit in another community; is this impossible (seed validation) or should the API respond with a specific error?
+24. What happens when a user holds a `resident` membership and also another role in the same community: the Membership is one row per user and community, so can this occur, and is it ignored?
+25. Which role-specific behavior is required for `board_member`, `manager` and `admin` in the same community, as the doc says D10 returns 404 for managers and admins but board members are OQ2: for a board member who is not a resident, do I return 404 for now, or stop and ask?
+26. Does the instruction "Do not build anything that depends on this. Stop and ask" for OQ1 and OQ2 mean I must halt the whole task, or only leave those cases unbuilt, and what default behavior should apply to those users in the meantime?
+27. What does R1 mean for a request whose submitter later loses the resident role or moves unit (memberships are fixed here, but can the seed change them), and should the list and detail still check the current role?
+28. For GET `/requests/{request_id}`, if the caller is a resident of the request's community and submitted it, what is returned when the caller's unit has since changed; is `unit_id` the stored value?
+29. Does the list endpoint return an empty list `[]` with 200 for a resident with no requests, and 404 only for non-residents?
+30. Does `unit_id` in the response and storage come from the caller's Membership at the time of submission, and is it ever accepted from the client?
+31. What are the maximum lengths and uniqueness constraints that must be enforced in the code versus only documented (Community name, Unit label, user id), and is validation of seed data expected?
+32. Is `created_at` second precision truncated or rounded, and does the ordering use a higher-precision stored value or only the truncated string?
+33. What is the status value serialization: are the strings exactly "Open", "In progress" and "Resolved", and what if the database holds any other value?
+34. Is there an `OPTIONS`, `HEAD`, or unsupported-method behavior to define, for example 405 responses, and is their body also `{"detail": ...}`?
+35. What should happen for paths not defined at all (404 body), or a trailing slash on routes?
+36. Are CORS, logging, authentication-failure rate limiting or any other cross-cutting concerns expected?
+37. What are the project's dependency versions, Python version, run command, how the app is started, and the project layout beyond `app/main.py`, `app/settings.py`, `app/seed.py`, and `tests/`?
+38. Does "newest first" for the list apply across all of the caller's requests in that community only, and is there any limit on how many requests a resident can submit or any duplicate-submission handling?
+39. Does `POST` response include a `Location` header, and is the `201` body identical to what GET returns?
+40. Are error messages case-sensitive and punctuation-exact as quoted (for example, `"Unknown user"`), and should the 404 body for a hidden record be byte-identical, including headers, to a missing one (R2)?
+41. Does R2 need the response time or other side channels to be indistinguishable between hidden and missing records?
+42. How should the doc's references to other items (E-1, E-2, E-12, S-2, S-9, S-11, Q-5) be treated, and is any of that content required reading for the build?
 
 ## Triage
 
-"Answered" names the section that already answered it. "Real gap" names where it was resolved in
-the updated doc (§8 decision D-number, or a rule rewrite).
+"Answered" names the section of `docs/design/S-1.md` that already answers the question. Every "Real gap" is now decided in §8 (D14 to D21) or §9.
 
 | # | Verdict | Where |
 |---|---|---|
-| 1 | Real gap | D7 (plain-text token, exact match) |
-| 2 | Answered | §4 error bodies |
-| 3 | Answered | §4 error bodies, R3 |
-| 4 | Real gap | D8 (header format) |
-| 5 | Real gap | D8 |
-| 6 | Real gap | D9 (401 before 422/404); R2 reworded so it can be checked from outside |
-| 7 | Real gap | D10 (out-of-range IDs → 404) |
-| 8 | Answered | §4 error bodies (one 404 body for all 404s) |
-| 9 | Real gap | D11 (connection per request, foreign keys on) |
-| 10 | Real gap | D12 (CREATE IF NOT EXISTS; no migrations in M1) |
-| 11 | Real gap | D12 (CHECK constraints for enums and ranges) |
-| 12 | Real gap | D12 (all columns NOT NULL; no deletes in S-1) |
-| 13 | Real gap | D6 extended (`app.main:app` reads the variable) |
-| 14 | Real gap | D13 (no seed script in M1) |
-| 15 | Real gap | D13 (tests use `secrets.token_hex(16)`) |
-| 16 | Real gap | D4 extended (`NotFound` and its handler) |
-| 17 | Answered | §4 (`require_member` raises `NotFound` when there is no membership row) |
-| 18 | Real gap | D14 (item endpoints: look up item, then `require_member`; timing parity is not a goal) |
-| 19 | Answered | R4, R3 |
-| 20 | Real gap | D15 (empty list → 200 `[]`; filtering in SQL) |
-| 21 | Real gap | D15 |
-| 22 | Real gap | D15 (ties by `id`; documents by `id`), D16 |
-| 23 | Real gap | D16 (timestamp format) |
-| 24 | Answered | §4 JSON shapes are the exact field lists |
-| 25 | Answered | §4 (`created_by`/`posted_by` are integer IDs; no names) |
-| 26 | Answered | §3 (no delete endpoints in S-1) |
-| 27 | Answered | §5 primary key |
-| 28 | Real gap | D17 (405 for wrong method) |
-| 29 | Real gap | D17 (no slash redirects; trailing slash → 404) |
-| 30 | Answered | §3 (no deletes) |
-| 31 | Answered | R1 (every item in every 200 response) |
-| 32 | Answered | R5 covers board members; AC-3 is about residents |
-| 33 | Real gap | D18 (who counts as an outsider in AC-1/AC-2) |
-| 34 | Real gap | D8 lists the variants; R2 reworded |
-| 35 | Answered | `AGENTS.md` (pytest + TestClient, `requirements.txt`) |
-| 36 | Real gap | D19 (module layout) |
-| 37 | Real gap | Q-3 reworded: admin's 404 follows from D3, and the open question is whether to *add* admin read access. Q-5/Q-7 likewise ask whether to *widen* D5. |
-| 38 | Answered | §1 note |
-| 39 | Real gap | D20 (no pagination in M1) |
-| 40 | Real gap | D20 (no audit log; never log tokens) |
-| 41 | Real gap | D21 ("switching" means choosing the community ID in the path) |
+| 1 | Answered | §8 D7 (every error body is `{"detail": <message>}`, framework errors included) |
+| 2 | Answered | §8 D11 (ties broken by id descending), D5 |
+| 3 | Real gap (repeated header) | §8 D14; the rest is answered by D1's regex |
+| 4 | Answered | §8 D1 (a missing header does not match the regex, so 401) |
+| 5 | Real gap (zero, negative, overflow) | §8 D14 |
+| 6 | Answered | §8 D6 (caller check first) |
+| 7 | Answered | §8 D6 (membership 404 before body checks) |
+| 8 | Real gap | §8 D15 |
+| 9 | Real gap (which message) | §8 D15 |
+| 10 | Answered | §8 D9 (`str.strip()`, `len()` in code points) |
+| 11 | Answered | §8 D6 (description before category); required and too long cannot both apply |
+| 12 | Answered | §8 D7 (non-string is "Invalid request body") |
+| 13 | Answered | §8 D4 (exact match, so no trimming) |
+| 14 | Real gap | §8 D16 |
+| 15 | Real gap | §8 D16 |
+| 16 | Real gap | §8 D16 |
+| 17 | Real gap | §8 D16 (connection per call, AUTOINCREMENT ids) |
+| 18 | Real gap | §8 D17 |
+| 19 | Answered | §8 D13 (signature); the database path is D16 and D18 |
+| 20 | Real gap (test client) | §8 D18; the test names are in §9 |
+| 21 | Real gap (where the AC wording is) | §9 now points to the backlog |
+| 22 | Real gap | §8 D18 (`count_requests()`) |
+| 23 | Real gap | §8 D17 (the seed rejects it) |
+| 24 | Answered | §5 Membership (one row per user and community) |
+| 25 | Real gap | §8 D19 |
+| 26 | Real gap | §8 D19 |
+| 27 | Answered | §6 R1 (current role is checked) |
+| 28 | Real gap | §8 D20 |
+| 29 | Real gap | §8 D20 |
+| 30 | Real gap | §8 D20 |
+| 31 | Real gap | §8 D17 |
+| 32 | Answered | §8 D5 (seconds), D11 (id tie-break) |
+| 33 | Answered | §4 `RequestOut`, §5 Request.status |
+| 34 | Real gap | §8 D21 |
+| 35 | Real gap | §8 D21 |
+| 36 | Real gap | §8 D21 |
+| 37 | Real gap | §8 D16 |
+| 38 | Real gap (limits, duplicates) | §8 D20; the ordering scope is answered by §2 |
+| 39 | Real gap | §8 D21 |
+| 40 | Answered | §4 (exact messages), §6 R2 (status and body) |
+| 41 | Answered | §6 R2 defines "exactly what it returns" as status and body |
+| 42 | Answered | §1 (evidence IDs are for traceability only) |
+
+**Totals:** 42 questions: 17 already answered, 25 real gaps, all resolved in §8 or §9.
