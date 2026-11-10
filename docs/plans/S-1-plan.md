@@ -1,52 +1,55 @@
-# S-1 Community isolation: build plan
+# S-1 build plan: submit and track a maintenance request
 
-- Written by: Claude Opus 5.5 (AI coding tool), 2026-11-03, before any file in `app/` existed.
-- Source of truth: `docs/design/S-1.md` (after gap check, commit `7a94c87`).
-- Tests that must pass: `tests/test_s1_community_isolation.py` (written first, commit `7a94c87`).
-- Approval: see the "Approval" section at the end. No task starts before it is filled in.
+Written by the AI tool before any `app/` file existed, from `docs/design/S-1.md` (commit `2a2f114`)
+and `tests/test_s1_requests.py` (commit `e7f9eaa`). Prompt: `prompts/20-plan-S-1.md`.
 
 ## How
 
-**Files that change** (all new; nothing outside `app/` is touched):
+**Files that change** (all new): `app/__init__.py`, `app/settings.py`, `app/db.py`, `app/seed.py`,
+`app/auth.py`, `app/access.py`, `app/main.py`. Nothing in `tests/`, `docs/`, `AGENTS.md`, `README.md`,
+`requirements.txt` or `pytest.ini` changes.
 
-| File | What it holds |
-|---|---|
-| `app/__init__.py` | empty package marker |
-| `app/settings.py` | named settings; S-1 needs none yet, but S-2's `REOPEN_WINDOW_DAYS` placeholder lives here (D5 of S-2) so the skipped S-2 tests can import it |
-| `app/db.py` | `connect(db_path) -> sqlite3.Connection` (foreign keys on, `sqlite3.Row` rows) and `init_schema(conn)` with the six tables from §5, using `CREATE TABLE IF NOT EXISTS`, `NOT NULL` and `CHECK` constraints (D11, D12) |
-| `app/auth.py` | `current_user` FastAPI dependency: parses `Authorization: Bearer <token>` exactly (D8), looks the token up in `users`, and raises 401 `{"detail": "Not authenticated"}` otherwise |
-| `app/access.py` | `NotFound` exception; `require_member(conn, user_id, community_id) -> str` returning the role or raising `NotFound` (D4) |
-| `app/main.py` | `create_app(db_path, clock=None)`: builds the FastAPI app with `redirect_slashes=False` (D17), registers the `NotFound` → 404 handler, adds `current_user` as a router-level dependency so auth runs before path parsing (D9), and defines the seven routes. Module-level `app` reads `COMMUNITYCONNECT_DB` (D6). |
+- `app/settings.py`: `REQUEST_CATEGORIES`, `MAX_DESCRIPTION_CHARS` (D8) and `DATABASE_PATH` from
+  `COMMUNITYCONNECT_DB` (D16). Every other module reads these as `settings.X` when it uses them.
+- `app/db.py`: `connect()` opens `settings.DATABASE_PATH` with foreign keys on and `sqlite3.Row`
+  rows; `init_db()` runs `CREATE TABLE IF NOT EXISTS` for the §5 tables.
+- `app/seed.py`: the four D17 functions, each validating the §5 rules and raising `ValueError`.
+- `app/auth.py`: `current_user` dependency: exactly one `X-User-Id` header matching `^[1-9][0-9]*$`
+  for an existing user, otherwise `401 "Unknown user"` (D1, D14).
+- `app/access.py`: `NotFound` exception and `require_resident(conn, user_id, community_id) -> Row`
+  (returns the membership, so its `unit_id` is used by D20). This is the only module that reads
+  `memberships`.
+- `app/main.py`: `create_app() -> FastAPI` (calls `init_db()`), module-level `app`, the three §4
+  endpoints, and exception handlers that give every error the `{"detail": ...}` body (D7, D21).
+  Path ids are taken as strings and checked by one `_parse_id` (D14), so FastAPI never answers 422
+  for a path. The POST body is read as raw JSON and checked in the D6 order.
 
-**How data is stored.** One SQLite file whose path is passed to `create_app`. Each request opens its
-own connection and closes it afterwards (D11). Tables and columns are exactly §5 of the design doc.
-Timestamps are text in `YYYY-MM-DDTHH:MM:SSZ` (D16). Every route that touches community data calls
-`require_member` first; list queries filter by `community_id` (and by `folder = 'community'`, and by
-`created_by` for residents and board members) in SQL (D15, R4, R5).
-
-`clock` is accepted by `create_app` and stored, but S-1 does not use it. It exists only so that the
-S-2 test module can be imported and skipped cleanly. *(This is a step we did not strictly ask for; see
-Approval.)*
+**How the data is stored:** SQLite at `DATABASE_PATH` (D12), one connection per API or seed call
+(D16). Tables `communities`, `units`, `users`, `memberships` (primary key `(user_id, community_id)`)
+and `requests` (`id INTEGER PRIMARY KEY AUTOINCREMENT`, `status` CHECK in the three §5 values,
+`created_at` as `YYYY-MM-DDTHH:MM:SSZ` text, D5). Descriptions are stored trimmed (D9).
 
 ## Tasks
 
-Each task is one bounded agent run, with a commit before and after.
+Each task is one bounded prompt in `prompts/`, with a commit before it as an undo point.
 
-1. **AC-5: unauthenticated requests are blocked.** Create `app/__init__.py`, `app/settings.py`,
-   `app/db.py`, `app/auth.py`, `app/access.py` and `app/main.py`, with the schema, the auth dependency
-   and all seven routes registered. In this task every authenticated route raises `NotFound` (fail
-   closed). Check: `python -m pytest tests/test_s1_community_isolation.py -k "ac5 or d9"` passes.
-2. **AC-3: members read their own community.** Implement `require_member` and the bodies of the six
-   community routes, with SQL filtering for R4 and R5. Change only `app/access.py` and `app/main.py`.
-   Check: `-k "ac3 or r4 or r5"` passes, and `-k "ac1 or ac2 or ac5"` still passes.
-3. **AC-4: a manager switches communities with one token.** Implement `GET /me/communities`
-   (ordered by `id`). Change only `app/main.py`. Check: `-k "ac4 or edge3"` passes.
-4. **AC-1 and AC-2 hardening: blocked equals missing.** Make out-of-range IDs (0, negative, ≥ 2^63)
-   raise `NotFound` instead of reaching SQLite (D10), and confirm trailing slashes give 404 (D17).
-   Change only `app/main.py`. Check: `-k "ac1 or ac2 or d10 or d17"` passes, then the full
-   `python -m pytest` run shows every S-1 test passing and the 7 S-2 tests skipped.
+1. **AC-1.** Create all seven files: settings, schema, seed, caller check, `require_resident`,
+   `POST /communities/{id}/requests` (resident only, R3) and `GET /communities/{id}/requests`
+   returning the community's requests. `GET /requests/{id}` exists but always answers 404 (fail
+   closed). Only the "Invalid request body" check on the body in this task.
+   Check: `python -m pytest tests/test_s1_requests.py -k "ac1 or d1 or d14 or d17"`.
+2. **AC-2.** Description, category and body-shape checks in the D6 order (D4, D7, D9, D15, R5).
+   Check: `-k "ac2 or r5 or d15 or d4 or d9 or d6"`.
+3. **AC-3.** The list answers only callers with the `resident` role in that community; everyone
+   else gets 404 (D10, D19). Check: `-k "ac3 or d10 or r3 or r1"`.
+4. **AC-4.** `GET /requests/{id}`, with hidden and missing ids answering identically (R2, D3),
+   plus the D21 unknown-path and wrong-method bodies. Check: `-k "ac4 or r2 or d21 or d5 or d12"`.
+5. **AC-5.** The list holds only the caller's own requests (D2), newest first (D11), and `[]` when
+   empty (D20). Check: `-k "ac5 or d11 or d20 or r4"`.
+6. **AC-6.** The detail shows the stored status. Check: `-k ac6`, then the full `python -m pytest`
+   (every S-1 test passes, the five S-6 tests skipped).
 
-## Approval
+## Steps not asked for
 
-- Approved by: Kundan Singh (kks59), in the Claude session, on 2026-11-03, before any `app/` file existed. The answer was "Approve as written".
-- Steps crossed out: none. The unused `clock` argument was flagged to the approver as a step not strictly asked for, and was kept on purpose.
+None proposed. (The AI considered adding a `/me/communities` endpoint for S-3, but that is not
+part of S-1, so it is not in the plan.)
