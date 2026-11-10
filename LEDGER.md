@@ -539,3 +539,19 @@ evidence: all ACs
 
 risk: The report's design-doc text in section 5 is now a copy of the repository docs that was edited by hand; nothing checks that the two stay the same.
 
+
+## Entry 34
+
+artifact: commits not yet named by SHA in this ledger: `c3a1b25` (entry 29: traceability matrix and ledger entries 16 to 29), `760d0ae` (entry 33: ledger entries 30 to 33), and `c28860f` (2026-11-09, Kundan Singh, "Updated the DB to postgresql": pushed with GitHub Desktop after unzipping the repository; it changes no content, only the file mode of 28 files from 100755 to 100644, undoing the executable bits set in `42ef893`, entry 16). This entry's own commit is the submitted commit; its SHA is in the report's table of contents and section 6e.
+
+tool: Opus, 2026-11-09 (this entry); `c28860f` was made by hand in GitHub Desktop
+
+prompts: Kundan Singh's request to check the pushed repository before submission (no separate prompt file)
+
+review: AI cloned the repository from GitHub, confirmed that `c28860f` is a child of `760d0ae` with the same file contents (`diff -r` against the local tree: no differences; `git show --summary`: 28 mode changes, 0 lines changed), and checked that every commit in the history is named in some entry. Human review: PENDING (assign a team member before submitting).
+
+checks: Fresh clone of the commit that adds this entry, new venv, `pip install -r requirements.txt`, PostgreSQL 16 with an empty `communityconnect_test` database, `python -m pytest` → result in the report's section 6e. `python -m pytest --collect-only -q`: all eleven test names in the traceability matrix exist. Every `prompts/` path referenced in this ledger exists.
+
+evidence: none (provenance housekeeping)
+
+risk: Sixteen review fields in entries 19 to 34 still say "Human review: PENDING". Handout 6d and 8 require a person to read each change, so the team must do those reviews and record what they found before submitting; until then the ledger shows AI-only review for that work.
