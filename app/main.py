@@ -5,7 +5,7 @@ import re
 from datetime import datetime, timezone
 
 from fastapi import Depends, FastAPI, Request
-from fastapi.exceptions import HTTPException
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.responses import JSONResponse
 
 from app import db, settings
@@ -64,6 +64,14 @@ def create_app() -> FastAPI:
     async def _not_found(request: Request, exc: NotFound):
         return JSONResponse(status_code=404, content={"detail": "Not found"})
 
+    @app.exception_handler(StarletteHTTPException)
+    async def _http_error(request: Request, exc: StarletteHTTPException):
+        # D21: unknown paths use the same 404 body as hidden records; other framework
+        # errors (405, the 401 from app.auth) keep their {"detail": ...} message.
+        detail = "Not found" if exc.status_code == 404 else exc.detail
+        return JSONResponse(status_code=exc.status_code, content={"detail": detail},
+                            headers=getattr(exc, "headers", None))
+
     @app.exception_handler(Invalid)
     async def _invalid(request: Request, exc: Invalid):
         return JSONResponse(status_code=422, content={"detail": exc.message})
@@ -112,8 +120,18 @@ def create_app() -> FastAPI:
 
     @app.get("/requests/{request_id}")
     def get_request(request_id: str, user: int = Depends(current_user)):
-        _parse_id(request_id)
-        raise NotFound()  # fail closed until task 4
+        rid = _parse_id(request_id)
+        conn = db.connect()
+        try:
+            row = conn.execute("SELECT * FROM requests WHERE id = ?", (rid,)).fetchone()
+            if row is None:
+                raise NotFound()
+            require_resident(conn, user, row["community_id"])
+            if row["submitted_by"] != user:  # R1: hidden answers like missing (R2)
+                raise NotFound()
+            return _out(row)
+        finally:
+            conn.close()
 
     return app
 
