@@ -37,19 +37,25 @@ Each task is one bounded prompt in `prompts/`, with a commit before it as an und
    `POST /communities/{id}/requests` (resident only, R3) and `GET /communities/{id}/requests`
    returning the community's requests. `GET /requests/{id}` exists but always answers 404 (fail
    closed). Only the "Invalid request body" check on the body in this task.
-   Check: `python -m pytest tests/test_s1_requests.py -k "ac1 or d1 or d14 or d17"`.
+   Check: `python -m pytest tests/test_s1_requests.py -k "ac1_ or d1_ or d14_ or d17_"`.
 2. **AC-2.** Description, category and body-shape checks in the D6 order (D4, D7, D9, D15, R5).
-   Check: `-k "ac2 or r5 or d15 or d4 or d9 or d6"`.
+   Check: `-k "ac2_ or r5_ or d15_ or d4_ or d9_ or d6_"`.
 3. **AC-3.** The list answers only callers with the `resident` role in that community; everyone
-   else gets 404 (D10, D19). Check: `-k "ac3 or d10 or r3 or r1"`.
+   else gets 404 (D10, D19). Check: `-k "ac3_ or d10_ or r3_ or r1_"`.
 4. **AC-4.** `GET /requests/{id}`, with hidden and missing ids answering identically (R2, D3),
-   plus the D21 unknown-path and wrong-method bodies. Check: `-k "ac4 or r2 or d21 or d5 or d12"`.
+   plus the D21 unknown-path and wrong-method bodies. Check: `-k "ac4_ or r2_ or d21_ or d5_ or d12_"`.
 5. **AC-5.** The list holds only the caller's own requests (D2), newest first (D11), and `[]` when
-   empty (D20). Check: `-k "ac5 or d11 or d20 or r4"`.
-6. **AC-6.** The detail shows the stored status. Check: `-k ac6`, then the full `python -m pytest`
+   empty (D20). Check: `-k "ac5_ or d11_ or d20_ or r4_"`.
+6. **AC-6.** The detail shows the stored status. Check: `-k ac6_`, then the full `python -m pytest`
    (every S-1 test passes, the five S-6 tests skipped).
 
 ## Steps not asked for
 
 None proposed. (The AI considered adding a `/me/communities` endpoint for S-3, but that is not
 part of S-1, so it is not in the plan.)
+
+## Change during the build
+
+After task 1, the checks were changed to end each name with `_` (for example `ac1_` instead of `ac1`),
+because `pytest -k` matches substrings and `d1` also selected `d10`, `d12` and `d15`. No task or step
+changed. Recorded in LEDGER.md.
