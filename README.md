@@ -12,11 +12,12 @@ Kundan Singh (requirements & quality and test lead), Sandeep Garg (architecture 
 
 | Story | What it is | State |
 |---|---|---|
-| S-1 | Community isolation: nobody reads another community's tickets, documents or announcements | Built, tests pass |
-| S-2 | Ticket status lifecycle (Open → In progress → Resolved, reopen) | Design doc + tests written; tests skipped until built |
+| S-1 | A resident submits a maintenance request and sees its status | Built; every S-1 test passes |
+| S-6 | Scheduled monthly dues payment, charged at most once per unit per month | Design doc and tests written; tests skipped until built |
 
-Requirements, backlog and evidence: `docs/requirements/`. Design docs: `docs/design/`.
-Build plan: `docs/plans/`. AI provenance: `LEDGER.md` and `prompts/`.
+Interviews: `docs/interviews/`. Evidence log, backlog and traceability: `docs/requirements/`.
+Design docs and gap checks: `docs/design/`. Build plan: `docs/plans/`. AI provenance: `LEDGER.md`
+and `prompts/`.
 
 ## Install
 
@@ -36,8 +37,8 @@ pip install -r requirements.txt
 python -m pytest
 ```
 
-Expected at Milestone 1: every S-1 test passes; every S-2 test is reported as skipped,
-with its AC ID in the skip reason.
+Expected at Milestone 1: every S-1 test passes, and the five S-6 tests are reported as skipped,
+each with its AC ID (AC-18 to AC-22) in the skip reason.
 
 ## Run the API locally (optional)
 
@@ -45,8 +46,9 @@ with its AC ID in the skip reason.
 COMMUNITYCONNECT_DB=dev.db uvicorn app.main:app --reload
 ```
 
-Milestone 1 has no demo-data script (S-1 design doc, D13), so a fresh database has no users.
-The tests are the way to exercise the API.
+Users, communities and memberships are created only with the functions in `app/seed.py`
+(S-1 D13, D17); there are no sign-up endpoints. Callers identify themselves with the
+`X-User-Id` header (S-1 D1). The tests are the main way to exercise the API.
 
 ## Layout
 
@@ -55,7 +57,8 @@ app/            API service (FastAPI + SQLite)
 tests/          pytest suites, one file per story; AC IDs in test names
 docs/design/    design docs (docs/design/<story ID>.md) and AI gap-check replies
 docs/plans/     build plans (docs/plans/<story ID>-plan.md)
-docs/requirements/  interview kit, notes, evidence log, backlog, traceability
+docs/interviews/    interview questions, participation table, raw notes
+docs/requirements/  proposal follow-up, evidence log, backlog, traceability
 prompts/        every prompt referenced from LEDGER.md
 LEDGER.md       provenance ledger
 AGENTS.md       standing instructions for AI coding tools

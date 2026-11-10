@@ -1,129 +1,88 @@
-"""Shared fixtures. Data is inserted with plain SQL using the column names in
-docs/design/S-1.md section 5, so the tests depend on the design doc, not on app code."""
+"""Shared fixtures for the S-1 and S-6 tests.
 
-import secrets
-import sqlite3
+Sample data from docs/requirements/backlog.md: communities Mountain Ridge, Pine Hollow and
+Elm Court. R1 lives in unit 12 and R3 in unit 20 of Mountain Ridge; R2 lives in Pine Hollow;
+R4 lives in Elm Court. M1 manages Mountain Ridge and Pine Hollow; M2 manages only Elm Court.
+B1 is a board member of Mountain Ridge. Data is created with app/seed.py (S-1 D13, D17), and
+each test gets a new temporary database (S-1 D12, D18).
+"""
+
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 
 import pytest
 from fastapi.testclient import TestClient
 
-from app.main import create_app
-
-TS = "2026-10-01T12:00:00Z"  # format from S-1 D16
-
 
 @dataclass
 class World:
-    db_path: str
     client: TestClient
-    tokens: dict = field(default_factory=dict)   # user key -> token
-    ids: dict = field(default_factory=dict)      # user key -> user id
-    items: dict = field(default_factory=dict)    # item key -> id
+    users: dict = field(default_factory=dict)        # "R1" -> user id
+    communities: dict = field(default_factory=dict)  # "MR" -> community id
+    units: dict = field(default_factory=dict)        # "MR-12" -> unit id
 
-    def headers(self, user_key):
-        return {"Authorization": f"Bearer {self.tokens[user_key]}"}
+    def h(self, user):
+        """Headers for a signed-in user (S-1 D1)."""
+        return {"X-User-Id": str(self.users[user])}
 
-    def get(self, path, user_key=None, headers=None):
-        if headers is None:
-            headers = self.headers(user_key) if user_key else {}
-        return self.client.get(path, headers=headers)
+    def get(self, path, user):
+        return self.client.get(path, headers=self.h(user))
 
+    def post(self, path, user, json=None, **kw):
+        return self.client.post(path, headers=self.h(user), json=json, **kw)
 
-# Communities: A=1, B=2, C=3
-COMMUNITIES = {"A": 1, "B": 2, "C": 3}
+    def submit(self, user, community, category=None, description="Kitchen sink leaks"):
+        from app import settings
 
-# user key -> (is_admin, [(community, role), ...])
-USERS = {
-    "res_a": (0, [("A", "resident")]),
-    "res_a2": (0, [("A", "resident")]),
-    "board_a": (0, [("A", "board")]),
-    "mgr_ac": (0, [("A", "manager"), ("C", "manager")]),
-    "res_b": (0, [("B", "resident")]),
-    "board_b": (0, [("B", "board")]),
-    "mgr_b": (0, [("B", "manager")]),
-    "res_c": (0, [("C", "resident")]),
-    "mgr_c": (0, [("C", "manager")]),
-    "admin": (1, []),
-}
+        body = {
+            "category": category if category is not None else settings.REQUEST_CATEGORIES[0],
+            "description": description,
+        }
+        return self.post(f"/communities/{self.communities[community]}/requests", user, json=body)
 
-# Every text that belongs to community B contains this marker, so a test can
-# check that no B data leaked by searching the raw response body.
-B_MARK = "B-SECRET"
-
-
-def _seed(conn, world):
-    for name, cid in COMMUNITIES.items():
-        conn.execute("INSERT INTO communities (id, name) VALUES (?, ?)", (cid, f"Community {name}"))
-    for uid, (key, (is_admin, memberships)) in enumerate(USERS.items(), start=1):
-        token = secrets.token_hex(16)
-        conn.execute(
-            "INSERT INTO users (id, display_name, token, is_admin) VALUES (?, ?, ?, ?)",
-            (uid, f"user {key}", token, is_admin),
-        )
-        for community, role in memberships:
-            conn.execute(
-                "INSERT INTO memberships (user_id, community_id, role) VALUES (?, ?, ?)",
-                (uid, COMMUNITIES[community], role),
-            )
-        world.tokens[key] = token
-        world.ids[key] = uid
-
-    def ticket(key, community, creator, title):
-        cur = conn.execute(
-            "INSERT INTO tickets (community_id, created_by, title, category, status, created_at)"
-            " VALUES (?, ?, ?, ?, 'open', ?)",
-            (COMMUNITIES[community], world.ids[creator], title, "plumbing", TS),
-        )
-        world.items[key] = cur.lastrowid
-
-    def document(key, community, folder, uploader, title):
-        cur = conn.execute(
-            "INSERT INTO documents (community_id, folder, title, uploaded_by, uploaded_at)"
-            " VALUES (?, ?, ?, ?, ?)",
-            (COMMUNITIES[community], folder, title, world.ids[uploader], TS),
-        )
-        world.items[key] = cur.lastrowid
-
-    def announcement(key, community, poster, title, posted_at=TS):
-        cur = conn.execute(
-            "INSERT INTO announcements (community_id, title, body, posted_by, posted_at)"
-            " VALUES (?, ?, ?, ?, ?)",
-            (COMMUNITIES[community], title, f"Body of {title}", world.ids[poster], posted_at),
-        )
-        world.items[key] = cur.lastrowid
-
-    ticket("ticket_a_res", "A", "res_a", "A leaky faucet")
-    ticket("ticket_a_res2", "A", "res_a2", "A broken gate")
-    ticket("ticket_b", "B", "res_b", f"{B_MARK} ticket roof leak")
-    ticket("ticket_c", "C", "res_c", "C pool pump")
-    document("doc_a", "A", "community", "board_a", "A bylaws")
-    document("doc_a_board", "A", "board_only", "board_a", "A board minutes")
-    document("doc_b", "B", "community", "board_b", f"{B_MARK} doc budget")
-    announcement("ann_a", "A", "mgr_ac", "A pool opening")
-    announcement("ann_b", "B", "mgr_b", f"{B_MARK} announcement")
-    announcement("ann_c", "C", "mgr_ac", "C parking notice")
+    def list_requests(self, user, community):
+        return self.get(f"/communities/{self.communities[community]}/requests", user)
 
 
 @pytest.fixture
-def world(tmp_path):
-    db_path = str(tmp_path / "test.db")
-    app = create_app(db_path)
-    w = World(db_path=db_path, client=TestClient(app))
-    conn = sqlite3.connect(db_path)
-    conn.execute("PRAGMA foreign_keys = ON")
-    _seed(conn, w)
-    conn.commit()
-    conn.close()
+def db_path(tmp_path, monkeypatch):
+    from app import settings
+
+    path = str(tmp_path / "test.db")
+    monkeypatch.setattr(settings, "DATABASE_PATH", path)
+    return path
+
+
+@pytest.fixture
+def world(db_path):
+    from app import seed
+    from app.main import create_app
+
+    client = TestClient(create_app())
+    w = World(client=client)
+    w.communities = {
+        "MR": seed.create_community("Mountain Ridge"),
+        "PH": seed.create_community("Pine Hollow"),
+        "EC": seed.create_community("Elm Court"),
+    }
+    c = w.communities
+    w.units = {
+        "MR-12": seed.create_unit(c["MR"], "12"),
+        "MR-20": seed.create_unit(c["MR"], "20"),
+        "MR-14": seed.create_unit(c["MR"], "14"),
+        "PH-3": seed.create_unit(c["PH"], "3"),
+        "EC-5": seed.create_unit(c["EC"], "5"),
+    }
+    u = w.units
+    for name in ["R1", "R2", "R3", "R4", "M1", "M2", "B1", "ADMIN", "NOBODY"]:
+        w.users[name] = seed.create_user()
+    seed.add_membership(w.users["R1"], c["MR"], "resident", u["MR-12"])
+    seed.add_membership(w.users["R3"], c["MR"], "resident", u["MR-20"])
+    seed.add_membership(w.users["R2"], c["PH"], "resident", u["PH-3"])
+    seed.add_membership(w.users["R4"], c["EC"], "resident", u["EC-5"])
+    seed.add_membership(w.users["M1"], c["MR"], "manager")
+    seed.add_membership(w.users["M1"], c["PH"], "manager")
+    seed.add_membership(w.users["M2"], c["EC"], "manager")
+    seed.add_membership(w.users["B1"], c["MR"], "board_member")
+    seed.add_membership(w.users["ADMIN"], c["MR"], "admin")
+    # NOBODY exists as a user but has no membership anywhere.
     return w
-
-
-class FakeClock:
-    """Settable UTC clock for S-2 (design doc S-2 section 4, D10)."""
-
-    def __init__(self, now=None):
-        self.now = now or datetime(2026, 10, 1, 12, 0, 0, tzinfo=timezone.utc)
-
-    def __call__(self):
-        return self.now

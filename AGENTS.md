@@ -30,7 +30,7 @@ that are not being built stay skipped; do not unskip them.
    something, do not guess: stop and ask. Never build anything that depends on an item listed
    under "Open questions".
 6. Values the interviews did not settle are named settings in `app/settings.py`
-   (for example `REOPEN_WINDOW_DAYS`). Never hard-code those numbers anywhere else.
+   (for example `MAX_DESCRIPTION_CHARS`). Never hard-code those numbers anywhere else.
 
 ## Files and folders you must not change
 
@@ -42,7 +42,14 @@ that are not being built stay skipped; do not unskip them.
 
 ## Access rule (applies to every endpoint)
 
-Every endpoint that returns community data calls `app.access.require_member` (or a helper
-built on it) before reading anything. A resource outside the caller's communities returns
-404 with exactly the same body as a resource that does not exist. There is no other place
-where community access is decided.
+The caller is read from the `X-User-Id` header by one function in `app/auth.py` (S-1 D1, D14).
+Membership and role are decided only in `app/access.py`; endpoints never query `memberships`
+themselves. A record the caller may not see returns 404 with exactly the same body as a record
+that does not exist: `{"detail": "Not found"}` (S-1 R2, D3).
+
+## Stories in this milestone
+
+- S-1 (submit and track a maintenance request) is the story being built: `docs/design/S-1.md`,
+  `tests/test_s1_requests.py`, plan in `docs/plans/S-1-plan.md`.
+- S-6 (scheduled dues payment) is designed but not built: `docs/design/S-6.md`,
+  `tests/test_s6_payments.py`. Its tests stay skipped. Do not write S-6 code.
