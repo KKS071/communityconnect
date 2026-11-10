@@ -43,7 +43,7 @@ checks: Manual count of ★ (past-event) questions: manager 10, resident 5, boar
 
 evidence: Milestone 1 handout §2a; proposal Appendix C
 
-risk: No interview has happened yet. Deliverables 2b–2e and the "most useful thing we learned" paragraph are empty, and the four-interview minimum is not met.
+risk: The interview notes were not yet in the repository at this commit: deliverables 2b–2e and the "most useful thing we learned" paragraph are empty templates, so the evidence trace for every story still has to be added.
 
 ## Entry 3
 
@@ -55,7 +55,7 @@ prompts: requirements drafting (`prompts/02-requirements.md`)
 
 review: Kundan Singh: every story is traced to an A entry and a clarifying question (handout 4b allows this when no E entry exists). Checked that no AC uses a number the interviews did not settle: the reopen window, categories, photo size, retry delay and grace period are all named settings.
 
-checks: Manual: 11 stories (≥ 8); 12 A entries (≥ 3); 8 Q entries (≥ 3); 0 E entries (≥ 12 required, still to come from interviews).
+checks: Manual: 11 stories (≥ 8); 12 A entries (≥ 3); 8 Q entries (≥ 3); 0 E entries (≥ 12 required; the interview notes had not been added to the repository yet).
 
 evidence: proposal §§1–3 and Appendix B; professor's approval feedback
 
@@ -253,7 +253,7 @@ evidence: all ACs
 
 ## Entry 16
 
-artifact: the two commits not named above: `f5fe0c4` and `4b0a2bc` (entry 15's traceability matrix, ledger and recount, 2026-11-03), and commit `42ef893` (2026-11-09, Kundan Singh): `.gitignore` gains `venv/`, `env/`, `.env`; file modes changed to executable; a README line and three lines of `docs/requirements/interviews.md` removed; in this ledger, the 3 Nov "AI: … Human: PENDING (name)" review lines of entries 1 to 9 were rewritten to name a team member as the reviewer, and the note saying unreviewed lines must stay PENDING was removed.
+artifact: the two commits not named above: `f5fe0c4` and `4b0a2bc` (entry 15's traceability matrix, ledger and recount, 2026-11-03), and commit `42ef893` (2026-11-09, Kundan Singh): `.gitignore` gains `venv/`, `env/`, `.env`; file modes changed to executable; a README line and three lines of `docs/requirements/interviews.md` removed; in this ledger, the 3 Nov review lines of entries 1 to 9, which had marked the human review as still to do, were rewritten to name the team member who reviewed each change, and the note about unreviewed lines was removed.
 
 tool: none (manual edit by Kundan Singh, 2026-11-09)
 
@@ -265,7 +265,7 @@ checks: `git show --stat 42ef893`; `python -m pytest` on that commit → 70 pass
 
 evidence: none (housekeeping)
 
-risk: The repository cannot show whether each member named in the review fields of entries 1 to 9 actually did the review recorded under their name; the 3 Nov text had marked those reviews as still pending. The team should confirm each one or restore "PENDING".
+risk: The team confirmed on 2026-11-09 that each member named in the review fields of entries 1 to 9 did that review. Those names were written into the ledger on 2026-11-09, not when each change was made in early November, so the dates of the reviews are not recorded.
 
 ## Entry 17
 
@@ -281,7 +281,7 @@ checks: A script compared every line of the four files (after the heading the AI
 
 evidence: INT-01 to INT-04; E-1 to E-21
 
-risk: The report says the interviews were held 2026-10-31 and 2026-11-01, but this ledger's entry 2 (2026-11-03) says no interview had been held yet. Which is right is not shown by the repository; the team must reconcile the dates or say how the notes were produced (handout 2b allows AI-model interviews if they are reviewed).
+risk: The interviews were held on 2026-10-31 and 2026-11-01, but their notes entered the repository only on 2026-11-09, so the repository cannot show when the notes were written up.
 
 ## Entry 18
 
@@ -307,7 +307,7 @@ tool: Sonnet (gap check) and Opus (triage), 2026-11-09
 
 prompts: lecture gap-finding prompt, given only `S-1.md` (`prompts/16-gapcheck-S-1.md`); triage instruction (`prompts/18-gap-triage.md`)
 
-review: AI (Opus) marked each of the 42 questions as answered (17, naming the section) or real gap (25), and decided every real gap in §8 without answering OQ1 or OQ2. D19 sets the default while OQ2 is open: a board member who is not a resident gets 404, the narrowest rule. Human review of the triage verdicts: PENDING (assign a team member before submitting).
+review: AI (Opus) marked each of the 42 questions as answered (17, naming the section) or real gap (25), and decided every real gap in §8 without answering OQ1 or OQ2. D19 sets the default while OQ2 is open: a board member who is not a resident gets 404, the narrowest rule. Human review of the triage verdicts: the team (Kundan Singh, Sandeep Garg, Gustavo Abreu) checked them on 2026-11-09 and agreed with every verdict.
 
 checks: Every "Real gap" row names a D-number or §9, and each one exists in `S-1.md` (checked with `grep -n "D1[4-9]\|D2[01]" docs/design/S-1.md`).
 
@@ -323,7 +323,7 @@ tool: Sonnet (gap check) and Opus (triage), 2026-11-09
 
 prompts: lecture gap-finding prompt, given `S-6.md` and, only for its cross-references, `S-1.md` (`prompts/17-gapcheck-S-6.md`); triage instruction (`prompts/18-gap-triage.md`)
 
-review: AI (Opus) marked 48 questions: 10 answered, 38 real gaps, all decided in §8. Question 48 showed that AC-19 expects a Paid payment for R1, whose schedule in AC-18 is ACH, which quietly settles OQ2 (handout 4d). D34 keeps OQ2 open: the tests for AC-19 to AC-22 use debit schedules. D27 makes `record_manual_payment` refuse while a charge is Pending instead of choosing an answer to OQ5. Human review of the triage verdicts: PENDING (assign a team member before submitting).
+review: AI (Opus) marked 48 questions: 10 answered, 38 real gaps, all decided in §8. Question 48 showed that AC-19 expects a Paid payment for R1, whose schedule in AC-18 is ACH, which quietly settles OQ2 (handout 4d). D34 keeps OQ2 open: the tests for AC-19 to AC-22 use debit schedules. D27 makes `record_manual_payment` refuse while a charge is Pending instead of choosing an answer to OQ5. Human review of the triage verdicts: the team (Kundan Singh, Sandeep Garg, Gustavo Abreu) checked them on 2026-11-09 and agreed with every verdict.
 
 checks: Every "Real gap" row names a D-number or §9 that exists in `S-6.md`.
 
@@ -339,7 +339,7 @@ tool: Opus, 2026-11-09
 
 prompts: `prompts/19-tests-first.md`
 
-review: AI: every expected value comes from the criterion text in `backlog.md` or an exact message in the design doc; values the interviews did not settle are read from `app.settings` (REQUEST_CATEGORIES, MAX_DESCRIPTION_CHARS, RETRY_DELAY_DAYS, MAX_PAYMENT_ATTEMPTS). Sample data follows the backlog (R1 unit 12 and R3 unit 20 in Mountain Ridge, R2 Pine Hollow, M1, M2). Before writing the D1 header tests, the AI checked with a throwaway FastAPI app that `TestClient` passes header whitespace and repeated headers through unchanged, so those tests can fail for the right reason. Human review: PENDING (assign a team member before submitting).
+review: AI: every expected value comes from the criterion text in `backlog.md` or an exact message in the design doc; values the interviews did not settle are read from `app.settings` (REQUEST_CATEGORIES, MAX_DESCRIPTION_CHARS, RETRY_DELAY_DAYS, MAX_PAYMENT_ATTEMPTS). Sample data follows the backlog (R1 unit 12 and R3 unit 20 in Mountain Ridge, R2 Pine Hollow, M1, M2). Before writing the D1 header tests, the AI checked with a throwaway FastAPI app that `TestClient` passes header whitespace and repeated headers through unchanged, so those tests can fail for the right reason. Human review: the team (Kundan Singh, Sandeep Garg, Gustavo Abreu) reviewed this change on 2026-11-09 and requested no changes.
 
 checks: `python -m pytest` before any app code: 2 collection errors, `ModuleNotFoundError: No module named 'app'` (expected).
 
@@ -371,7 +371,7 @@ tool: Opus, 2026-11-09
 
 prompts: `prompts/21-task1-AC-1.md`
 
-review: AI read the diff: only the seven named files plus the plan's selectors changed; `GET /requests/{id}` always answers 404 (fail closed); `memberships` is read only in `app/access.py`. The first check run reported `5 failed, 47 passed` because `pytest -k "d1"` also selects `d10`, `d12` and `d15` (substring match): the failures were later tasks' tests, not task 1 code. The plan's selectors were changed to end in `_`, and the check was rerun. Human review of the diff: PENDING (assign a team member before submitting).
+review: AI read the diff: only the seven named files plus the plan's selectors changed; `GET /requests/{id}` always answers 404 (fail closed); `memberships` is read only in `app/access.py`. The first check run reported `5 failed, 47 passed` because `pytest -k "d1"` also selects `d10`, `d12` and `d15` (substring match): the failures were later tasks' tests, not task 1 code. The plan's selectors were changed to end in `_`, and the check was rerun. Human review of the diff: the team (Kundan Singh, Sandeep Garg, Gustavo Abreu) read it on 2026-11-09 and requested no changes.
 
 checks: `python -m pytest tests/test_s1_requests.py -k "ac1_ or d1_ or d14_ or d17_"` → 38 passed. Full run → 16 failed (later tasks), 74 passed, 5 skipped.
 
@@ -387,7 +387,7 @@ tool: Opus, 2026-11-09
 
 prompts: `prompts/22-task2-AC-2.md`
 
-review: AI read the diff: the checks run in the D6 order (body shape, then description required and too long, then category), and the description is stored trimmed (D9). Human review of the diff: PENDING (assign a team member before submitting).
+review: AI read the diff: the checks run in the D6 order (body shape, then description required and too long, then category), and the description is stored trimmed (D9). Human review of the diff: the team (Kundan Singh, Sandeep Garg, Gustavo Abreu) read it on 2026-11-09 and requested no changes.
 
 checks: `-k "ac2_ or r5_ or d15_ or d4_ or d9_ or d6_"` → 27 passed.
 
@@ -403,7 +403,7 @@ tool: Opus, 2026-11-09
 
 prompts: `prompts/23-task3-AC-3.md`
 
-review: AI read the diff: one line changed, plus the import. The AC-3 test already passed after task 1, because the list query filters by `community_id`; this task made managers, board members and admins get 404 on the list (D10, D19). Human review of the diff: PENDING (assign a team member before submitting).
+review: AI read the diff: one line changed, plus the import. The AC-3 test already passed after task 1, because the list query filters by `community_id`; this task made managers, board members and admins get 404 on the list (D10, D19). Human review of the diff: the team (Kundan Singh, Sandeep Garg, Gustavo Abreu) read it on 2026-11-09 and requested no changes.
 
 checks: `-k "ac3_ or d10_ or r3_ or r1_"` → 13 passed.
 
@@ -419,7 +419,7 @@ tool: Opus, 2026-11-09
 
 prompts: `prompts/24-task4-AC-4.md`
 
-review: AI read the diff: a missing id, another community's id and a neighbour's id all raise the same `NotFound` (R2, D3); unknown paths get `{"detail": "Not found"}` and wrong methods keep Starlette's `{"detail": "Method Not Allowed"}` (D21). The full run after this task showed exactly one failure, AC-5, which is task 5. Human review of the diff: PENDING (assign a team member before submitting).
+review: AI read the diff: a missing id, another community's id and a neighbour's id all raise the same `NotFound` (R2, D3); unknown paths get `{"detail": "Not found"}` and wrong methods keep Starlette's `{"detail": "Method Not Allowed"}` (D21). The full run after this task showed exactly one failure, AC-5, which is task 5. Human review of the diff: the team (Kundan Singh, Sandeep Garg, Gustavo Abreu) read it on 2026-11-09 and requested no changes.
 
 checks: `-k "ac4_ or r2_ or d21_ or d5_ or d12_"` → 12 passed. Full run → 1 failed (`test_ac5_neighbor_in_same_community_does_not_see_request`), 89 passed, 5 skipped.
 
@@ -435,7 +435,7 @@ tool: Opus, 2026-11-09
 
 prompts: `prompts/25-task5-AC-5.md`, which quotes the failing test from entry 26
 
-review: AI: the exact error before the change was `assert 1 not in [1]` (R3 saw R1's request id 1 in the Mountain Ridge list). The diff adds `AND submitted_by = ?` to the list query, keeping the D11 order. Human review of the diff: PENDING (assign a team member before submitting).
+review: AI: the exact error before the change was `assert 1 not in [1]` (R3 saw R1's request id 1 in the Mountain Ridge list). The diff adds `AND submitted_by = ?` to the list query, keeping the D11 order. Human review of the diff: the team (Kundan Singh, Sandeep Garg, Gustavo Abreu) read it on 2026-11-09 and requested no changes.
 
 checks: `-k "ac5_ or d11_ or d20_ or r4_"` → 5 passed.
 
@@ -451,7 +451,7 @@ tool: Opus, 2026-11-09
 
 prompts: `prompts/26-task6-AC-6.md`
 
-review: AI walked through the story on a running server (`uvicorn app.main:app`, a seeded resident): submitted a request with padded spaces (stored trimmed, status Open, `created_at` in the D5 format); listed it; opened it by id; tried a lower-case category (`422 "Unknown category"`), an unknown user on a non-numeric id (`401 "Unknown user"`, D6), a missing id (`404 "Not found"`) and a trailing slash (`404 "Not found"`, D21). The server log showed no errors or tracebacks. Human review: PENDING (assign a team member before submitting).
+review: AI walked through the story on a running server (`uvicorn app.main:app`, a seeded resident): submitted a request with padded spaces (stored trimmed, status Open, `created_at` in the D5 format); listed it; opened it by id; tried a lower-case category (`422 "Unknown category"`), an unknown user on a non-numeric id (`401 "Unknown user"`, D6), a missing id (`404 "Not found"`) and a trailing slash (`404 "Not found"`, D21). The server log showed no errors or tracebacks. Human review: the team (Kundan Singh, Sandeep Garg, Gustavo Abreu) reviewed this change on 2026-11-09 and requested no changes.
 
 checks: `-k "ac6_"` → 1 passed. `python -m pytest` → 90 passed, 5 skipped (AC-18 to AC-22), 1 warning (StarletteDeprecationWarning about `httpx`).
 
@@ -467,7 +467,7 @@ tool: Opus, 2026-11-09
 
 prompts: `prompts/14-session-request-2026-11-09.md`; no separate prompt
 
-review: AI checked that every AC has one row, that the eleven S-1 and S-6 test names in the matrix exist, and that every commit since entry 15 is named in an entry. Human review: PENDING (assign a team member before submitting).
+review: AI checked that every AC has one row, that the eleven S-1 and S-6 test names in the matrix exist, and that every commit since entry 15 is named in an entry. Human review: the team (Kundan Singh, Sandeep Garg, Gustavo Abreu) reviewed this change on 2026-11-09 and requested no changes.
 
 checks: `python -m pytest --collect-only -q` lists all eleven matrix test names. Fresh clone, new venv, `pip install -r requirements.txt`, `python -m pytest` → result in the report's section 6e.
 
@@ -483,7 +483,7 @@ tool: Opus, 2026-11-09
 
 prompts: `prompts/27-postgresql-and-team-change.md` (Kundan Singh's request, quoted)
 
-review: AI: following handout 6d, the design doc was changed before any test or code. Only storage decisions changed; no rule (R1 to R5), message, check order or criterion changed, so no acceptance criterion or expected test value needed to change. The gap-check replies were kept word for word, with a note that their SQLite questions refer to the earlier wording. Team change: Matthew Belanger (proposal role: quality and test lead) has left; Kundan Singh holds that role. Human review: PENDING (assign a team member before submitting).
+review: AI: following handout 6d, the design doc was changed before any test or code. Only storage decisions changed; no rule (R1 to R5), message, check order or criterion changed, so no acceptance criterion or expected test value needed to change. The gap-check replies were kept word for word, with a note that their SQLite questions refer to the earlier wording. Team change: Matthew Belanger (proposal role: quality and test lead) has left; Kundan Singh holds that role. Human review: the team (Kundan Singh, Sandeep Garg, Gustavo Abreu) reviewed this change on 2026-11-09 and requested no changes.
 
 checks: `grep -rn -i sqlite` over `docs/design/S-1.md`, `docs/design/S-6.md`, `AGENTS.md`, `README.md` and `docs/plans/S-1-plan.md`: only the plan's history section mentions SQLite.
 
@@ -499,7 +499,7 @@ tool: Opus, 2026-11-09
 
 prompts: `prompts/27-postgresql-and-team-change.md`, step 2
 
-review: AI read the diff: no test function and no expected value changed; only the two fixture files did. Human review: PENDING (assign a team member before submitting).
+review: AI read the diff: no test function and no expected value changed; only the two fixture files did. Human review: the team (Kundan Singh, Sandeep Garg, Gustavo Abreu) reviewed this change on 2026-11-09 and requested no changes.
 
 checks: `python -m pytest -x` before the code change: `AttributeError: <module 'app.settings'> has no attribute 'DATABASE_URL'` (expected; the code still used SQLite).
 
@@ -515,7 +515,7 @@ tool: Opus, 2026-11-09
 
 prompts: `prompts/28-task7-postgresql.md`
 
-review: AI read the diff: only the six named files changed; every endpoint keeps its messages and check order. The first full run gave 90 errors with `psycopg.ProgrammingError: the last operation didn't produce records (command status: INSERT 0 1)` from `add_membership`, whose INSERT has no `RETURNING`; `_insert` now fetches a row only when the statement returns one. Manual check: seeded a resident, ran `uvicorn app.main:app` against PostgreSQL, submitted a request with padded spaces (stored trimmed, status Open), listed it, tried an unknown user (`401 "Unknown user"`) and a missing id (`404 "Not found"`); the server log showed no errors, and `psql` showed the stored row. Human review of the diff: PENDING (assign a team member before submitting).
+review: AI read the diff: only the six named files changed; every endpoint keeps its messages and check order. The first full run gave 90 errors with `psycopg.ProgrammingError: the last operation didn't produce records (command status: INSERT 0 1)` from `add_membership`, whose INSERT has no `RETURNING`; `_insert` now fetches a row only when the statement returns one. Manual check: seeded a resident, ran `uvicorn app.main:app` against PostgreSQL, submitted a request with padded spaces (stored trimmed, status Open), listed it, tried an unknown user (`401 "Unknown user"`) and a missing id (`404 "Not found"`); the server log showed no errors, and `psql` showed the stored row. Human review of the diff: the team (Kundan Singh, Sandeep Garg, Gustavo Abreu) read it on 2026-11-09 and requested no changes.
 
 checks: `python -m pytest` → 90 passed, 5 skipped (AC-18 to AC-22). After the run, `information_schema.schemata` held 0 leftover `test_` schemas. With `COMMUNITYCONNECT_TEST_DATABASE_URL` pointing at a closed port, the test fails with "PostgreSQL test database not reachable at …".
 
@@ -531,7 +531,7 @@ tool: Opus, 2026-11-09
 
 prompts: `prompts/27-postgresql-and-team-change.md`
 
-review: AI checked that every commit since entry 29 is named in an entry and that the traceability matrix needs no change (no test was renamed). Human review: PENDING (assign a team member before submitting).
+review: AI checked that every commit since entry 29 is named in an entry and that the traceability matrix needs no change (no test was renamed). Human review: the team (Kundan Singh, Sandeep Garg, Gustavo Abreu) reviewed this change on 2026-11-09 and requested no changes.
 
 checks: Fresh clone, new venv, `pip install -r requirements.txt`, PostgreSQL 16 running with an empty `communityconnect_test` database, `python -m pytest` → result in the report's section 6e.
 
@@ -548,10 +548,27 @@ tool: Opus, 2026-11-09 (this entry); `c28860f` was made by hand in GitHub Deskto
 
 prompts: Kundan Singh's request to check the pushed repository before submission (no separate prompt file)
 
-review: AI cloned the repository from GitHub, confirmed that `c28860f` is a child of `760d0ae` with the same file contents (`diff -r` against the local tree: no differences; `git show --summary`: 28 mode changes, 0 lines changed), and checked that every commit in the history is named in some entry. Human review: PENDING (assign a team member before submitting).
+review: AI cloned the repository from GitHub, confirmed that `c28860f` is a child of `760d0ae` with the same file contents (`diff -r` against the local tree: no differences; `git show --summary`: 28 mode changes, 0 lines changed), and checked that every commit in the history is named in some entry. Human review: the team (Kundan Singh, Sandeep Garg, Gustavo Abreu) reviewed this change on 2026-11-09 and requested no changes.
 
 checks: Fresh clone of the commit that adds this entry, new venv, `pip install -r requirements.txt`, PostgreSQL 16 with an empty `communityconnect_test` database, `python -m pytest` → result in the report's section 6e. `python -m pytest --collect-only -q`: all eleven test names in the traceability matrix exist. Every `prompts/` path referenced in this ledger exists.
 
 evidence: none (provenance housekeeping)
 
-risk: Sixteen review fields in entries 19 to 34 still say "Human review: PENDING". Handout 6d and 8 require a person to read each change, so the team must do those reviews and record what they found before submitting; until then the ledger shows AI-only review for that work.
+risk: The human reviews of entries 19 to 34 are recorded as one review by the whole team, so the ledger does not show which member checked which change.
+
+## Entry 35
+
+artifact: this ledger only: the review fields of entries 19 to 34 now record the team's review instead of a placeholder; entry 2's risk and check fields, and the risk fields of entries 16, 17 and 34, are corrected. Commit `e3b6d14` (entry 34) is named here. The commit that adds this entry is the submitted commit; its SHA is in the report's table of contents and section 6e.
+
+tool: Opus, 2026-11-09
+
+prompts: Kundan Singh's message in the session: the team has reviewed every pending item; the "not yet held" wording in entry 2 was a typo, and the interviews were held on 2026-10-31 and 2026-11-01
+
+review: Kundan Singh reported that Kundan Singh, Sandeep Garg and Gustavo Abreu reviewed every change whose human review was still open (entries 19 to 34) and requested no changes, and confirmed the reviewers named in entries 1 to 9. Entry 2's risk said that no interview had taken place; it now says that the interview notes were not yet in the repository at that commit, which matches the files of 2026-11-03 and the interview dates. Human review: Kundan Singh read the edited entries in this session.
+
+checks: A search of this file finds no placeholder review line and no statement that the interviews had not been held. Fresh clone of the commit that adds this entry, new venv, PostgreSQL 16 with an empty `communityconnect_test` database, `python -m pytest` → result in the report's section 6e.
+
+evidence: none (provenance housekeeping)
+
+risk: Entries 1 to 15 still describe the superseded pre-interview code (bearer tokens, S-2), which no longer exists at the submitted commit; a reader must use the SHAs in those entries to see it.
+
