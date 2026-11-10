@@ -9,5 +9,9 @@ import os
 REQUEST_CATEGORIES = ["Plumbing", "Electrical", "Landscaping", "Pool", "Other"]
 MAX_DESCRIPTION_CHARS = 2000
 
-# SQLite file (S-1 D12, D16).
-DATABASE_PATH = os.environ.get("COMMUNITYCONNECT_DB", "communityconnect.db")
+# PostgreSQL connection and schema (S-1 D12, D16).
+DATABASE_URL = os.environ.get(
+    "COMMUNITYCONNECT_DATABASE_URL",
+    "postgresql://postgres:postgres@localhost:5432/communityconnect",
+)
+DATABASE_SCHEMA = os.environ.get("COMMUNITYCONNECT_DB_SCHEMA", "public")

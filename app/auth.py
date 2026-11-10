@@ -15,11 +15,8 @@ def current_user(request: Request) -> int:
     values = request.headers.getlist("x-user-id")
     if len(values) == 1 and _USER_ID.fullmatch(values[0]) and int(values[0]) <= _MAX_ID:
         user_id = int(values[0])
-        conn = db.connect()
-        try:
-            found = conn.execute("SELECT 1 FROM users WHERE id = ?", (user_id,)).fetchone()
-        finally:
-            conn.close()
+        with db.connect() as conn:
+            found = conn.execute("SELECT 1 FROM users WHERE id = %s", (user_id,)).fetchone()
         if found:
             return user_id
     raise HTTPException(status_code=401, detail="Unknown user")

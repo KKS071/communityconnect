@@ -79,8 +79,7 @@ def create_app() -> FastAPI:
     @app.post("/communities/{community_id}/requests", status_code=201)
     async def submit_request(community_id: str, request: Request, user: int = Depends(current_user)):
         cid = _parse_id(community_id)
-        conn = db.connect()
-        try:
+        with db.connect() as conn:
             membership = require_resident(conn, user, cid)  # R3
             body = await _json_object(request)
             category, description = body.get("category"), body.get("description")
@@ -93,48 +92,50 @@ def create_app() -> FastAPI:
                 raise Invalid("Description is too long")
             if category not in settings.REQUEST_CATEGORIES:  # D4: exact, case-sensitive
                 raise Invalid("Unknown category")
-            cur = conn.execute(
+            row = conn.execute(
                 "INSERT INTO requests (community_id, unit_id, submitted_by, category, description,"
-                " status, created_at) VALUES (?, ?, ?, ?, ?, 'Open', ?)",
+                " status, created_at) VALUES (%s, %s, %s, %s, %s, 'Open', %s) RETURNING *",
                 (cid, membership["unit_id"], user, category, description, _now()),
-            )
-            conn.commit()
-            row = conn.execute("SELECT * FROM requests WHERE id = ?", (cur.lastrowid,)).fetchone()
+            ).fetchone()
             return _out(row)
-        finally:
-            conn.close()
 
     @app.get("/communities/{community_id}/requests")
     def list_requests(community_id: str, user: int = Depends(current_user)):
         cid = _parse_id(community_id)
-        conn = db.connect()
-        try:
+        with db.connect() as conn:
             require_resident(conn, user, cid)  # D10, D19
             rows = conn.execute(
-                "SELECT * FROM requests WHERE community_id = ? AND submitted_by = ?"
+                "SELECT * FROM requests WHERE community_id = %s AND submitted_by = %s"
                 " ORDER BY created_at DESC, id DESC",  # D2, D11
                 (cid, user),
             ).fetchall()
             return [_out(r) for r in rows]
-        finally:
-            conn.close()
 
     @app.get("/requests/{request_id}")
     def get_request(request_id: str, user: int = Depends(current_user)):
         rid = _parse_id(request_id)
-        conn = db.connect()
-        try:
-            row = conn.execute("SELECT * FROM requests WHERE id = ?", (rid,)).fetchone()
+        with db.connect() as conn:
+            row = conn.execute("SELECT * FROM requests WHERE id = %s", (rid,)).fetchone()
             if row is None:
                 raise NotFound()
             require_resident(conn, user, row["community_id"])
             if row["submitted_by"] != user:  # R1: hidden answers like missing (R2)
                 raise NotFound()
             return _out(row)
-        finally:
-            conn.close()
 
     return app
 
 
-app = create_app()
+
+_app = None
+
+
+def __getattr__(name: str):
+    """`app.main:app` for uvicorn (D16), built on first use so that importing this module
+    does not need a running database."""
+    global _app
+    if name == "app":
+        if _app is None:
+            _app = create_app()
+        return _app
+    raise AttributeError(name)
