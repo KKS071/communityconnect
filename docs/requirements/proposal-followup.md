@@ -6,3 +6,11 @@ Our approval (“Approved. You may start building.”) listed no required change
 |-------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | “Payments carry the most risk in your plan. Keep the cut line in view.” | We kept the proposal’s cut line unchanged and ranked the payment stories (S-6, S-7) last above the backlog cut line, so the access and request stories are finished first (section 4e). We also wrote the S-6 design doc now, so the payment rules, including “at most one Paid payment per unit per month”, are settled before any payment code exists (docs/design/S-6.md). |
 | “Run the cross-community access tests from the first week.”             | The story we build first, S-1, includes the cross-community checks as acceptance criteria AC-3, AC-4 and AC-5 (section 4d). Their tests are written before the code (Deliverable 6b) in tests/test_s1_requests.py, so they run from the first commit.                                                                                                                         |
+
+## Changes since the proposal
+
+- **Team.** Matthew Belanger (proposal role: quality and test lead) has left the team. Kundan Singh
+  took over the quality and test lead role, and the work is now shared by three members: Gustavo
+  Abreu, Kundan Singh and Sandeep Garg.
+- **Database.** The proposal said only that the database is stored on our own server. The team
+  chose PostgreSQL (S-1 design doc, D12 and D16); the README explains how to run it.

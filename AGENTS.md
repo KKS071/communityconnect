@@ -5,7 +5,8 @@ Read this file before every task in this repository.
 ## Language and framework
 
 - Python 3.11+.
-- API: FastAPI. Storage: SQLite through the standard-library `sqlite3` module (no ORM).
+- API: FastAPI. Storage: PostgreSQL 14+ through `psycopg` 3 (no ORM). SQL lives in `app/db.py`,
+  `app/access.py`, `app/seed.py` and `app/main.py`; use `%s` placeholders, never string formatting.
 - Tests: pytest with FastAPI's `TestClient`.
 - Do not add a dependency without asking. The allowed list is `requirements.txt`.
 
@@ -14,6 +15,8 @@ Read this file before every task in this repository.
 ```bash
 python -m pytest
 ```
+
+The tests need a running PostgreSQL server; see README.md. Each test gets its own schema.
 
 A task is not done until this command passes for the story being built. Tests for stories
 that are not being built stay skipped; do not unskip them.

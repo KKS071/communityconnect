@@ -4,6 +4,8 @@
 
 **Prompt** (`prompts/16-gapcheck-S-1.md`): "You are the engineer who must build this. List every question you would have to guess the answer to. Do not answer them."
 
+> **Later change (2026-11-09, LEDGER entry 30):** the team moved storage from SQLite to PostgreSQL. S-1 D12, D16 and D18 and S-6 D32 were rewritten; the reply and triage below are kept as they were, so questions that mention SQLite refer to the earlier wording.
+
 ## Full reply
 
 1. What is the exact JSON shape of the "Invalid request body" 422 versus the other 422s, and does a framework (FastAPI/Pydantic) validation error need to be intercepted globally to produce `{"detail": <message>}` as a string rather than the default list?

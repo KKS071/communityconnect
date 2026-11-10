@@ -59,3 +59,13 @@ part of S-1, so it is not in the plan.)
 After task 1, the checks were changed to end each name with `_` (for example `ac1_` instead of `ac1`),
 because `pytest -k` matches substrings and `d1` also selected `d10`, `d12` and `d15`. No task or step
 changed. Recorded in LEDGER.md.
+
+## Change after the build: PostgreSQL (task 7)
+
+The team chose PostgreSQL instead of SQLite (S-1 D12, D16 and D18 rewritten first). Task 7 changes
+`app/settings.py` (`DATABASE_URL`, `DATABASE_SCHEMA` replace `DATABASE_PATH`), `app/db.py` (`psycopg`
+connection with `search_path`, schema creation, `BIGINT GENERATED ALWAYS AS IDENTITY` ids),
+`app/seed.py`, `app/auth.py`, `app/access.py` and `app/main.py` (`%s` placeholders, `RETURNING id`
+instead of `lastrowid`). Tests change only in `tests/conftest.py` and `tests/helpers.py` (per-test
+schema); no expected value changes. Check: `python -m pytest` (every S-1 test passes, S-6 skipped).
+Prompt: `prompts/28-task7-postgresql.md`.

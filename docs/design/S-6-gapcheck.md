@@ -4,6 +4,8 @@
 
 **Prompt** (`prompts/17-gapcheck-S-6.md`): "You are the engineer who must build this. List every question you would have to guess the answer to. Do not answer them."
 
+> **Later change (2026-11-09, LEDGER entry 30):** the team moved storage from SQLite to PostgreSQL. S-1 D12, D16 and D18 and S-6 D32 were rewritten; the reply and triage below are kept as they were, so questions that mention SQLite refer to the earlier wording.
+
 ## Full reply
 
 1. What exact value do `RETRY_DELAY_DAYS` and `MAX_PAYMENT_ATTEMPTS` take in tests, and where do tests read them from, given the doc says tests read the settings but gives only provisional defaults?
