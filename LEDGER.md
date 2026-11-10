@@ -10,7 +10,8 @@ Tool abbreviations used below:
 **Entries 1 to 15 (2026-11-03) cover the pre-interview version of the repository:** S-1 community
 isolation, S-2 ticket lifecycle, bearer tokens. That work was replaced on 2026-11-09 (entries 17 to
 29) to match the team's Milestone 1 report, which is based on the interviews. The files it describes
-are still in the git history at the SHAs given. Entry 16 records the commit between the two versions.
+are still in the git history at the SHAs given. Entry 16 records the commit between the two versions. Entries 30 to 33 record the team change
+(Matthew Belanger left) and the move from SQLite to PostgreSQL.
 
 ## Entry 1
 
@@ -473,3 +474,68 @@ checks: `python -m pytest --collect-only -q` lists all eleven matrix test names.
 evidence: all ACs
 
 risk: The report's evidence and backlog sections were copied from the team's document; if the team edits the report again, the repository copies must be updated by hand, because nothing checks that they match.
+
+## Entry 30
+
+artifact: design-first change for PostgreSQL and the team change: S-1 D12, D16 and D18 and S-6 D32 rewritten; a note added at the top of both gap checks; `AGENTS.md` (storage, test command note), `README.md` (PostgreSQL install, Docker option, test database, team roles), `requirements.txt` (adds `psycopg[binary]>=3.1`), new `docker-compose.yml` and `db/init/01-test-database.sql`, a "Change after the build" section in `docs/plans/S-1-plan.md`, and a "Changes since the proposal" section in `docs/requirements/proposal-followup.md`. Commit `85aa60f`.
+
+tool: Opus, 2026-11-09
+
+prompts: `prompts/27-postgresql-and-team-change.md` (Kundan Singh's request, quoted)
+
+review: AI: following handout 6d, the design doc was changed before any test or code. Only storage decisions changed; no rule (R1 to R5), message, check order or criterion changed, so no acceptance criterion or expected test value needed to change. The gap-check replies were kept word for word, with a note that their SQLite questions refer to the earlier wording. Team change: Matthew Belanger (proposal role: quality and test lead) has left; Kundan Singh holds that role. Human review: PENDING (assign a team member before submitting).
+
+checks: `grep -rn -i sqlite` over `docs/design/S-1.md`, `docs/design/S-6.md`, `AGENTS.md`, `README.md` and `docs/plans/S-1-plan.md`: only the plan's history section mentions SQLite.
+
+evidence: S-1 D12, D16, D18; S-6 D32
+
+risk: The revised D12, D16 and D18 were not gap-checked again; an engineer reading them fresh may still have to guess (for example, how many connections the API may open under load). `docker compose up -d db` was not run in this session (no Docker available); only a locally started PostgreSQL 16 server was used.
+
+## Entry 31
+
+artifact: `tests/conftest.py` (fixture `db_schema` replaces `db_path`: each test gets a new schema in the test database, dropped afterwards, and fails with "PostgreSQL test database not reachable at <URL>" if the server is down) and `tests/helpers.py` (`set_status`, `count_requests` now use `psycopg`). Commit `77a0f32`.
+
+tool: Opus, 2026-11-09
+
+prompts: `prompts/27-postgresql-and-team-change.md`, step 2
+
+review: AI read the diff: no test function and no expected value changed; only the two fixture files did. Human review: PENDING (assign a team member before submitting).
+
+checks: `python -m pytest -x` before the code change: `AttributeError: <module 'app.settings'> has no attribute 'DATABASE_URL'` (expected; the code still used SQLite).
+
+evidence: S-1 D18
+
+risk: The test suite now needs a running PostgreSQL server; on a machine without one every test fails (by design, with the message above), so the 6e result depends on the grader starting the database as the README says.
+
+## Entry 32
+
+artifact: S-1 task 7 (PostgreSQL): `app/settings.py` (`DATABASE_URL`, `DATABASE_SCHEMA` replace `DATABASE_PATH`), `app/db.py` (`psycopg` connection with `search_path`, schema and table creation, `BIGINT GENERATED ALWAYS AS IDENTITY` ids), `app/seed.py`, `app/auth.py`, `app/access.py`, `app/main.py` (`%s` placeholders, `RETURNING`, connections used as context managers; `app.main:app` is now built on first use so importing the module needs no database). Undo point `5a39089`, result commit **`c2540d5`**.
+
+tool: Opus, 2026-11-09
+
+prompts: `prompts/28-task7-postgresql.md`
+
+review: AI read the diff: only the six named files changed; every endpoint keeps its messages and check order. The first full run gave 90 errors with `psycopg.ProgrammingError: the last operation didn't produce records (command status: INSERT 0 1)` from `add_membership`, whose INSERT has no `RETURNING`; `_insert` now fetches a row only when the statement returns one. Manual check: seeded a resident, ran `uvicorn app.main:app` against PostgreSQL, submitted a request with padded spaces (stored trimmed, status Open), listed it, tried an unknown user (`401 "Unknown user"`) and a missing id (`404 "Not found"`); the server log showed no errors, and `psql` showed the stored row. Human review of the diff: PENDING (assign a team member before submitting).
+
+checks: `python -m pytest` → 90 passed, 5 skipped (AC-18 to AC-22). After the run, `information_schema.schemata` held 0 leftover `test_` schemas. With `COMMUNITYCONNECT_TEST_DATABASE_URL` pointing at a closed port, the test fails with "PostgreSQL test database not reachable at …".
+
+evidence: S-1 AC-1 to AC-6; D12, D16, D18
+
+risk: Each request opens a new PostgreSQL connection (D16) and there is no connection pool; behaviour under many simultaneous users is untested. Tested only on PostgreSQL 16; versions 14 and 15, which D12 allows, are unverified.
+
+## Entry 33
+
+artifact: this ledger's entries 30 to 33 and the updated report (team note in section 1, revised D12, D16, D18 and D32 in section 5, new 6e output, submitted commit). Commit: the one that adds this entry (its SHA is in the report's table of contents).
+
+tool: Opus, 2026-11-09
+
+prompts: `prompts/27-postgresql-and-team-change.md`
+
+review: AI checked that every commit since entry 29 is named in an entry and that the traceability matrix needs no change (no test was renamed). Human review: PENDING (assign a team member before submitting).
+
+checks: Fresh clone, new venv, `pip install -r requirements.txt`, PostgreSQL 16 running with an empty `communityconnect_test` database, `python -m pytest` → result in the report's section 6e.
+
+evidence: all ACs
+
+risk: The report's design-doc text in section 5 is now a copy of the repository docs that was edited by hand; nothing checks that the two stay the same.
+
