@@ -111,8 +111,9 @@ def create_app() -> FastAPI:
         try:
             require_resident(conn, user, cid)  # D10, D19
             rows = conn.execute(
-                "SELECT * FROM requests WHERE community_id = ? ORDER BY created_at DESC, id DESC",
-                (cid,),
+                "SELECT * FROM requests WHERE community_id = ? AND submitted_by = ?"
+                " ORDER BY created_at DESC, id DESC",  # D2, D11
+                (cid, user),
             ).fetchall()
             return [_out(r) for r in rows]
         finally:
