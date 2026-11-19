@@ -8,7 +8,7 @@ from fastapi import Depends, FastAPI, Request
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.responses import JSONResponse
 
-from app import db, settings
+from app import clock, db, settings
 from app.access import NotFound, require_resident
 from app.auth import current_user
 
@@ -54,6 +54,17 @@ async def _json_object(request: Request) -> dict:
     if not isinstance(body, dict):
         raise Invalid("Invalid request body")
     return body
+
+
+def _schedule_out(row) -> dict:
+    """Never include the stored payment token in API output (S-6 section 5)."""
+    return {
+        "id": row["id"],
+        "unit_id": row["unit_id"],
+        "method": row["method"],
+        "day_of_month": row["day_of_month"],
+        "active": row["active"],
+    }
 
 
 def create_app() -> FastAPI:
@@ -122,6 +133,54 @@ def create_app() -> FastAPI:
             if row["submitted_by"] != user:  # R1: hidden answers like missing (R2)
                 raise NotFound()
             return _out(row)
+
+    @app.post("/communities/{community_id}/payment-schedules", status_code=201)
+    async def create_payment_schedule(
+        community_id: str, request: Request, user: int = Depends(current_user)
+    ):
+        cid = _parse_id(community_id)
+        with db.connect() as conn:
+            membership = require_resident(conn, user, cid)  # S-6 D7, D22
+            body = await _json_object(request)
+            method = body.get("method")
+            day = body.get("day_of_month")
+            token = body.get("token")
+            # D12/D21: validate shape/types first, then values in field order.
+            if (not isinstance(method, str) or type(day) is not int
+                    or not isinstance(token, str)):
+                raise Invalid("Invalid request body")
+            if method not in ("ach", "debit", "credit"):
+                raise Invalid("Unknown method")
+            if not 1 <= day <= 28:
+                raise Invalid("Day must be 1 to 28")
+            if not token.strip():
+                raise Invalid("Token is required")
+            # D22: duplicate check follows validation, even if the unit already has a schedule.
+            existing = conn.execute(
+                "SELECT id FROM schedules WHERE unit_id = %s", (membership["unit_id"],)
+            ).fetchone()
+            if existing is not None:
+                return JSONResponse(status_code=409,
+                                    content={"detail": "Schedule already exists"})
+            row = conn.execute(
+                "INSERT INTO schedules (unit_id, method, day_of_month, token, active, created_at)"
+                " VALUES (%s, %s, %s, %s, TRUE, %s) RETURNING *",
+                (membership["unit_id"], method, day, token,
+                 clock.now().strftime("%Y-%m-%dT%H:%M:%SZ")),
+            ).fetchone()
+            return _schedule_out(row)
+
+    @app.get("/communities/{community_id}/payment-schedules/mine")
+    def get_my_payment_schedule(community_id: str, user: int = Depends(current_user)):
+        cid = _parse_id(community_id)
+        with db.connect() as conn:
+            membership = require_resident(conn, user, cid)
+            row = conn.execute(
+                "SELECT * FROM schedules WHERE unit_id = %s", (membership["unit_id"],)
+            ).fetchone()
+            if row is None:
+                raise NotFound()
+            return _schedule_out(row)
 
     return app
 

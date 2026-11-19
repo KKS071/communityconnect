@@ -40,6 +40,15 @@ CREATE TABLE IF NOT EXISTS requests (
     status       TEXT NOT NULL CHECK (status IN ('Open', 'In progress', 'Resolved')),
     created_at   TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS schedules (
+    id           BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    unit_id      BIGINT NOT NULL UNIQUE REFERENCES units(id),
+    method       TEXT NOT NULL CHECK (method IN ('ach', 'debit', 'credit')),
+    day_of_month INTEGER NOT NULL CHECK (day_of_month BETWEEN 1 AND 28),
+    token        TEXT NOT NULL CHECK (char_length(btrim(token)) > 0),
+    active       BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at   TEXT NOT NULL
+);
 """
 
 
