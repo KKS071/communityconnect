@@ -19,7 +19,8 @@ python -m pytest
 The tests need a running PostgreSQL server; see README.md. Each test gets its own schema.
 
 A task is not done until this command passes for the story being built. Tests for stories
-that are not being built stay skipped; do not unskip them.
+that are not being built stay skipped. For approved S-6 implementation, remove only the
+current AC skip marker when implementation is ready; never weaken test assertions.
 
 ## Workflow rules
 
@@ -38,10 +39,12 @@ that are not being built stay skipped; do not unskip them.
 ## Files and folders you must not change
 
 - `tests/`: never change an expected value, delete a test, or weaken an assertion to make
-  code pass. If you think a test is wrong, stop and say why.
+  code pass. For S-6 only, the current approved AC skip marker may be removed when
+  implementation is ready. If you think a test is wrong, stop and say why.
 - `docs/` (design docs, requirements, plans): read only. Humans change these.
 - `LEDGER.md` and `prompts/`: humans write these.
-- `AGENTS.md`, `README.md`, `requirements.txt`, `pytest.ini`.
+- `AGENTS.md`, `README.md`, `requirements.txt`, `pytest.ini`. Human-approved
+  scope updates to `AGENTS.md` are permitted; do not infer other permissions.
 
 ## Access rule (applies to every endpoint)
 
@@ -54,5 +57,6 @@ that does not exist: `{"detail": "Not found"}` (S-1 R2, D3).
 
 - S-1 (submit and track a maintenance request) is the story being built: `docs/design/S-1.md`,
   `tests/test_s1_requests.py`, plan in `docs/plans/S-1-plan.md`.
-- S-6 (scheduled dues payment) is designed but not built: `docs/design/S-6.md`,
-  `tests/test_s6_payments.py`. Its tests stay skipped. Do not write S-6 code.
+- S-6 (scheduled dues payment) is approved for staged implementation, one AC at a time,
+  starting with AC-18. Follow `docs/plans/S-6-plan.md` and `docs/design/S-6.md`.
+  Leave unimplemented AC tests skipped. Do not implement unresolved OQ1–OQ5 policy.
