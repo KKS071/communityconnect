@@ -43,6 +43,15 @@ def s6(world, monkeypatch):
     return world
 
 
+@pytest.fixture
+def s6_schedule(world, monkeypatch):
+    """AC-18 only: a fixed UTC clock, without AC-19 payment setup."""
+    from app import clock
+
+    monkeypatch.setattr(clock, "now", lambda: datetime(2026, 11, 20, 12, 0, tzinfo=timezone.utc))
+    return world
+
+
 def schedule(w, method="debit", day=DUE_DAY, token=GOOD_TOKEN, user="R1"):
     return w.post(f"/communities/{w.communities['MR']}/payment-schedules", user,
                   json={"method": method, "day_of_month": day, "token": token})
@@ -54,10 +63,10 @@ def history(w, user="R1", month=MONTH):
     return resp.json()
 
 
-@pytest.mark.skip(reason=f"AC-18: {NOT_BUILT}")
-def test_ac18_schedule_shown_on_payments_page(s6):
+def test_ac18_schedule_shown_on_payments_page(s6_schedule):
     # AC-18: R1 schedules payment on day 5 by ACH; the Payments page (D10: GET .../mine)
     # shows "Scheduled: day 5 of each month, ACH".
+    s6 = s6_schedule
     resp = schedule(s6, method="ach", day=5)
     assert resp.status_code == 201
     mine = s6.get(f"/communities/{s6.communities['MR']}/payment-schedules/mine", "R1")
