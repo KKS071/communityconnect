@@ -64,11 +64,15 @@ As a resident, I want my monthly HOA fee paid automatically by ACH, debit card o
 
 **Evidence:** E-9, E-21
 
+**Step 1 scope clarification:** AC-18 covers ACH schedule creation and display only; it does not establish ACH settlement. Per S-6 D10, the Payments page is represented by `GET .../payment-schedules/mine`. Per D34, AC-19–AC-22 use debit schedules with `FakeProcessor` to leave ACH settlement OQ2 open. S-6 remains design/test-only in Milestone 1; all five tests are skipped.
+
 - **AC-18** Given R1 has saved a test bank account, When R1 schedules payment on day 5 of each month by ACH, Then R1’s Payments page shows “Scheduled: day 5 of each month, ACH”.
 - **AC-19** Given R1’s payment is scheduled for day 5 and unit 12 has no payment for the month, When the daily payment run happens on day 5, Then R1’s payment history shows exactly one payment for that month, marked Paid, for Mountain Ridge’s DUES_AMOUNT_CENTS.
 - **AC-20** Given the payment run on day 5 is interrupted and restarted after R1 was charged, When the restarted run finishes, Then R1’s payment history still shows exactly one payment for that month.
 - **AC-21** Given the manager recorded a check payment for unit 12 for this month, When the payment run happens on day 5, Then no scheduled charge is made and the history shows one payment for the month.
 - **AC-22** Given the test processor declines R1’s charge on day 5, When RETRY_DELAY_DAYS have passed, Then R1’s payment history shows the first attempt as Failed and one retry attempt.
+
+**Verification boundaries (not new ACs):** AC-18's API response must omit the token (S-6 §5). AC-19's repeated run must not duplicate a payment (R1–R3). AC-20's existing test simulates a post-charge exception and same-key replay while retaining the fake processor; it does not restart an OS process (D4, D29, D31). AC-21's manual `Paid` record exists before the run; concurrent manual overlap remains OQ5. AC-22 uses `RETRY_DELAY_DAYS` and `MAX_PAYMENT_ATTEMPTS` from settings (D15, D17), not interview-set constants.
 
 ### S-7: Overdue flag and automatic reminder
 
