@@ -2,6 +2,8 @@
 
 The test names for S-1 and S-6 are the names in each design doc’s section 9. All eleven exist in the repository at the submitted commit (checked with `python -m pytest --collect-only -q`).
 
+**S-6 Step 1 status:** The six S-1 AC tests concern the built M1 story. The five S-6 AC-18–AC-22 test functions are present but skipped; this matrix proves traceability, not passing payment behavior. Existing AC IDs, evidence references and test paths below remain unchanged. AC-18 covers ACH scheduling/display; D34 uses debit schedules for AC-19–AC-22. See `docs/reviews/S-6-requirements-finalization.md` for open questions and the pending human-review gate.
+
 | Evidence ID      | Story ID | AC ID | Test name                                                                           |
 |------------------|----------|-------|-------------------------------------------------------------------------------------|
 | E-1, E-2, E-12   | S-1      | AC-1  | tests/test_s1_requests.py::test_ac1_resident_submits_request_shown_as_open          |
