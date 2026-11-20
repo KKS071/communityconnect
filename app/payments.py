@@ -1,10 +1,11 @@
 """S-6 AC-19 first monthly charge and AC-20 Pending replay.
 
-AC-21 manual payment and AC-22 failed retry are separate tasks.
+AC-21 manual payment is implemented; AC-22 failed retry is separate.
 Only a single runner is supported (D32); no live processor integration.
 """
 from dataclasses import dataclass
 from datetime import date
+import re
 
 from app import clock, db, processor
 
@@ -91,6 +92,19 @@ def run_due_payments(today: date) -> RunResult:
     return RunResult(charged=charged, failed=failed, skipped=skipped)
 
 
-def record_manual_payment(unit_id: int, billing_month: str):
-    """AC-21 is not implemented yet."""
-    raise NotImplementedError("Manual payments are reserved for AC-21")
+def record_manual_payment(unit_id: int, billing_month: str) -> dict:
+    """Record an already-received manual payment, without processor charging.
+
+    A Paid or Pending payment prevents insertion; Failed attempts do not (D27).
+    """
+    if (not isinstance(billing_month, str)
+            or re.fullmatch(r"[0-9]{4}-(0[1-9]|1[0-2])", billing_month) is None):
+        raise ValueError("Invalid billing month")
+    if type(unit_id) is not int or unit_id <= 0:
+        raise ValueError("Unknown unit")
+    row, conflict = db.create_manual_payment(unit_id, billing_month, _timestamp())
+    if conflict == "Paid":
+        raise AlreadyPaid("Payment already recorded for this month")
+    if conflict == "Pending":
+        raise PaymentPending("A scheduled payment is still Pending")
+    return row
