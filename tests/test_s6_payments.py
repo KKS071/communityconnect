@@ -79,7 +79,6 @@ def test_ac18_schedule_shown_on_payments_page(s6_schedule):
     assert "token" not in body  # §5: never returned by the API
 
 
-@pytest.mark.skip(reason=f"AC-19: {NOT_BUILT}")
 def test_ac19_due_day_charges_exactly_once(s6):
     # AC-19: on day 5, with no payment for the month, the run leaves exactly one payment
     # for the month, marked Paid, for Mountain Ridge's DUES_AMOUNT_CENTS.
