@@ -636,3 +636,85 @@ checks: GitHub commit and branch comparison confirmed that PR #2 merged AC-18 in
 evidence: S-6 AC-18; commit `6b1317f`; merge commit `e7787de`; GitHub PR #2.
 
 risk: GitHub source verification confirms the committed implementation but does not independently execute the test suite. AC-18 does not establish correctness of monthly charging, retry processing, crash recovery, or real payment-provider integration.
+
+## Entry 40
+
+artifact: S-6 AC-19 monthly scheduled payment implementation, including payment persistence, the monthly payment runner, FakeProcessor integration, payment history, and AC-19 test activation. Implementation commit `ce8671e7613b842cbec8b1775a4a725a26afa4a8`. Merged through GitHub PR #3, merge commit `7886408581cb325abb620678b87844c627c6c177`.
+
+tool: ChatGPT (GPT-6), with implementation applied locally by Sandeep Garg, 2026-11-19 to 2026-11-20.
+
+prompts: User request to implement AC-19 using `docs/plans/S-6-plan.md`, one acceptance criterion at a time. No separate repository prompt file verified.
+
+review: The implementation adds monthly scheduled debit processing using FakeProcessor. It persists a Pending payment with an idempotency key before invoking the processor, then records the payment result. It follows the single-runner restriction and does not make real payment transactions. AC-19 was implemented separately from later acceptance criteria.
+
+checks: AC-19 was implemented and merged. Its original AC-specific test output should be taken from the corresponding terminal record. Subsequent regression testing after AC-21 confirmed that AC-19 passed. The full suite at that later checkpoint reported 94 passed, 1 skipped, and 1 warning.
+
+evidence: S-6 AC-19; R1–R3; D25, D28–D32; `docs/plans/S-6-plan.md`; implementation commit `ce8671e`; GitHub PR #3.
+
+risk: FakeProcessor validates the local payment workflow, not Stripe integration or production charging. Concurrent runners are unsupported. The later regression result does not replace the original AC-19 test record.
+
+## Entry 41
+
+artifact: S-6 AC-20 crash-recovery and idempotent replay implementation. Implementation commit `caa65a8b1f098028e33d75b60595dfb516668c77`. Merged through GitHub PR #4, merge commit `b00603295139a9d7535ce83b53de2a5efde66c66`.
+
+tool: ChatGPT (GPT-6), with implementation applied and tested locally by Sandeep Garg, 2026-11-20.
+
+prompts: User request to implement AC-20 following the approved S-6 implementation plan. No separate repository prompt file verified.
+
+review: The implementation supports replaying a Pending payment using the original idempotency key and stored amount. ProcessorUnavailable leaves the payment Pending so a later run can resume it. The implementation avoids creating another payment attempt during replay and remains within the approved FakeProcessor architecture.
+
+checks: AC-20 was implemented and merged. Its original AC-specific test output should be verified from the corresponding terminal record. Subsequent regression testing after AC-21 confirmed that AC-20 passed alongside AC-18 and AC-19.
+
+evidence: S-6 AC-20; D4, D26, D29–D31; `tests/test_s6_payments.py`; implementation commit `caa65a8`; GitHub PR #4.
+
+risk: The test simulates processor interruption using a retained FakeProcessor instance. It does not demonstrate a complete process restart or independently durable external processor state. Concurrent replay remains unverified.
+
+## Entry 42
+
+artifact: S-6 AC-21 manual payment recording and scheduled-charge prevention. Implementation commit `456802fa4a0314333fde7e9807353b5ed44ad3a3`. Merged through GitHub PR #5, merge commit `6b86b5963016a85411426c6cc251323eb5d4bd64`.
+
+tool: ChatGPT (GPT-6), with implementation applied and verified locally by Sandeep Garg, 2026-11-20.
+
+prompts: User request to implement AC-21 following the approved S-6 implementation plan. No separate repository prompt file verified.
+
+review: The implementation records manual Paid payments for valid units and billing months. A previously recorded manual payment prevents a subsequent scheduled charge for that month. Existing AlreadyPaid and PaymentPending behavior was preserved. AC-21 was completed independently of AC-22.
+
+checks: `python3 -m pytest tests/test_s6_payments.py -k "ac21_" -v` → 1 passed, 4 deselected. `python3 -m pytest tests/test_s6_payments.py -k "ac18_ or ac19_ or ac20_" -v` → 3 passed, 2 deselected. `python3 -m pytest` → 94 passed, 1 skipped, 1 warning in 172.84 seconds. AC-22 remained skipped.
+
+evidence: S-6 AC-21; R1, R3, D13, D27; `tests/test_s6_payments.py`; implementation commit `456802f`; GitHub PR #5.
+
+risk: Manual payment before scheduled processing is covered by the acceptance test. Concurrent manual payment and scheduled retry operations have not been demonstrated safe. AC-22 remains unimplemented.
+
+## Entry 43
+
+artifact: Project 2 Claude Code configuration: `CLAUDE.md`, `.claude/settings.json`, `.claude/agents/test-analyst.md`, `.claude/agents/security-reviewer.md`, and `.claude/agents/code-reviewer.md`. Configuration commit `a60f745cf2dcf61a71a5b5942d826b32311d2661`. Merged through GitHub PR #6, merge commit `2d94009ce0d5cea7fae03160ec3635c7d7ea43c9`.
+
+tool: ChatGPT (GPT-6) for configuration guidance; Claude Code 2.1.329 for configuration verification; Sandeep Garg created, committed, and merged the files, 2026-11-20.
+
+prompts: User-approved request to create exactly five Claude Code configuration files without implementing AC-22. Follow-up interactive Claude Code prompt requested verification of the available subagents and active tool restrictions. No separate repository prompt file verified.
+
+review: The configuration establishes project instructions, human-approval gates, a read-only default permission profile, and three specialized subagents. Claude Code recognized test-analyst, security-reviewer, and code-reviewer, each configured with Read, Grep, and Glob tools. GitHub PR #6 contains exactly the five approved configuration files and no application or test changes.
+
+checks: Claude Code reported that all three project subagents were available. The main agent observed that Bash, Edit, Write, and NotebookEdit were unavailable under the project settings. GitHub confirms PR #6 merged into main on 2026-11-20. The merge commit is `2d94009`. No application tests were executed as part of this configuration verification.
+
+evidence: `CLAUDE.md`; `.claude/settings.json`; `.claude/agents/`; GitHub PR #6; configuration commit `a60f745`; merge commit `2d94009`.
+
+risk: The read-only settings also restrict teammates using Claude Code in this repository. Permission configuration was observed but not tested by deliberately attempting a forbidden operation. The current settings do not authorize AC-22 implementation.
+
+## Entry 44
+
+artifact: Project 2 AGENT-01 and AGENT-02 evidence for AC-22 preimplementation analysis. AGENT-01 used three actual Claude Code subagents. AGENT-02 executed Claude Code headlessly and produced structured JSON. Evidence includes the AGENT-01 transcript and `AGENT-02-headless.json`. No application changes were made.
+
+tool: Claude Code 2.1.329 using Claude Opus 5.5, with ChatGPT (GPT-6) assisting with task prompts and result review, 2026-11-20.
+
+prompts: AGENT-01 instructed the main agent to delegate AC-22 test analysis to test-analyst, payment security review to security-reviewer, and design compliance review to code-reviewer. AGENT-02 used `claude -p --output-format json` to analyze the AC-22 retry-date design gap without making changes. Exact prompts were supplied interactively; no repository prompt file verified.
+
+review: AGENT-01 launched all three configured subagents. Test-analyst completed 21 reported tool calls, security-reviewer 14, and code-reviewer 12, totaling 47. The reviewers independently identified missing retry-date persistence, incomplete AC-22 implementation scope, and gaps in test coverage. The main agent consolidated the findings and identified decisions requiring human approval.
+
+AGENT-02 independently identified the missing retry-date field, cross-month retry ambiguity, D18/D25 conflict, and uncertainty about the retry date after a Pending replay. The structured result explicitly reported that no subagents were used in AGENT-02.
+
+checks: AGENT-01 → 3 subagents completed, 47 reported tool calls; no file modifications or shell commands reported. AGENT-02 → `type=result`, `subtype=success`, `is_error=false`, `terminal_reason=completed`, 0 permission denials, 0 subagents spawned, and 0 safety stops. Reported execution duration was 21.411 seconds and estimated API cost was $0.2033224. No application tests were executed during these analysis tasks.
+
+evidence: S-6 AC-22; D15–D18, D25, D32; `docs/design/S-6.md`; `docs/plans/S-6-plan.md`; AGENT-01 transcript; `AGENT-02-headless.json`; headless session ID `7dc62edd-3323-4ba7-87fd-560c02ec6f65`.
+
+risk: AC-22 remains unimplemented and its acceptance test remains skipped. The design lacks a persisted retry-anchor date, and the current implementation plan omits `app/db.py` from the AC-22 file list. Resolving the schema, retry timing, month-boundary behavior, and concurrency questions requires separate human approval. Neither analysis task proves that forbidden tools would be blocked under an attempted violation.
