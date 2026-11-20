@@ -131,3 +131,25 @@ def finish_payment(payment_id: int, status: str, processor_id: str) -> None:
             "UPDATE payments SET status = %s, processor_id = %s WHERE id = %s",
             (status, processor_id, payment_id),
         )
+
+
+
+def pending_payments() -> list[dict]:
+    """All Pending payments, including original amount, key and schedule token."""
+    with connect() as conn:
+        return conn.execute(
+            "SELECT p.id, p.unit_id, p.billing_month, p.amount_cents, p.method, "
+            "p.idempotency_key, s.token "
+            "FROM payments p JOIN schedules s ON s.unit_id = p.unit_id "
+            "WHERE p.status = 'Pending' ORDER BY p.id"
+        ).fetchall()
+
+
+def has_paid_payment(unit_id: int, billing_month: str) -> bool:
+    """Protect a Paid month when an older Pending row exists (D26/OQ5)."""
+    with connect() as conn:
+        return conn.execute(
+            "SELECT 1 FROM payments WHERE unit_id = %s AND billing_month = %s "
+            "AND status = 'Paid' LIMIT 1",
+            (unit_id, billing_month),
+        ).fetchone() is not None

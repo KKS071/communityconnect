@@ -96,7 +96,6 @@ def test_ac19_due_day_charges_exactly_once(s6):
     assert len(history(s6)) == 1
 
 
-@pytest.mark.skip(reason=f"AC-20: {NOT_BUILT}")
 def test_ac20_restart_mid_run_keeps_one_payment(s6):
     # AC-20: the run is interrupted after R1 was charged and restarted; R1's history still
     # shows exactly one payment for the month.
