@@ -572,3 +572,67 @@ evidence: none (provenance housekeeping)
 
 risk: Entries 1 to 15 still describe the superseded pre-interview code (bearer tokens, S-2), which no longer exists at the submitted commit; a reader must use the SHAs in those entries to see it.
 
+
+## Entry 36
+
+artifact: `docs/plans/S-6-plan.md` (implementation plan for AC-18 to AC-22), and updated `AGENTS.md` instructions permitting staged S-6 implementation. Plan commit `bd558d4`.
+
+tool: ChatGPT (GPT-6), 2026-11-19
+
+prompts: User request to prepare the S-6 implementation plan and proceed one acceptance criterion at a time. No separate prompt file verified.
+
+review: The plan records team approval reported by the requester, including Gustavo's approval. It limits implementation to one AC at a time, requires separate file-scope approval, and keeps unresolved policy questions OQ1–OQ5 outside implementation.
+
+checks: Reviewed the plan against `docs/design/S-6.md`, `AGENTS.md`, and the existing acceptance tests. AC-18 was separated from payment processing and settlement. AC-19 through AC-22 were assigned separate implementation stages.
+
+evidence: S-6; AC-18 to AC-22; D1–D34; `docs/plans/S-6-plan.md`.
+
+risk: The plan records reported team approval, but the individual AC approvals and review evidence must be retained separately. Future ACs may require additional files or separate dependency approval.
+
+## Entry 37
+
+artifact: S-6 task 1 (AC-18): `app/db.py`, `app/main.py`, new `app/clock.py`, and `tests/test_s6_payments.py`. Implementation commit **`6b1317f`**.
+
+tool: ChatGPT (GPT-6), 2026-11-19; implementation patch applied and tested locally by Sandeep Garg.
+
+prompts: User request to implement AC-18 using the approved S-6 plan. No separate repository prompt file verified.
+
+review: The implementation adds the `schedules` table, POST and GET payment-schedule endpoints, and a UTC clock. Resident authorization uses `require_resident`; only one schedule is allowed per unit. Input validation follows D12 and D21. The response excludes the stored payment token. The AC-18 test uses a separate fixture without requiring the unimplemented payment processor. 
+
+checks: `python3 -m pytest tests/test_s6_payments.py -k ac18_ -v` → 1 passed, 4 deselected. `python3 -m pytest tests/test_s1_requests.py -v` → 90 passed.
+
+evidence: S-6 AC-18; D7, D10–D12, D21–D24; `tests/test_s6_payments.py::test_ac18_schedule_shown_on_payments_page`.
+
+risk: AC-18 verifies schedule creation and retrieval only. It does not process payments, validate tokens with Stripe, or establish ACH settlement behavior. Duplicate-schedule and invalid-input edge cases are implemented but are not independently covered by the AC-18 acceptance test.
+
+## Entry 38
+
+artifact: AC-18 test activation and regression verification: `tests/test_s6_payments.py` (new `s6_schedule` fixture and removal of only the AC-18 skip marker). Included in commit **`6b1317f`**.
+
+tool: ChatGPT (GPT-6) for test-fixture guidance; Sandeep Garg executed the tests locally, 2026-11-19.
+
+prompts: User request to resolve the AC-18 test fixture dependency on unimplemented AC-19 modules and verify the implementation. No separate prompt file verified.
+
+review: The fixture change isolates AC-18 from `app.processor` and `app.seed.set_dues`. The existing AC-18 assertions were preserved. AC-19 through AC-22 remained skipped. The test changes were reviewed against the requirement not to weaken acceptance criteria.
+
+checks: `python3 -m pytest` → **91 passed, 4 skipped, 1 warning** in 100.09 seconds. `git diff --check` produced no errors. The warning was `StarletteDeprecationWarning` concerning `httpx` and `starlette.testclient`.
+
+evidence: S-6 AC-18; `tests/test_s6_payments.py`; `AGENTS.md` test requirements.
+
+risk: The successful test run covers the implemented AC-18 behavior and S-1 regression tests. AC-19 through AC-22 are skipped and must not be counted as passing. The dependency deprecation warning remains unresolved.
+
+## Entry 39
+
+artifact: AC-18 GitHub integration: feature branch `feature/s6-ac18-payment-schedule`, implementation commit **`6b1317f`**, and merge commit **`e7787de`** (pull request #2).
+
+tool: Git and GitHub, with ChatGPT (GPT-6) verification, 2026-11-19.
+
+prompts: User request to verify that all AC-18 changes were committed and present in `main`. No separate prompt file verified.
+
+review: Verified that the merged `main` branch contains the schedule table, POST and GET endpoints, UTC clock, AC-18 fixture, and enabled AC-18 test. Confirmed that AC-19 through AC-22 remain skipped. The feature branch and merged `main` have identical AC-18 file contents.
+
+checks: GitHub commit and branch comparison confirmed that PR #2 merged AC-18 into `main`. The verified local full test suite reported 91 passed, 4 skipped and 1 warning.
+
+evidence: S-6 AC-18; commit `6b1317f`; merge commit `e7787de`; GitHub PR #2.
+
+risk: GitHub source verification confirms the committed implementation but does not independently execute the test suite. AC-18 does not establish correctness of monthly charging, retry processing, crash recovery, or real payment-provider integration.

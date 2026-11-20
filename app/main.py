@@ -9,7 +9,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.responses import JSONResponse
 
 from app import clock, db, settings
-from app.access import NotFound, require_resident
+from app.access import NotFound, require_member, require_resident
 from app.auth import current_user
 
 _ID = re.compile(r"[1-9][0-9]*")
@@ -181,6 +181,29 @@ def create_app() -> FastAPI:
             if row is None:
                 raise NotFound()
             return _schedule_out(row)
+
+    @app.get("/communities/{community_id}/payments")
+    def list_payments(community_id: str, month: str | None = None,
+                      user: int = Depends(current_user)):
+        cid = _parse_id(community_id)
+        with db.connect() as conn:
+            member = require_member(conn, user, cid)  # S-6 D8/D23: role decided in access.py
+            if member["role"] not in ("resident", "manager"):
+                raise NotFound()
+            if month is None or re.fullmatch(r"[0-9]{4}-(0[1-9]|1[0-2])", month) is None:
+                raise Invalid("Invalid month")
+            query = (
+                "SELECT p.id, p.unit_id, p.billing_month, p.amount_cents, p.method, "
+                "p.status, p.attempt, p.created_at FROM payments p "
+                "JOIN units u ON u.id = p.unit_id "
+                "WHERE u.community_id = %s AND p.billing_month = %s"
+            )
+            params: tuple = (cid, month)
+            if member["role"] == "resident":
+                query += " AND p.unit_id = %s"
+                params += (member["unit_id"],)
+            query += " ORDER BY p.unit_id, p.attempt, p.id"
+            return conn.execute(query, params).fetchall()
 
     return app
 

@@ -49,6 +49,20 @@ CREATE TABLE IF NOT EXISTS schedules (
     active       BOOLEAN NOT NULL DEFAULT TRUE,
     created_at   TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS payments (
+    id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    unit_id         BIGINT NOT NULL REFERENCES units(id),
+    billing_month   TEXT NOT NULL CHECK (billing_month ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'),
+    amount_cents    BIGINT NOT NULL CHECK (amount_cents > 0),
+    method          TEXT NOT NULL CHECK (method IN ('ach', 'debit', 'credit', 'manual')),
+    status          TEXT NOT NULL CHECK (status IN ('Pending', 'Paid', 'Failed')),
+    attempt         INTEGER NOT NULL CHECK (attempt >= 1),
+    idempotency_key TEXT NOT NULL UNIQUE,
+    processor_id    TEXT,
+    created_at      TEXT NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS payments_one_paid_per_unit_month
+    ON payments (unit_id, billing_month) WHERE status = 'Paid';
 """
 
 
@@ -74,3 +88,46 @@ def init_db() -> None:
     with connect() as conn:
         conn.execute(f'CREATE SCHEMA IF NOT EXISTS "{_schema()}"')
         conn.execute(TABLES)
+        conn.execute("ALTER TABLE communities ADD COLUMN IF NOT EXISTS dues_amount_cents "
+                     "BIGINT CHECK (dues_amount_cents > 0)")
+
+
+def due_schedules() -> list[dict]:
+    """Active schedules with configured dues, in deterministic order."""
+    with connect() as conn:
+        return conn.execute(
+            "SELECT s.unit_id, s.method, s.day_of_month, s.token, s.created_at, "
+            "c.dues_amount_cents FROM schedules s "
+            "JOIN units u ON u.id = s.unit_id "
+            "JOIN communities c ON c.id = u.community_id "
+            "WHERE s.active = TRUE AND c.dues_amount_cents IS NOT NULL "
+            "ORDER BY s.unit_id"
+        ).fetchall()
+
+
+def latest_payment(unit_id: int, billing_month: str) -> dict | None:
+    with connect() as conn:
+        return conn.execute(
+            "SELECT status FROM payments WHERE unit_id = %s AND billing_month = %s "
+            "ORDER BY attempt DESC, id DESC LIMIT 1", (unit_id, billing_month)
+        ).fetchone()
+
+
+def create_pending_payment(unit_id: int, billing_month: str, amount_cents: int,
+                           method: str, key: str, created_at: str) -> int:
+    with connect() as conn:
+        row = conn.execute(
+            "INSERT INTO payments (unit_id, billing_month, amount_cents, method, "
+            "status, attempt, idempotency_key, processor_id, created_at) "
+            "VALUES (%s, %s, %s, %s, 'Pending', 1, %s, NULL, %s) RETURNING id",
+            (unit_id, billing_month, amount_cents, method, key, created_at),
+        ).fetchone()
+        return row["id"]
+
+
+def finish_payment(payment_id: int, status: str, processor_id: str) -> None:
+    with connect() as conn:
+        conn.execute(
+            "UPDATE payments SET status = %s, processor_id = %s WHERE id = %s",
+            (status, processor_id, payment_id),
+        )
