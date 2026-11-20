@@ -153,3 +153,41 @@ def has_paid_payment(unit_id: int, billing_month: str) -> bool:
             "AND status = 'Paid' LIMIT 1",
             (unit_id, billing_month),
         ).fetchone() is not None
+
+
+def create_manual_payment(unit_id: int, billing_month: str, created_at: str) -> tuple[dict | None, str | None]:
+    """Atomically check payment state and insert manual Paid payment (D13/D27).
+
+    Return (payment, None), or (None, 'Paid'/'Pending') for conflicts.
+    Lock the unit row to serialize manual entries for the same unit. A single
+    payment runner remains the design's operational assumption (D32).
+    """
+    with connect() as conn:
+        unit = conn.execute(
+            "SELECT c.dues_amount_cents FROM units u "
+            "JOIN communities c ON c.id = u.community_id "
+            "WHERE u.id = %s FOR UPDATE OF u", (unit_id,),
+        ).fetchone()
+        if unit is None:
+            raise ValueError("Unknown unit")
+        if unit["dues_amount_cents"] is None:
+            raise ValueError("Dues amount is not configured")
+
+        states = conn.execute(
+            "SELECT status FROM payments WHERE unit_id = %s AND billing_month = %s",
+            (unit_id, billing_month),
+        ).fetchall()
+        if any(p["status"] == "Paid" for p in states):
+            return None, "Paid"
+        if any(p["status"] == "Pending" for p in states):
+            return None, "Pending"
+
+        key = f"{unit_id}:{billing_month}:manual"
+        row = conn.execute(
+            "INSERT INTO payments (unit_id, billing_month, amount_cents, method, "
+            "status, attempt, idempotency_key, processor_id, created_at) "
+            "VALUES (%s, %s, %s, 'manual', 'Paid', 1, %s, NULL, %s) "
+            "RETURNING *",
+            (unit_id, billing_month, unit["dues_amount_cents"], key, created_at),
+        ).fetchone()
+        return row, None

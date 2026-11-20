@@ -125,7 +125,6 @@ def test_ac20_restart_mid_run_keeps_one_payment(s6):
     assert len(keys) == 1  # every call used the same idempotency key (R2, D4)
 
 
-@pytest.mark.skip(reason=f"AC-21: {NOT_BUILT}")
 def test_ac21_manual_payment_prevents_scheduled_charge(s6):
     # AC-21: the manager recorded a check payment for unit 12 this month; on day 5 no
     # scheduled charge is made and the history shows one payment for the month.
