@@ -6,3 +6,4 @@ env/
 .env
 *.db
 .pytest_cache/
+/agent-patches

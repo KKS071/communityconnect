@@ -718,3 +718,102 @@ checks: AGENT-01 → 3 subagents completed, 47 reported tool calls; no file modi
 evidence: S-6 AC-22; D15–D18, D25, D32; `docs/design/S-6.md`; `docs/plans/S-6-plan.md`; AGENT-01 transcript; `AGENT-02-headless.json`; headless session ID `7dc62edd-3323-4ba7-87fd-560c02ec6f65`.
 
 risk: AC-22 remains unimplemented and its acceptance test remains skipped. The design lacks a persisted retry-anchor date, and the current implementation plan omits `app/db.py` from the AC-22 file list. Resolving the schema, retry timing, month-boundary behavior, and concurrency questions requires separate human approval. Neither analysis task proves that forbidden tools would be blocked under an attempted violation.
+
+## Entry 45 — AGENT-03: Retrospective Audit of S-6 AC-18 Through AC-21
+
+artifact: `docs/audits/S-6-AC18-AC21-retrospective.md`. Audit commit `c639e82`; merged through GitHub PR #7, merge commit `21887e9`.
+
+tool: Claude Code main agent with three configured subagents (`test-analyst`, `security-reviewer`, `code-reviewer`), assisted by ChatGPT (GPT-6) for review and remediation planning, 2026-11-20.
+
+prompts: AGENT-03 retrospective review of S-6 AC-18 through AC-21. The task requested independent test, security, and code reviews before implementing AC-22.
+
+review: The three subagents reported 67 tool calls and produced 25 consolidated findings. Seven findings were prioritized: F-01, F-02, F-03, F-04, F-05, F-06, and F-23. The audit was reviewed and merged as a documentation-only record. Findings were classified as potential defects, missing test coverage, design inconsistencies, or historical scope issues rather than treating every finding as a confirmed bug.
+
+checks: Read-only analysis using Read, Grep, and Glob. No application code was modified and no tests were executed during the audit. GitHub PR #7 was merged into `main`.
+
+evidence: AGENT-03 audit report; S-6 AC-18 through AC-21; PR #7; commits `c639e82` and `21887e9`.
+
+risk: The audit did not resolve the findings. F-01 concurrency and F-02 Paid-payment checking remain important correctness concerns. AC-22 remains unimplemented.
+
+## Entry 46 — Initial F-23/F-06 Resolution Proposal
+
+artifact: Initial documentation-only proposal to resolve AGENT-03 findings F-23 and F-06. No repository changes were made at this stage.
+
+tool: Claude Code, with ChatGPT (GPT-6) reviewing the proposed decisions, 2026-11-20.
+
+prompts: prompts/46-Initial-F-23F-06-design-review
+
+review: Claude identified inconsistencies involving D18/D25, R4, ACH payment behavior, manual-payment errors, missing dues, and payment amount persistence. It proposed resolving these in `docs/design/S-6.md` and a new design-resolution record. F-06 was identified as requiring historical Git verification.
+
+checks: Documentation and code inspection only. No tests were run or files changed as part of this proposal.
+
+evidence: AGENT-03 F-23 and F-06; `docs/design/S-6.md`; initial resolution proposal.
+
+risk: The initial proposal required further clarification of R4, Pending replay, and ACH limitations before approval.
+
+## Entry 47 — Corrected S-6 Design Decisions
+
+artifact: Revised F-23/F-06 documentation proposal, establishing DR-1, DR-2, DR-2a, DR-ACH, DR-3, DR-4, DR-5, and DR-6.
+
+tool: Claude Code for design analysis; ChatGPT (GPT-6) for independent review, 2026-11-20.
+
+prompts: Follow-up prompts requesting correction of R4, D18, D25, and the treatment of ACH schedules.
+
+review: R4 was narrowed to initial attempt-1 creation for eligible debit and credit schedules. D18 was clarified as defining due timing, while D25 determines the processing action. The unresolved Pending-after-replay case was explicitly documented. ACH automatic charging was deferred until OQ2 is resolved.
+
+checks: Proposed changes were compared against the existing design and reported implementation behavior. No application or acceptance-test changes were authorized.
+
+evidence: S-6 R4, D18, D25, D26, D34; F-23; revised design proposal; final resolution in PR #8.
+
+risk: ACH schedules can be created and displayed but are not automatically charged. Retry behavior remains dependent on AC-22.
+
+## Entry 48 — 
+
+artifact: Historical verification of the AC-18 test-fixture change in commit `6b1317f`. The result is recorded in `docs/reviews/S-6-AGENT-03-design-resolution.md`.
+
+tool: Kundan reviewd using Git in WSL; ChatGPT (GPT-6) assisted with interpreting the evidence, 2026-11-20.
+
+prompts: prompts/48-Incorporate human Git verification
+
+review: Compared the original tests-first commit `e7f9eaa` against AC-18 commit `6b1317f`. The changes consisted of the new `s6_schedule` fixture, removal of the AC-18 skip marker, a test parameter change, and the `s6 = s6_schedule` alias. Existing assertions, expected values, and constants were unchanged. The change was retroactively approved as a one-time historical file-scope exception.
+
+checks:
+- `git diff e7f9eaa 6b1317f -- tests/test_s6_payments.py`
+- `git log --oneline -- tests/test_s6_payments.py`
+- Verification result: PASSED.
+
+evidence: F-06; AC-18; `tests/test_s6_payments.py`; commits `e7f9eaa` and `6b1317f`; DR-6 in PR #8.
+
+risk: The historical change exceeded the original approved file list. Retroactive approval does not authorize future unapproved test modifications.
+
+## Entry 49 — F-23/F-06 Documentation Resolution
+
+artifact: Updated `docs/design/S-6.md` and new `docs/reviews/S-6-AGENT-03-design-resolution.md`. Implementation commit `454df79`; GitHub PR #8, merge commit `45cfc4b`.
+
+tool: Claude Code prepared the proposed documentation patch; Sandeep applied and committed the approved changes using Git/WSL. ChatGPT (GPT-6) reviewed the resulting documents.
+
+prompts: prompts/49-Final R4Pending clarification
+
+review: The final documentation incorporated DR-1, DR-2, DR-2a, DR-ACH, DR-3, DR-4, DR-5, and DR-6. It aligned R4, D18, D25, manual-payment errors, nullable dues, and payment amount persistence. The resolution record documents F-06 verification as PASSED and the historical fixture change as retroactively approved. No application code or tests were changed.
+
+checks: The original generated patch failed `git apply --check` because its context did not match `docs/design/S-6.md`. A corrected patch was subsequently prepared and the documentation changes were committed. GitHub PR #8 confirms exactly two changed files and a successful merge into `main`. No application tests were run as part of this documentation-only change.
+
+evidence: S-6 design; F-23; F-06; PR #8; commits `454df79` and `45cfc4b`.
+
+risk: F-02, F-08, and F-25 remain outside the resolution. The documentation still contains outdated implementation/test-status wording. The resolution does not implement AC-22.
+
+## Entry 50 — Restricted Claude Patch-Generation Workflow
+
+artifact: `CLAUDE.md` and `.claude/settings.json`. Configuration commit `8f8ecf0`; incorporated into `main` through integration commit `f1de0ec`.
+
+tool: Sandeep edited the project configuration using WSL; Claude Code tested the permission boundary and generated the documentation patch; ChatGPT (GPT-6) assisted with configuration and workflow review.
+
+prompts: Claude patch-output authorization and permission-verification prompts, followed by the F-23/F-06 patch-generation request. Retain the exact prompts and Claude permission-denial reports as historical evidence.
+
+review: The initial configuration denied Write because the permission rule did not match the attempted operation. The configuration was corrected to allow `Edit(./agent-patches/**)` while retaining `dontAsk` and denying Bash and NotebookEdit. `CLAUDE.md` was updated to authorize creation of new patch files only in `agent-patches/`, The permission configuration was committed separately from the design documentation.
+
+checks: The first Write attempt was denied in `dontAsk` mode. After permission changes, Claude generated a patch file, as evidenced by the subsequent `git apply --check` attempt. The original patch had a context mismatch; the documentation was later successfully committed. GitHub commit `8f8ecf0` contains only the two configuration files.
+
+evidence: `CLAUDE.md`; `.claude/settings.json`; commit `8f8ecf0`; integration commit `f1de0ec`; generated F-23/F-06 patch workflow.
+
+risk: The scoped Edit permission is not a strict create-only guarantee and may allow overwriting files within the patch directory. `agent-patches/` is not currently excluded by `.gitignore`. 
