@@ -70,11 +70,13 @@ def run_due_payments(today: date) -> RunResult:
             continue
         if s["method"] == "ach":
             continue  # ACH settlement remains OQ2.
+        if db.has_paid_payment(s["unit_id"], month):
+            skipped += 1  # D25: the month is Paid (R1, R3); AGENT-03 F-02.
+            continue
         prior = db.latest_payment(s["unit_id"], month)
         if prior is not None:
-            if prior["status"] == "Paid":
-                skipped += 1
-            # Pending already replayed; Failed retries are AC-22.
+            # D25: a Pending left after the D26 replay gets no new attempt;
+            # Failed retries are AC-22.
             continue
         key = f'{s["unit_id"]}:{month}:1'
         payment_id = db.create_pending_payment(
