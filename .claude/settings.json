@@ -6,11 +6,12 @@
     "disableAutoMode": "disable",
     "blockReadsOutsideWorkingDirectories": true,
     "blockWritesOutsideWorkingDirectories": true,
+    "allow": [
+      "Edit(./agent-patches/**)"
+    ],
     "deny": [
       "Bash",
-      "Edit",
-      "Write",
       "NotebookEdit"
     ]
-  }
+  }  
 }

@@ -42,6 +42,25 @@ AC-22 is not authorized for implementation yet.
 Do not modify application code, tests, requirements,
 design documents, plans, prompts, or LEDGER.md.
 
+### Agent Patch Authorization
+
+Claude Code is authorized to create new `.patch` files only within `agent-patches/`.
+
+This authorization is limited to preparing proposed changes for human review.
+
+Rules:
+
+1. Use a unique patch filename for each task.
+2. Never overwrite or modify an existing patch file.
+3. Never directly modify existing project files, including `app/`, `tests/`, `docs/`, or `LEDGER.md`.
+4. Never modify `AGENTS.md`, `CLAUDE.md`, or `.claude/settings.json`.
+5. Generate patches in standard unified Git diff format.
+6. Include only files explicitly approved for the task.
+7. Never apply patches, run tests, commit, or push without separate authorization.
+8. If patch creation fails, report the exact restriction and stop.
+
+Creating a patch file does not authorize applying its contents.
+
 ## Delegation
 
 Use these project subagents for independent analysis:
