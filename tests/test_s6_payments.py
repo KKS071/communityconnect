@@ -160,3 +160,97 @@ def test_ac22_declined_charge_retried_after_delay(s6):
     rows = history(s6)
     assert [r["attempt"] for r in rows] == [1, 2]
     assert rows[0]["status"] == "Failed"
+
+
+# AGENT-03 F-02 regression tests (approved scope). The run must skip a month that has any
+# Paid payment (D25 first branch; R1, R3), not only when the latest attempt is Paid. States
+# the API cannot create are built with app.db functions, so the tests add no SQL.
+
+
+def _record_attempt(w, status):
+    """Store one scheduled attempt-1 row for R1's unit this month, then set its status."""
+    from app import db
+
+    unit = w.units["MR-12"]
+    payment_id = db.create_pending_payment(
+        unit, MONTH, DUES_CENTS, "debit", f"{unit}:{MONTH}:1", "2026-11-20T12:00:00Z")
+    if status != "Pending":
+        db.finish_payment(payment_id, status, f"test_{payment_id}")
+    return payment_id
+
+
+def test_f02_earlier_paid_then_later_failed_is_not_charged(s6):
+    # T1: an earlier Paid payment and a later Failed attempt in the same month. The Failed
+    # row sorts as the latest, so only a check for any Paid row skips the month.
+    from app.payments import RunResult, record_manual_payment, run_due_payments
+
+    assert schedule(s6).status_code == 201
+    record_manual_payment(s6.units["MR-12"], MONTH)
+    _record_attempt(s6, "Failed")
+    result = run_due_payments(date(2026, 12, DUE_DAY))
+    assert s6.fake.calls == []
+    assert [r["status"] for r in history(s6)] == ["Paid", "Failed"]
+    assert result == RunResult(charged=0, failed=0, skipped=1)
+
+
+def test_f02_paid_with_pending_is_not_charged_and_pending_unchanged(s6):
+    # T2: Paid and Pending in the same month (the OQ5 race state, built here by setup only).
+    # Verifies existing D26 behaviour and the D25 skip count; it does not resolve OQ5.
+    from app.payments import RunResult, record_manual_payment, run_due_payments
+
+    assert schedule(s6).status_code == 201
+    record_manual_payment(s6.units["MR-12"], MONTH)
+    _record_attempt(s6, "Pending")
+    before = history(s6)
+    result = run_due_payments(date(2026, 12, DUE_DAY))
+    assert s6.fake.calls == []
+    assert history(s6) == before
+    assert [r["status"] for r in before] == ["Paid", "Pending"]
+    assert result == RunResult(charged=0, failed=0, skipped=1)
+
+
+def test_f02_manual_payment_after_decline_is_not_charged(s6):
+    # T3: attempt 1 is declined, then the manager records a manual payment (D27).
+    from app.payments import RunResult, record_manual_payment, run_due_payments
+
+    assert schedule(s6, token=DECLINED_TOKEN).status_code == 201
+    run_due_payments(date(2026, 12, DUE_DAY))
+    assert [r["status"] for r in history(s6)] == ["Failed"]
+    record_manual_payment(s6.units["MR-12"], MONTH)
+    calls_before = len(s6.fake.calls)
+    result = run_due_payments(date(2026, 12, DUE_DAY + 1))
+    assert len(s6.fake.calls) == calls_before
+    assert result == RunResult(charged=0, failed=0, skipped=1)
+
+
+def test_f02_second_run_same_day_counts_paid_month_as_skipped(s6):
+    # T4: the AC-19 rerun, with the RunResult counts pinned (D16).
+    from app.payments import RunResult, run_due_payments
+
+    assert schedule(s6).status_code == 201
+    assert run_due_payments(date(2026, 12, DUE_DAY)) == RunResult(charged=1, failed=0, skipped=0)
+    assert run_due_payments(date(2026, 12, DUE_DAY)) == RunResult(charged=0, failed=0, skipped=1)
+    assert len(s6.fake.calls) == 1
+
+
+def test_f02_paid_in_another_month_does_not_block_this_month(s6):
+    # T5: the Paid check is per billing month.
+    from app.payments import RunResult, record_manual_payment, run_due_payments
+
+    assert schedule(s6).status_code == 201
+    record_manual_payment(s6.units["MR-12"], "2026-11")
+    result = run_due_payments(date(2026, 12, DUE_DAY))
+    assert result == RunResult(charged=1, failed=0, skipped=0)
+    assert [r["status"] for r in history(s6)] == ["Paid"]
+    assert [r["method"] for r in history(s6, month="2026-11")] == ["manual"]
+
+
+def test_f02_paid_for_another_unit_does_not_block_this_unit(s6):
+    # T6: the Paid check is per unit (R3's unit 20 is paid; R1's unit 12 is not).
+    from app.payments import RunResult, record_manual_payment, run_due_payments
+
+    assert schedule(s6).status_code == 201
+    record_manual_payment(s6.units["MR-20"], MONTH)
+    result = run_due_payments(date(2026, 12, DUE_DAY))
+    assert result == RunResult(charged=1, failed=0, skipped=0)
+    assert [r["status"] for r in history(s6)] == ["Paid"]
