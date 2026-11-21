@@ -767,7 +767,7 @@ evidence: S-6 R4, D18, D25, D26, D34; F-23; revised design proposal; final resol
 
 risk: ACH schedules can be created and displayed but are not automatically charged. Retry behavior remains dependent on AC-22.
 
-## Entry 48 — 
+## Entry 48 — Verification of F-06
 
 artifact: Historical verification of the AC-18 test-fixture change in commit `6b1317f`. The result is recorded in `docs/reviews/S-6-AGENT-03-design-resolution.md`.
 
@@ -816,4 +816,25 @@ checks: The first Write attempt was denied in `dontAsk` mode. After permission c
 
 evidence: `CLAUDE.md`; `.claude/settings.json`; commit `8f8ecf0`; integration commit `f1de0ec`; generated F-23/F-06 patch workflow.
 
-risk: The scoped Edit permission is not a strict create-only guarantee and may allow overwriting files within the patch directory. `agent-patches/` is not currently excluded by `.gitignore`. 
+risk: The scoped Edit permission is not a strict create-only guarantee and may allow overwriting files within the patch directory. `agent-patches/` was added to .gitignore in 9822cc3.
+
+## Entry 51 — AGENT-03 F-02 Paid-Payment Guard Remediation
+
+artifact: `app/payments.py` and `tests/test_s6_payments.py`. Implementation commit: 
+
+tool: Claude Code prepared the restricted unified patch; ChatGPT (GPT-6) reviewed the proposed change; human reviewer applied the patch and ran the tests locally, 2026-11-21.
+
+prompts: AGENT-03 F-02 investigation followed by human-approved minimal implementation and regression-test preparation. Claude created `agent-patches/AGENT-03-F02-paid-guard.patch` without directly editing application files.
+
+review: Added `db.has_paid_payment()` before `db.latest_payment()` in the due-schedule loop. Any existing Paid payment for the same unit and billing month now increments `skipped` and prevents another processor call. Added six regression tests covering an earlier Paid row followed by Failed, Paid with Pending, manual payment after decline, repeated processing, different billing months, and different units. Existing acceptance-test assertions were preserved. F-01 concurrency and AC-22 retries remain outside scope.
+
+checks:
+- `python3 -m pytest tests/test_s6_payments.py -v` → 10 passed, 1 skipped, 1 warning in 39.12 seconds.
+- `python3 -m pytest` → 100 passed, 1 skipped, 1 warning in 194.79 seconds.
+- AC-18 through AC-21 passed.
+- All six new F-02 regression tests passed.
+- AC-22 remains skipped.
+
+evidence: AGENT-03 F-02 investigation; `agent-patches/AGENT-03-F02-paid-guard.patch`; `app/payments.py`; `tests/test_s6_payments.py`; implementation commit .
+
+risk: The Paid-payment guard is not atomic with processor charging. Concurrent manual and scheduled payment operations may still create an external double-charge risk (F-01). The new tests do not establish concurrency safety. AC-22 retry processing remains unimplemented.
