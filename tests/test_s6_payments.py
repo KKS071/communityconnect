@@ -1,9 +1,10 @@
 """S-6 Scheduled monthly dues payment (docs/design/S-6.md).
 
-Written before any S-6 code exists (handout 6b). S-6 is not built in Milestone 1, so every test
-is skipped with a reason that names its AC ID. Do not delete or weaken them; remove the skip
-marker when S-6 is built. Imports of S-6 modules are inside the tests so that collection works
-before those modules exist.
+Written before any S-6 code existed (handout 6b). AC-18 to AC-21 are implemented and their tests
+run. AC-22 is not implemented, so its test keeps its skip marker; the NOT_BUILT reason text
+predates AC-18 and is kept unchanged. Do not delete or weaken any test; remove the AC-22 skip
+marker only when AC-22 is approved and built. Imports of S-6 modules stay inside the tests. The
+AGENT-03 regression tests at the end of this file add checks and change no AC expectation.
 
 Interfaces used: app.payments (run_due_payments, record_manual_payment), app.processor
 (FakeProcessor, set_processor), app.clock.now, app.seed.set_dues (S-6 D24, D28 to D30).
@@ -358,3 +359,418 @@ def test_f01_manual_payment_during_charge_is_refused_as_pending(s6):
     assert outcomes == ["PaymentPending"]
     assert [(r["method"], r["status"]) for r in history(s6)] == [("debit", "Paid")]
     assert result == RunResult(charged=1, failed=0, skipped=0)
+
+
+# AGENT-03 F-04 negative and authorization tests and F-05 access-layer tests (approved scope).
+# They pin the existing S-6 contract (section 4; D6 to D9, D11 to D13, D16, D18, D21 to D23,
+# D25, D27, D30, D31, D34) and add no policy. Board-member access to the payments list is OQ4
+# and is deliberately untested. Wrong-typed unit_id or billing_month inputs are not tested
+# because D27 does not specify them.
+
+NOT_FOUND = {"detail": "Not found"}
+UNKNOWN_USER = {"detail": "Unknown user"}
+
+
+def _payments_url(w, community="MR", month=MONTH):
+    return f"/communities/{w.communities[community]}/payments?month={month}"
+
+
+def _mine_url(w, community="MR"):
+    return f"/communities/{w.communities[community]}/payment-schedules/mine"
+
+
+def _two_manual_payments(w):
+    """Manual Paid payments this month for R1's unit 12 and R3's unit 20 (Mountain Ridge)."""
+    from app.payments import record_manual_payment
+
+    record_manual_payment(w.units["MR-12"], MONTH)
+    record_manual_payment(w.units["MR-20"], MONTH)
+
+
+def _viewer_scope(w, user, community):
+    """Call the F-05 access-layer decision directly for a seeded caller."""
+    from app import db
+    from app.access import require_payment_viewer
+
+    with db.connect() as conn:
+        return require_payment_viewer(conn, w.users[user], w.communities[community])
+
+
+def test_f04_resident_sees_only_own_unit_payments(s6):
+    # D8: a resident sees their own unit's payments, never a neighbour's.
+    _two_manual_payments(s6)
+    assert [r["unit_id"] for r in history(s6, user="R1")] == [s6.units["MR-12"]]
+    assert [r["unit_id"] for r in history(s6, user="R3")] == [s6.units["MR-20"]]
+
+
+def test_f04_manager_sees_every_unit_of_managed_community(s6):
+    # D8, D23: M1 sees both Mountain Ridge units, ordered by unit_id.
+    _two_manual_payments(s6)
+    assert [r["unit_id"] for r in history(s6, user="M1")] == sorted(
+        [s6.units["MR-12"], s6.units["MR-20"]])
+
+
+def test_f04_payments_isolated_between_communities(s6):
+    # D8, D23 (S-1 R2): with real payments in Mountain Ridge and Elm Court, each list shows
+    # only its own community, and callers from the other community get 404.
+    from app import seed
+    from app.payments import record_manual_payment
+
+    seed.set_dues(s6.communities["EC"], DUES_CENTS)
+    _two_manual_payments(s6)
+    record_manual_payment(s6.units["EC-5"], MONTH)
+    assert [r["unit_id"] for r in history(s6, user="M1")] == sorted(
+        [s6.units["MR-12"], s6.units["MR-20"]])
+    assert [r["unit_id"] for r in history(s6, user="R1")] == [s6.units["MR-12"]]
+    for user in ("M2", "R4"):
+        resp = s6.get(_payments_url(s6, community="EC"), user)
+        assert resp.status_code == 200
+        assert [r["unit_id"] for r in resp.json()] == [s6.units["EC-5"]]
+    for user in ("M1", "R1"):
+        resp = s6.get(_payments_url(s6, community="EC"), user)
+        assert resp.status_code == 404
+        assert resp.json() == NOT_FOUND
+    resp = s6.get(_payments_url(s6, community="PH"), "M1")
+    assert resp.status_code == 200
+    assert resp.json() == []
+
+
+@pytest.mark.parametrize("user", ["ADMIN", "NOBODY", "M2", "R2"])
+def test_f04_payments_hidden_from_other_callers(s6, user):
+    # D8: admins, non-members and members of other communities get 404 with the same body
+    # as a missing record (S-1 R2, D3). B1 (board member) is OQ4 and is not tested.
+    _two_manual_payments(s6)
+    resp = s6.get(_payments_url(s6), user)
+    assert resp.status_code == 404
+    assert resp.json() == NOT_FOUND
+
+
+@pytest.mark.parametrize("community_id", ["999999999", "abc"])
+def test_f04_payments_unknown_community_is_not_found(s6, community_id):
+    # D6 (S-1 D14): a missing or malformed community id is 404 "Not found".
+    resp = s6.get(f"/communities/{community_id}/payments?month={MONTH}", "M1")
+    assert resp.status_code == 404
+    assert resp.json() == NOT_FOUND
+
+
+def test_f04_payments_unknown_user_is_401(s6):
+    # D6 (S-1 D1): a missing, malformed or unknown X-User-Id is 401 "Unknown user".
+    unknown = str(max(s6.users.values()) + 1000)
+    for headers in ({}, {"X-User-Id": "abc"}, {"X-User-Id": unknown}):
+        resp = s6.client.get(_payments_url(s6), headers=headers)
+        assert resp.status_code == 401
+        assert resp.json() == UNKNOWN_USER
+
+
+@pytest.mark.parametrize("month", ["", "2026-13", "2026-00", "2026-1", "2026-12-01"])
+def test_f04_payments_invalid_month_is_422(s6, month):
+    # D9: month must be YYYY-MM with month 01 to 12.
+    resp = s6.get(_payments_url(s6, month=month), "R1")
+    assert resp.status_code == 422
+    assert resp.json() == {"detail": "Invalid month"}
+
+
+def test_f04_payments_missing_month_is_422(s6):
+    # D9: month is required.
+    resp = s6.get(f"/communities/{s6.communities['MR']}/payments", "M1")
+    assert resp.status_code == 422
+    assert resp.json() == {"detail": "Invalid month"}
+
+
+@pytest.mark.parametrize("user", ["NOBODY", "ADMIN"])
+def test_f04_payments_membership_checked_before_month(s6, user):
+    # D6 (S-1 D6): the 404 membership check runs before the 422 month check.
+    resp = s6.get(_payments_url(s6, month="2026-13"), user)
+    assert resp.status_code == 404
+    assert resp.json() == NOT_FOUND
+
+
+def test_f04_payments_future_month_empty_and_rows_have_paymentout_fields(s6):
+    # D9: a future month is an empty list. Section 4, D23: rows carry only PaymentOut fields.
+    _two_manual_payments(s6)
+    assert history(s6, user="M1", month="2027-06") == []
+    rows = history(s6, user="M1")
+    assert len(rows) == 2
+    for row in rows:
+        assert set(row) == {"id", "unit_id", "billing_month", "amount_cents", "method",
+                            "status", "attempt", "created_at"}
+
+
+def test_f05_payment_viewer_scope_for_residents_and_managers(s6):
+    # D8, D23: a manager gets None (every unit; main.py still filters by community_id), and
+    # a resident gets their own concrete unit id, never None.
+    assert _viewer_scope(s6, "M1", "MR") is None
+    assert _viewer_scope(s6, "M1", "PH") is None
+    assert _viewer_scope(s6, "M2", "EC") is None
+    assert _viewer_scope(s6, "R1", "MR") == s6.units["MR-12"]
+    assert _viewer_scope(s6, "R3", "MR") == s6.units["MR-20"]
+    assert _viewer_scope(s6, "R2", "PH") == s6.units["PH-3"]
+
+
+@pytest.mark.parametrize("user, community", [("ADMIN", "MR"), ("NOBODY", "MR"), ("M2", "MR"),
+                                             ("R1", "PH")])
+def test_f05_payment_viewer_refuses_other_callers(s6, user, community):
+    # D8: admins, non-members, and a manager or resident of another community get NotFound,
+    # never manager-wide None. Board members are OQ4 and are not tested.
+    from app.access import NotFound
+
+    with pytest.raises(NotFound):
+        _viewer_scope(s6, user, community)
+
+
+def test_f05_resident_without_unit_never_gets_manager_scope(monkeypatch):
+    # F-05: seed.py cannot create a resident membership without a unit, so the membership row
+    # is stubbed (no SQL in tests). Such a resident gets NotFound, never None.
+    from app import access
+
+    monkeypatch.setattr(access, "require_member",
+                        lambda conn, user_id, community_id: {"role": "resident",
+                                                             "unit_id": None})
+    with pytest.raises(access.NotFound):
+        access.require_payment_viewer(None, 1, 1)
+
+
+@pytest.mark.parametrize("user", ["M1", "ADMIN", "B1", "NOBODY", "R2"])
+def test_f04_schedules_need_resident_of_community(s6, user):
+    # D7, D22: only a resident of the community may create or read a schedule; any other
+    # caller gets 404 "Not found", and no schedule is stored for any resident's unit.
+    resp = schedule(s6, user=user)
+    assert resp.status_code == 404
+    assert resp.json() == NOT_FOUND
+    mine = s6.get(_mine_url(s6), user)
+    assert mine.status_code == 404
+    assert mine.json() == NOT_FOUND
+    for resident, community in (("R1", "MR"), ("R3", "MR"), ("R2", "PH")):
+        assert s6.get(_mine_url(s6, community), resident).status_code == 404
+
+
+def test_f04_schedules_unknown_user_is_401(s6):
+    # D6, D22 (S-1 D1): 401 "Unknown user" before any other check.
+    path = f"/communities/{s6.communities['MR']}/payment-schedules"
+    body = {"method": "debit", "day_of_month": DUE_DAY, "token": GOOD_TOKEN}
+    for headers in ({}, {"X-User-Id": str(max(s6.users.values()) + 1000)}):
+        post = s6.client.post(path, headers=headers, json=body)
+        assert (post.status_code, post.json()) == (401, UNKNOWN_USER)
+        mine = s6.client.get(_mine_url(s6), headers=headers)
+        assert (mine.status_code, mine.json()) == (401, UNKNOWN_USER)
+    assert s6.get(_mine_url(s6), "R1").status_code == 404
+
+
+# D12 lists the field order and D21 the messages. Cases that mix a wrong type in one field
+# with a bad value in an earlier field (for example method "bogus" with day_of_month "5")
+# are deliberately excluded until the human D12 ruling on F-10.
+@pytest.mark.parametrize("body, detail", [
+    ({"day_of_month": DUE_DAY, "token": GOOD_TOKEN}, "Invalid request body"),
+    ({"method": "debit", "token": GOOD_TOKEN}, "Invalid request body"),
+    ({"method": "debit", "day_of_month": DUE_DAY}, "Invalid request body"),
+    ({"method": "debit", "day_of_month": True, "token": GOOD_TOKEN}, "Invalid request body"),
+    ({"method": "debit", "day_of_month": 5.0, "token": GOOD_TOKEN}, "Invalid request body"),
+    ({"method": "debit", "day_of_month": "5", "token": GOOD_TOKEN}, "Invalid request body"),
+    ({"method": "debit", "day_of_month": DUE_DAY, "token": None}, "Invalid request body"),
+    ({"method": "manual", "day_of_month": DUE_DAY, "token": GOOD_TOKEN}, "Unknown method"),
+    ({"method": "Debit", "day_of_month": DUE_DAY, "token": GOOD_TOKEN}, "Unknown method"),
+    ({"method": "debit", "day_of_month": 0, "token": GOOD_TOKEN}, "Day must be 1 to 28"),
+    ({"method": "debit", "day_of_month": 29, "token": GOOD_TOKEN}, "Day must be 1 to 28"),
+    ({"method": "debit", "day_of_month": DUE_DAY, "token": ""}, "Token is required"),
+    ({"method": "debit", "day_of_month": DUE_DAY, "token": "   "}, "Token is required"),
+    ({"method": "bogus", "day_of_month": 29, "token": ""}, "Unknown method"),
+    ({"method": "debit", "day_of_month": 29, "token": ""}, "Day must be 1 to 28"),
+])
+def test_f04_schedule_validation_is_422_and_stores_nothing(s6, body, detail):
+    # D12, D21: fixed 422 messages, checked in the order method, day_of_month, token.
+    resp = s6.post(f"/communities/{s6.communities['MR']}/payment-schedules", "R1", json=body)
+    assert resp.status_code == 422
+    assert resp.json() == {"detail": detail}
+    assert s6.get(_mine_url(s6), "R1").status_code == 404
+
+
+@pytest.mark.parametrize("kwargs", [{"json": [1, 2]}, {"content": b"{not json"}])
+def test_f04_schedule_body_must_be_json_object(s6, kwargs):
+    # Section 4: a body that is not a JSON object is 422 "Invalid request body".
+    resp = s6.post(f"/communities/{s6.communities['MR']}/payment-schedules", "R1", **kwargs)
+    assert resp.status_code == 422
+    assert resp.json() == {"detail": "Invalid request body"}
+    assert s6.get(_mine_url(s6), "R1").status_code == 404
+
+
+def test_f04_second_schedule_is_409_only_after_validation(s6):
+    # D11, D22: any existing schedule gives 409, but the body checks come first.
+    assert schedule(s6).status_code == 201
+    dup = schedule(s6, method="credit", day=10)
+    assert dup.status_code == 409
+    assert dup.json() == {"detail": "Schedule already exists"}
+    bad = schedule(s6, method="manual")
+    assert bad.status_code == 422
+    assert bad.json() == {"detail": "Unknown method"}
+    mine = s6.get(_mine_url(s6), "R1").json()
+    assert (mine["method"], mine["day_of_month"]) == ("debit", DUE_DAY)
+
+
+def test_f04_schedule_post_response_omits_token_and_mine_is_per_unit(s6):
+    # Section 5: the token is never returned. D7, D22: R3 does not see R1's unit schedule.
+    resp = schedule(s6)
+    assert resp.status_code == 201
+    assert set(resp.json()) == {"id", "unit_id", "method", "day_of_month", "active"}
+    other = s6.get(_mine_url(s6), "R3")
+    assert other.status_code == 404
+    assert other.json() == NOT_FOUND
+
+
+def test_f04_manual_payment_twice_raises_already_paid(s6):
+    # D13: a second manual payment for a Paid month raises AlreadyPaid and records nothing.
+    from app.payments import AlreadyPaid, record_manual_payment
+
+    record_manual_payment(s6.units["MR-12"], MONTH)
+    with pytest.raises(AlreadyPaid):
+        record_manual_payment(s6.units["MR-12"], MONTH)
+    assert [(r["method"], r["status"]) for r in history(s6)] == [("manual", "Paid")]
+
+
+def test_f04_manual_payment_while_pending_raises_payment_pending(s6):
+    # D16, D27: an unavailable processor leaves attempt 1 Pending; a manual payment for the
+    # month then raises PaymentPending and records nothing.
+    from app.payments import PaymentPending, RunResult, record_manual_payment, run_due_payments
+
+    s6.fake.unavailable = True
+    assert schedule(s6).status_code == 201
+    assert run_due_payments(date(2026, 12, DUE_DAY)) == RunResult(charged=0, failed=0, skipped=1)
+    with pytest.raises(PaymentPending):
+        record_manual_payment(s6.units["MR-12"], MONTH)
+    assert [(r["method"], r["status"]) for r in history(s6)] == [("debit", "Pending")]
+
+
+@pytest.mark.parametrize("billing_month", ["2026-13", "2026-1", ""])
+def test_f04_manual_payment_invalid_month_raises_value_error(s6, billing_month):
+    # D27: an invalid billing_month raises ValueError and records nothing.
+    from app.payments import record_manual_payment
+
+    with pytest.raises(ValueError):
+        record_manual_payment(s6.units["MR-12"], billing_month)
+    assert history(s6) == []
+
+
+@pytest.mark.parametrize("unit_id", [999999999, 0])
+def test_f04_manual_payment_unknown_unit_raises_value_error(s6, unit_id):
+    # D27: an unknown unit raises ValueError.
+    from app.payments import record_manual_payment
+
+    with pytest.raises(ValueError):
+        record_manual_payment(unit_id, MONTH)
+
+
+def test_f04_manual_payment_without_dues_raises_value_error(s6):
+    # D27, D30 (DR-4): Pine Hollow has no dues set, so nothing is recorded for R2's unit.
+    from app.payments import record_manual_payment
+
+    with pytest.raises(ValueError):
+        record_manual_payment(s6.units["PH-3"], MONTH)
+    resp = s6.get(_payments_url(s6, community="PH"), "R2")
+    assert resp.status_code == 200
+    assert resp.json() == []
+
+
+def test_f04_unavailable_processor_leaves_pending_and_next_run_reuses_key(s6):
+    # D16, D26: ProcessorUnavailable leaves attempt 1 Pending; the next run charges the same
+    # key and the month ends Paid. skipped on the second run is not pinned (F-08).
+    from app.payments import RunResult, run_due_payments
+
+    s6.fake.unavailable = True
+    assert schedule(s6).status_code == 201
+    assert run_due_payments(date(2026, 12, DUE_DAY)) == RunResult(charged=0, failed=0, skipped=1)
+    assert [(r["attempt"], r["status"]) for r in history(s6)] == [(1, "Pending")]
+    s6.fake.unavailable = False
+    assert run_due_payments(date(2026, 12, DUE_DAY + 1)).charged == 1
+    assert [(r["attempt"], r["status"]) for r in history(s6)] == [(1, "Paid")]
+    key = f"{s6.units['MR-12']}:{MONTH}:1"
+    assert [call[2] for call in s6.fake.calls] == [key, key]
+
+
+@pytest.mark.parametrize("unreachable", ["R1", "R3"])
+def test_f04_run_continues_after_processor_unavailable_for_one_unit(s6, unreachable):
+    # D31: ProcessorUnavailable for one unit does not stop the run. Both orders are tested, so
+    # the result does not depend on which unit the run reaches first.
+    from app import processor
+    from app.payments import RunResult, run_due_payments
+
+    class UnreachableForOneToken(processor.FakeProcessor):
+        def charge(self, token, amount_cents, idempotency_key):
+            if token == "pm_unreachable":
+                raise processor.ProcessorUnavailable("unreachable for this test")
+            return super().charge(token, amount_cents, idempotency_key)
+
+    units = {"R1": s6.units["MR-12"], "R3": s6.units["MR-20"]}
+    previous = processor.get_processor()
+    processor.set_processor(UnreachableForOneToken())
+    try:
+        for user in units:
+            token = "pm_unreachable" if user == unreachable else GOOD_TOKEN
+            assert schedule(s6, token=token, user=user).status_code == 201
+        result = run_due_payments(date(2026, 12, DUE_DAY))
+    finally:
+        processor.set_processor(previous)  # restore the s6 fixture's processor (F-16)
+    assert result == RunResult(charged=1, failed=0, skipped=1)
+    expected = sorted((unit, "Pending" if user == unreachable else "Paid")
+                      for user, unit in units.items())
+    assert [(r["unit_id"], r["status"]) for r in history(s6, user="M1")] == expected
+
+
+def test_f04_declined_attempt_is_failed_and_counted(s6):
+    # D16: a declined attempt 1 is Failed and counted once in failed (retries are AC-22).
+    from app.payments import RunResult, run_due_payments
+
+    assert schedule(s6, token=DECLINED_TOKEN).status_code == 201
+    assert run_due_payments(date(2026, 12, DUE_DAY)) == RunResult(charged=0, failed=1, skipped=0)
+    assert [(r["attempt"], r["status"]) for r in history(s6)] == [(1, "Failed")]
+
+
+def test_f04_not_due_before_day_and_caught_up_later_in_month(s6):
+    # D18, D25: nothing before day_of_month; a missed run is caught up later in the month.
+    from app.payments import RunResult, run_due_payments
+
+    assert schedule(s6).status_code == 201
+    assert run_due_payments(date(2026, 12, DUE_DAY - 1)) == RunResult()
+    assert s6.fake.calls == []
+    assert history(s6) == []
+    assert run_due_payments(date(2026, 12, 28)) == RunResult(charged=1, failed=0, skipped=0)
+    assert [r["status"] for r in history(s6)] == ["Paid"]
+
+
+def test_f04_first_due_month_follows_created_at(s6):
+    # D18, D25: the clock reads 2026-11-20. A day-20 schedule is not due in November (its
+    # date must be strictly after created_at) and is first due on 2026-12-20.
+    from app.payments import RunResult, run_due_payments
+
+    assert schedule(s6, day=20).status_code == 201
+    assert run_due_payments(date(2026, 11, 20)) == RunResult()
+    assert run_due_payments(date(2026, 11, 30)) == RunResult()
+    assert history(s6, month="2026-11") == []
+    assert run_due_payments(date(2026, 12, 19)) == RunResult()
+    assert run_due_payments(date(2026, 12, 20)).charged == 1
+
+
+def test_f04_day_after_creation_is_due_in_the_same_month(s6):
+    # D18, D25: the clock reads 2026-11-20, so a day-28 schedule is first due on 2026-11-28.
+    from app.payments import RunResult, run_due_payments
+
+    assert schedule(s6, day=28).status_code == 201
+    assert run_due_payments(date(2026, 11, 27)) == RunResult()
+    assert run_due_payments(date(2026, 11, 28)) == RunResult(charged=1, failed=0, skipped=0)
+    assert [r["status"] for r in history(s6, month="2026-11")] == ["Paid"]
+
+
+def test_f04_community_without_dues_and_ach_schedules_are_not_charged(s6):
+    # D30, D22: Pine Hollow has no dues, so R2's schedule (accepted under D22) is never due
+    # and its history stays empty. D34 (DR-ACH): an ach schedule is not charged or counted
+    # until OQ2 is answered.
+    from app.payments import RunResult, run_due_payments
+
+    ph = s6.post(f"/communities/{s6.communities['PH']}/payment-schedules", "R2",
+                 json={"method": "debit", "day_of_month": DUE_DAY, "token": GOOD_TOKEN})
+    assert ph.status_code == 201
+    assert schedule(s6, method="ach").status_code == 201
+    assert run_due_payments(date(2026, 12, DUE_DAY)) == RunResult()
+    assert s6.fake.calls == []
+    assert history(s6) == []
+    pine = s6.get(_payments_url(s6, community="PH"), "R2")
+    assert pine.status_code == 200
+    assert pine.json() == []

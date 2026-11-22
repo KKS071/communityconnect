@@ -1,4 +1,5 @@
-"""CommunityConnect API service: S-1 submit and track a maintenance request (docs/design/S-1.md)."""
+"""CommunityConnect API service: S-1 maintenance requests (docs/design/S-1.md) and the
+S-6 payment schedule and payment history endpoints (docs/design/S-6.md)."""
 
 import json
 import re
@@ -9,7 +10,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.responses import JSONResponse
 
 from app import clock, db, settings
-from app.access import NotFound, require_member, require_resident
+from app.access import NotFound, require_payment_viewer, require_resident
 from app.auth import current_user
 
 _ID = re.compile(r"[1-9][0-9]*")
@@ -187,9 +188,7 @@ def create_app() -> FastAPI:
                       user: int = Depends(current_user)):
         cid = _parse_id(community_id)
         with db.connect() as conn:
-            member = require_member(conn, user, cid)  # S-6 D8/D23: role decided in access.py
-            if member["role"] not in ("resident", "manager"):
-                raise NotFound()
+            unit_id = require_payment_viewer(conn, user, cid)  # S-6 D8/D23 decided in access.py
             if month is None or re.fullmatch(r"[0-9]{4}-(0[1-9]|1[0-2])", month) is None:
                 raise Invalid("Invalid month")
             query = (
@@ -199,9 +198,9 @@ def create_app() -> FastAPI:
                 "WHERE u.community_id = %s AND p.billing_month = %s"
             )
             params: tuple = (cid, month)
-            if member["role"] == "resident":
+            if unit_id is not None:  # a resident: only their own unit (D8)
                 query += " AND p.unit_id = %s"
-                params += (member["unit_id"],)
+                params += (unit_id,)
             query += " ORDER BY p.unit_id, p.attempt, p.id"
             return conn.execute(query, params).fetchall()
 
