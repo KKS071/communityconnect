@@ -254,3 +254,107 @@ def test_f02_paid_for_another_unit_does_not_block_this_unit(s6):
     result = run_due_payments(date(2026, 12, DUE_DAY))
     assert result == RunResult(charged=1, failed=0, skipped=0)
     assert [r["status"] for r in history(s6)] == ["Paid"]
+
+
+# AGENT-03 F-01 and F-03 regression tests (approved scope). F-01: a manual payment and a
+# scheduled attempt for the same unit and month cannot both succeed. F-03: crash recovery
+# keeps the Pending row, the key and the stored amount (D4, D26, D30, D31).
+
+
+def _crash_after_charge_processor():
+    """Install a FakeProcessor that notes the Pending rows it sees and crashes after charging."""
+    from app import db, processor
+
+    class CrashAfterCharge(processor.FakeProcessor):
+        crash = True
+
+        def __init__(self):
+            super().__init__()
+            self.pending_seen = []
+
+        def charge(self, token, amount_cents, idempotency_key):
+            self.pending_seen.append(
+                [(p["idempotency_key"], p["amount_cents"]) for p in db.pending_payments()])
+            result = super().charge(token, amount_cents, idempotency_key)
+            if self.crash:
+                raise SimulatedCrash()
+            return result
+
+    crashing = CrashAfterCharge()
+    processor.set_processor(crashing)
+    return crashing
+
+
+def test_f03_crash_recovery_reuses_pending_key_and_amount(s6):
+    # F-03: Pending is saved before the charge; the restart replays it with the same key and
+    # the stored amount, adds no attempt or row, and ends with exactly one Paid payment.
+    from app import seed
+    from app.payments import run_due_payments
+
+    crashing = _crash_after_charge_processor()
+    assert schedule(s6).status_code == 201
+    key = f"{s6.units['MR-12']}:{MONTH}:1"
+    with pytest.raises(SimulatedCrash):
+        run_due_payments(date(2026, 12, DUE_DAY))
+    # 1. The Pending row existed when the processor was called (D4).
+    assert crashing.pending_seen == [[(key, DUES_CENTS)]]
+    assert [(r["attempt"], r["status"]) for r in history(s6)] == [(1, "Pending")]
+
+    seed.set_dues(s6.communities["MR"], DUES_CENTS + 100)  # dues change before the restart
+    crashing.crash = False
+    result = run_due_payments(date(2026, 12, DUE_DAY))
+    # 2 and 3. Same key and the stored amount on replay (D4, D26, D30).
+    assert crashing.calls == [(GOOD_TOKEN, DUES_CENTS, key), (GOOD_TOKEN, DUES_CENTS, key)]
+    # 4 and 5. No new attempt or row, and exactly one Paid payment.
+    assert [(r["attempt"], r["status"], r["amount_cents"]) for r in history(s6)] == [
+        (1, "Paid", DUES_CENTS)]
+    assert result.charged == 1
+    run_due_payments(date(2026, 12, DUE_DAY + 1))
+    assert len(crashing.calls) == 2
+    assert len(history(s6)) == 1
+
+
+def test_f01_manual_payment_committed_during_run_prevents_charge(s6, monkeypatch):
+    # F-01: the manager's payment commits after the run's pre-checks but before its Pending
+    # insert. The locked re-check sees it, so the processor is never called (R1, R3, D27).
+    from app import db
+    from app.payments import RunResult, record_manual_payment, run_due_payments
+
+    assert schedule(s6).status_code == 201
+    real_latest_payment = db.latest_payment
+
+    def manual_payment_in_window(unit_id, billing_month):
+        prior = real_latest_payment(unit_id, billing_month)
+        record_manual_payment(s6.units["MR-12"], MONTH)
+        return prior
+
+    monkeypatch.setattr(db, "latest_payment", manual_payment_in_window)
+    result = run_due_payments(date(2026, 12, DUE_DAY))
+    assert s6.fake.calls == []
+    assert [(r["method"], r["status"]) for r in history(s6)] == [("manual", "Paid")]
+    assert result == RunResult(charged=0, failed=0, skipped=1)
+
+
+def test_f01_manual_payment_during_charge_is_refused_as_pending(s6):
+    # F-01: once the scheduled Pending row is committed, a manual payment raises
+    # PaymentPending (D27). It would block if the run held the unit lock during the charge.
+    from app import processor
+    from app.payments import PaymentPending, RunResult, record_manual_payment, run_due_payments
+
+    outcomes = []
+
+    class ManualPaymentDuringCharge(processor.FakeProcessor):
+        def charge(self, token, amount_cents, idempotency_key):
+            try:
+                record_manual_payment(s6.units["MR-12"], MONTH)
+                outcomes.append("recorded")
+            except PaymentPending:
+                outcomes.append("PaymentPending")
+            return super().charge(token, amount_cents, idempotency_key)
+
+    processor.set_processor(ManualPaymentDuringCharge())
+    assert schedule(s6).status_code == 201
+    result = run_due_payments(date(2026, 12, DUE_DAY))
+    assert outcomes == ["PaymentPending"]
+    assert [(r["method"], r["status"]) for r in history(s6)] == [("debit", "Paid")]
+    assert result == RunResult(charged=1, failed=0, skipped=0)
