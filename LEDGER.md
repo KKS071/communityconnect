@@ -861,3 +861,26 @@ risk: The Paid-payment guard is not atomic with processor charging. Concurrent m
 **Risk:** The concurrency protection follows the single-runner assumption (D32). Multiple concurrent scheduled-payment runners are not covered. OQ5 remains unresolved.
 
 **Decision:** F-01 and F-03 remediation accepted under the documented design assumptions, based on successful regression testing.
+
+## Entry 53 — AGENT-03 F-04, F-05 and F-25 Remediation
+
+artifact: `app/access.py`, `app/main.py`, `tests/test_s6_payments.py`, `docs/design/S-6.md`.
+
+tool: Claude Code prepared the implementation proposal and coordinated security-reviewer, test-analyst and code-reviewer reviews. ChatGPT (GPT-6) assisted with review decisions. Human reviewer approved, applied and tested the changes.
+
+prompts: `prompts/53-s6-fix-AGENT-03-F04-F05-F25.md` — Combined remediation, independent review and approved v2 revision.
+
+review: F-04 added negative and authorization regression coverage. F-05 centralized payment-viewing authorization in `app/access.py`, preserving community isolation and documented role restrictions. F-25 corrected outdated S-6 implementation-status wording. Reviewer recommendations strengthened cross-community tests, clarified documentation and avoided encoding unresolved design decisions.
+
+checks:
+- `python3 -m pytest tests/test_s6_payments.py -v` — 79 passed, 1 skipped, 1 warning in 190.49 seconds.
+- `python3 -m pytest` — 169 passed, 1 skipped, 1 warning in 348.57 seconds.
+- AC-18 through AC-21 passed.
+- AC-22 remains skipped.
+- No test failures.
+
+evidence: Committed application code, regression tests, S-6 design documentation, saved Prompt 53 and implementation commit cbf56d6.
+
+risk: AC-22 retry behavior remains unimplemented. OQ2, OQ4 and OQ5 remain unresolved. The resident-without-unit case now fails closed with 404. Some stale wording outside the approved file scope remains for a separate cleanup.
+
+decision: Accept F-04, F-05 and F-25 remediation based on the successful focused and full regression tests, subject to final commit review.
