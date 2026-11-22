@@ -808,7 +808,7 @@ artifact: `CLAUDE.md` and `.claude/settings.json`. Configuration commit `8f8ecf0
 
 tool: Sandeep edited the project configuration using WSL; Claude Code tested the permission boundary and generated the documentation patch; ChatGPT (GPT-6) assisted with configuration and workflow review.
 
-prompts: Claude patch-output authorization and permission-verification prompts, followed by the F-23/F-06 patch-generation request. Retain the exact prompts and Claude permission-denial reports as historical evidence.
+prompts: prompts/50-Documentation implementation authorization.md, Claude patch-output authorization and permission-verification prompts, followed by the F-23/F-06 patch-generation request. Retain the exact prompts and Claude permission-denial reports as historical evidence.
 
 review: The initial configuration denied Write because the permission rule did not match the attempted operation. The configuration was corrected to allow `Edit(./agent-patches/**)` while retaining `dontAsk` and denying Bash and NotebookEdit. `CLAUDE.md` was updated to authorize creation of new patch files only in `agent-patches/`, The permission configuration was committed separately from the design documentation.
 
@@ -820,11 +820,11 @@ risk: The scoped Edit permission is not a strict create-only guarantee and may a
 
 ## Entry 51 — AGENT-03 F-02 Paid-Payment Guard Remediation
 
-artifact: `app/payments.py` and `tests/test_s6_payments.py`. Implementation commit: 
+artifact: `app/payments.py` and `tests/test_s6_payments.py`. Implementation commit: d575033
 
 tool: Claude Code prepared the restricted unified patch; ChatGPT (GPT-6) reviewed the proposed change; human reviewer applied the patch and ran the tests locally, 2026-11-21.
 
-prompts: AGENT-03 F-02 investigation followed by human-approved minimal implementation and regression-test preparation. Claude created `agent-patches/AGENT-03-F02-paid-guard.patch` without directly editing application files.
+prompts: prompts/51-s6-fix-AGENT-03 F-02.md, AGENT-03 F-02 investigation followed by human-approved minimal implementation and regression-test preparation. Claude created `agent-patches/AGENT-03-F02-paid-guard.patch` without directly editing application files.
 
 review: Added `db.has_paid_payment()` before `db.latest_payment()` in the due-schedule loop. Any existing Paid payment for the same unit and billing month now increments `skipped` and prevents another processor call. Added six regression tests covering an earlier Paid row followed by Failed, Paid with Pending, manual payment after decline, repeated processing, different billing months, and different units. Existing acceptance-test assertions were preserved. F-01 concurrency and AC-22 retries remain outside scope.
 
@@ -835,6 +835,29 @@ checks:
 - All six new F-02 regression tests passed.
 - AC-22 remains skipped.
 
-evidence: AGENT-03 F-02 investigation; `agent-patches/AGENT-03-F02-paid-guard.patch`; `app/payments.py`; `tests/test_s6_payments.py`; implementation commit .
+evidence: AGENT-03 F-02 investigation; `app/payments.py`; `tests/test_s6_payments.py`; implementation commit d575033.
 
 risk: The Paid-payment guard is not atomic with processor charging. Concurrent manual and scheduled payment operations may still create an external double-charge risk (F-01). The new tests do not establish concurrency safety. AC-22 retry processing remains unimplemented.
+
+## Entry 52 — AGENT-03 F-01 and F-03 Payment Safety Remediation
+
+**Artifact:** `app/db.py`, `app/payments.py`, `tests/test_s6_payments.py`.
+
+**Tool:** Claude Code (combined investigation and implementation preparation); ChatGPT GPT-6 (review); human reviewer (application and testing).
+
+**Prompt:** `prompts/52-s6-fix-AGENT-03-F01-F03.md` — Combined F-01 concurrency and F-03 crash-recovery remediation. Claude was instructed to preserve existing acceptance tests, follow the approval-first workflow, and avoid unauthorized repository changes.
+
+**Review:** F-01 introduced database-level protection for concurrent manual and scheduled payment operations. F-03 strengthened crash-recovery testing to verify Pending persistence, idempotency-key reuse, original payment amount, and prevention of duplicate attempts. Three regression tests were added without modifying existing acceptance-test assertions.
+
+**Checks:**
+- S-6 tests: 13 passed, 1 skipped, 1 warning (37.39 seconds).
+- Full regression suite: 103 passed, 1 skipped, 1 warning (214.85 seconds).
+- AC-18 through AC-21 passed.
+- All three new F-01/F-03 regression tests passed.
+- AC-22 remains skipped.
+
+**Evidence:** Committed changes to `app/db.py`, `app/payments.py`, and `tests/test_s6_payments.py`; saved Prompt 52; implementation commit 8b04c21; pytest results recorded above.
+
+**Risk:** The concurrency protection follows the single-runner assumption (D32). Multiple concurrent scheduled-payment runners are not covered. OQ5 remains unresolved.
+
+**Decision:** F-01 and F-03 remediation accepted under the documented design assumptions, based on successful regression testing.

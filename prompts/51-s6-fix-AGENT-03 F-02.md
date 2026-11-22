@@ -1,0 +1,7 @@
+Prompt 1 — AGENT-03 F-02 Investigation
+
+Investigate AGENT-03 finding F-02 before AC-22 implementation. Determine whether an earlier Paid payment can be overlooked when a later Failed or Pending payment is returned by latest_payment(). Examine the payment processing logic, identify the smallest safe correction, propose regression tests, and explain the relationship to F-01 concurrency and AC-22 retries. Do not modify files or run tests. Report the findings and request approval before implementation.
+
+Prompt 2 — AGENT-03 F-02 Approved Implementation
+
+Implement the approved F-02 correction by checking db.has_paid_payment() before db.latest_payment() in the due-schedule loop. When a Paid payment already exists for the unit and billing month, increment skipped and do not charge again. Preserve Pending and Failed handling, and do not implement AC-22. Add six regression tests covering earlier Paid followed by Failed, Paid with Pending, manual Paid after decline, same-day repeated processing, different billing months, and different units. Modify only app/payments.py and tests/test_s6_payments.py. Generate agent-patches/AGENT-03-F02-paid-guard.patch without applying it, running tests, committing, or pushing.
