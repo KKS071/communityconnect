@@ -1,10 +1,10 @@
 """S-6 Scheduled monthly dues payment (docs/design/S-6.md).
 
-Written before any S-6 code existed (handout 6b). AC-18 to AC-21 are implemented and their tests
-run. AC-22 is not implemented, so its test keeps its skip marker; the NOT_BUILT reason text
-predates AC-18 and is kept unchanged. Do not delete or weaken any test; remove the AC-22 skip
-marker only when AC-22 is approved and built. Imports of S-6 modules stay inside the tests. The
-AGENT-03 regression tests at the end of this file add checks and change no AC expectation.
+Written before any S-6 code existed (handout 6b). AC-18 to AC-22 are implemented and none of
+their tests is skipped; the AC-22 skip marker was removed with the AC-22 patch, and the NOT_BUILT
+constant it used is kept unchanged. Do not delete or weaken any test. Imports of S-6 modules stay
+inside the tests. The AGENT-03 and AC-22 regression tests at the end of this file add checks and
+change no AC expectation.
 
 Interfaces used: app.payments (run_due_payments, record_manual_payment), app.processor
 (FakeProcessor, set_processor), app.clock.now, app.seed.set_dues (S-6 D24, D28 to D30).
@@ -141,7 +141,6 @@ def test_ac21_manual_payment_prevents_scheduled_charge(s6):
     assert rows[0]["status"] == "Paid"
 
 
-@pytest.mark.skip(reason=f"AC-22: {NOT_BUILT}")
 def test_ac22_declined_charge_retried_after_delay(s6):
     # AC-22: the processor declines on day 5; once RETRY_DELAY_DAYS have passed the history
     # shows the first attempt as Failed and one retry attempt.
@@ -774,3 +773,528 @@ def test_f04_community_without_dues_and_ach_schedules_are_not_charged(s6):
     pine = s6.get(_payments_url(s6, community="PH"), "R2")
     assert pine.status_code == 200
     assert pine.json() == []
+
+
+# AC-22 retry regression tests (approved scope, Prompts 55 to 58). They follow R5, D15 to
+# D17, D25, D26, D27, D30 and D35: failed_on is the `today` of the run in which an attempt
+# became Failed, a Failed row without failed_on is never retried, and an earlier billing
+# month is never retried (OQ3 stays open). Settings are read, or overridden with
+# monkeypatch, never copied as numbers. The F-11 tests check the finish_payment state guard
+# and conflicting completions; the F-01 test checks READ COMMITTED on the lock transactions.
+
+FIRST = date(2026, 12, DUE_DAY)
+
+
+@pytest.fixture
+def install_processor(s6, monkeypatch):
+    """Use the given processor for one test. monkeypatch restores get_processor afterwards
+    (AGENT-03 F-16) without changing the s6 fixture."""
+    from app import processor
+
+    def install(p):
+        monkeypatch.setattr(processor, "get_processor", lambda: p)
+        return p
+
+    return install
+
+
+def _require_retries():
+    """Settings assumptions for tests that need a retry inside December (D15)."""
+    assert settings.MAX_PAYMENT_ATTEMPTS >= 2, "these tests need at least one retry"
+    last_day = FIRST.day + settings.MAX_PAYMENT_ATTEMPTS * (settings.RETRY_DELAY_DAYS + 2)
+    assert last_day <= 31, "these tests need every retry date inside December"
+
+
+def _attempts(w, user="R1", month=MONTH):
+    return [(r["attempt"], r["status"]) for r in history(w, user=user, month=month)]
+
+
+def _failed_on(w, month=MONTH):
+    """failed_on of R1's latest attempt in the month, read with app.db (no SQL in tests)."""
+    from app import db
+
+    return db.latest_payment(w.units["MR-12"], month)["failed_on"]
+
+
+def _key(w, attempt, unit="MR-12", month=MONTH):
+    return f"{w.units[unit]}:{month}:{attempt}"
+
+
+def _declining_keys(keys):
+    """A FakeProcessor that declines exactly the given idempotency keys (D29 otherwise)."""
+    from app import processor
+
+    class DeclineKeys(processor.FakeProcessor):
+        def charge(self, token, amount_cents, idempotency_key):
+            self.declined_tokens = (frozenset({token}) if idempotency_key in keys
+                                    else frozenset())
+            return super().charge(token, amount_cents, idempotency_key)
+
+    return DeclineKeys()
+
+
+def _completing_processor(stored_status):
+    """A FakeProcessor that, like a second runner, completes the Pending row itself with
+    stored_status before returning its own result (D32 broken on purpose; F-11)."""
+    from app import db, processor
+
+    class CompletesFirst(processor.FakeProcessor):
+        def charge(self, token, amount_cents, idempotency_key):
+            for p in db.pending_payments():
+                if p["idempotency_key"] == idempotency_key:
+                    db.finish_payment(p["id"], stored_status, "other_runner",
+                                      FIRST.isoformat())
+            return super().charge(token, amount_cents, idempotency_key)
+
+    return CompletesFirst(declined_tokens=frozenset({DECLINED_TOKEN}))
+
+
+def _failed_attempt_1(w, failed_on):
+    """Attempt 1 for R1's unit this month, Failed on failed_on, built with app.db (no SQL)."""
+    from app import db
+
+    payment_id = db.create_pending_payment(
+        w.units["MR-12"], MONTH, DUES_CENTS, "debit", _key(w, 1), "2026-11-20T12:00:00Z")
+    assert db.finish_payment(payment_id, "Failed", "test_declined", failed_on.isoformat())
+
+
+def _claim(w, attempt, **retry):
+    """Call the locked claim directly for R1's unit this month (D35); no SQL in tests."""
+    from app import db
+
+    return db.claim_pending_payment(w.units["MR-12"], MONTH, DUES_CENTS, "debit",
+                                    _key(w, attempt), "2026-11-20T12:00:00Z",
+                                    attempt=attempt, **retry)
+
+
+def test_ac22_no_retry_before_retry_delay_days(s6):
+    # R5, D17: no run before RETRY_DELAY_DAYS have passed makes a new attempt.
+    from app.payments import RunResult, run_due_payments
+
+    _require_retries()
+    assert schedule(s6, token=DECLINED_TOKEN).status_code == 201
+    assert run_due_payments(FIRST) == RunResult(charged=0, failed=1, skipped=0)
+    for days in range(settings.RETRY_DELAY_DAYS):
+        assert run_due_payments(FIRST + timedelta(days=days)) == RunResult()
+    assert _attempts(s6) == [(1, "Failed")]
+    assert len(s6.fake.calls) == 1
+
+
+def test_ac22_exactly_one_retry_on_the_first_eligible_run(s6):
+    # R5, D16, D17: the first run RETRY_DELAY_DAYS after the decline makes one attempt 2 with
+    # its own key, counted in failed; a second run that day makes no attempt.
+    from app.payments import RunResult, run_due_payments
+
+    _require_retries()
+    assert schedule(s6, token=DECLINED_TOKEN).status_code == 201
+    run_due_payments(FIRST)
+    retry_day = FIRST + timedelta(days=settings.RETRY_DELAY_DAYS)
+    assert run_due_payments(retry_day) == RunResult(charged=0, failed=1, skipped=0)
+    assert run_due_payments(retry_day) == RunResult()
+    assert _attempts(s6) == [(1, "Failed"), (2, "Failed")]
+    assert [call[2] for call in s6.fake.calls] == [_key(s6, 1), _key(s6, 2)]
+
+
+def test_ac22_retry_follows_a_nondefault_retry_delay(s6, monkeypatch):
+    # D15, R5: the delay is read from settings at run time, so one more day than the default
+    # means no retry on the default's day and one retry a day later.
+    from app.payments import run_due_payments
+
+    monkeypatch.setattr(settings, "RETRY_DELAY_DAYS", settings.RETRY_DELAY_DAYS + 1)
+    _require_retries()
+    assert schedule(s6, token=DECLINED_TOKEN).status_code == 201
+    run_due_payments(FIRST)
+    run_due_payments(FIRST + timedelta(days=settings.RETRY_DELAY_DAYS - 1))
+    assert _attempts(s6) == [(1, "Failed")]
+    run_due_payments(FIRST + timedelta(days=settings.RETRY_DELAY_DAYS))
+    assert _attempts(s6) == [(1, "Failed"), (2, "Failed")]
+
+
+def test_ac22_late_run_still_makes_exactly_one_retry(s6):
+    # R5: the retry happens on the first run at least RETRY_DELAY_DAYS after the decline,
+    # even when that run comes days later than the eligible date.
+    from app.payments import RunResult, run_due_payments
+
+    _require_retries()
+    assert schedule(s6, token=DECLINED_TOKEN).status_code == 201
+    run_due_payments(FIRST)
+    late_day = FIRST + timedelta(days=settings.RETRY_DELAY_DAYS + 2)
+    assert run_due_payments(late_day) == RunResult(charged=0, failed=1, skipped=0)
+    assert run_due_payments(late_day) == RunResult()
+    assert _attempts(s6) == [(1, "Failed"), (2, "Failed")]
+
+
+def test_ac22_attempts_stop_at_max_with_unique_keys(s6, monkeypatch):
+    # R2, R5, D17: with one more attempt allowed than the default, attempts stop at the
+    # maximum, each with its own key, later runs this month do nothing, and the schedule
+    # stays active.
+    from app.payments import run_due_payments
+
+    monkeypatch.setattr(settings, "MAX_PAYMENT_ATTEMPTS", settings.MAX_PAYMENT_ATTEMPTS + 1)
+    _require_retries()
+    maximum, delay = settings.MAX_PAYMENT_ATTEMPTS, settings.RETRY_DELAY_DAYS
+    assert schedule(s6, token=DECLINED_TOKEN).status_code == 201
+    for n in range(maximum):
+        assert run_due_payments(FIRST + timedelta(days=n * delay)).failed == 1
+    for day in range(FIRST.day, 32):
+        run_due_payments(date(2026, 12, day))
+    assert _attempts(s6) == [(n, "Failed") for n in range(1, maximum + 1)]
+    keys = [call[2] for call in s6.fake.calls]
+    assert keys == [_key(s6, n) for n in range(1, maximum + 1)]
+    assert len(set(keys)) == len(keys)
+    assert s6.get(_mine_url(s6), "R1").json()["active"] is True
+
+
+def test_ac22_successful_retry_is_paid_and_nothing_is_charged_after(s6, install_processor):
+    # R1, R3, D16: a retry that succeeds is Paid and counted in charged; no later run in the
+    # month calls the processor, and the Paid attempt keeps failed_on null (D35).
+    from app.payments import RunResult, run_due_payments
+
+    _require_retries()
+    fake = install_processor(_declining_keys({_key(s6, 1)}))
+    assert schedule(s6).status_code == 201
+    assert run_due_payments(FIRST) == RunResult(charged=0, failed=1, skipped=0)
+    retry_day = FIRST + timedelta(days=settings.RETRY_DELAY_DAYS)
+    assert run_due_payments(retry_day) == RunResult(charged=1, failed=0, skipped=0)
+    for day in range(retry_day.day, 32):
+        run_due_payments(date(2026, 12, day))
+    assert _attempts(s6) == [(1, "Failed"), (2, "Paid")]
+    assert _failed_on(s6) is None
+    assert [call[2] for call in fake.calls] == [_key(s6, 1), _key(s6, 2)]
+
+
+def test_ac22_delay_counts_from_the_run_that_declined(s6):
+    # D16, D17, D35: attempt 1 stays Pending while the processor is unavailable on day 5 and
+    # is declined by the D26 replay on day 6, so failed_on is day 6 and the retry waits for it.
+    from app.payments import RunResult, run_due_payments
+
+    _require_retries()
+    s6.fake.unavailable = True
+    assert schedule(s6, token=DECLINED_TOKEN).status_code == 201
+    assert run_due_payments(FIRST) == RunResult(charged=0, failed=0, skipped=1)
+    s6.fake.unavailable = False
+    declined_day = FIRST + timedelta(days=1)
+    assert run_due_payments(declined_day).failed == 1
+    assert _failed_on(s6) == declined_day.isoformat()  # not FIRST, when attempt 1 was created
+    run_due_payments(declined_day + timedelta(days=settings.RETRY_DELAY_DAYS - 1))
+    assert _attempts(s6) == [(1, "Failed")]
+    retry_day = declined_day + timedelta(days=settings.RETRY_DELAY_DAYS)
+    run_due_payments(retry_day)
+    assert _attempts(s6) == [(1, "Failed"), (2, "Failed")]
+    assert _failed_on(s6) == retry_day.isoformat()
+
+
+def test_ac22_crash_during_retry_replays_its_key_and_stored_amount(s6, install_processor):
+    # D4, D26, D30, D31: attempt 2 is Pending before its charge; after a crash the restart
+    # replays key :2 with its stored amount, adds no attempt, and leaves one Paid payment.
+    from app import db, processor, seed
+    from app.payments import run_due_payments
+
+    _require_retries()
+    first_key, retry_key = _key(s6, 1), _key(s6, 2)
+
+    class CrashOnRetry(processor.FakeProcessor):
+        crash = True
+
+        def __init__(self):
+            super().__init__()
+            self.pending_seen = []
+
+        def charge(self, token, amount_cents, idempotency_key):
+            self.declined_tokens = (frozenset({token}) if idempotency_key == first_key
+                                    else frozenset())
+            self.pending_seen.append(
+                [(p["idempotency_key"], p["amount_cents"]) for p in db.pending_payments()])
+            result = super().charge(token, amount_cents, idempotency_key)
+            if self.crash and idempotency_key == retry_key:
+                raise SimulatedCrash()
+            return result
+
+    crashing = install_processor(CrashOnRetry())
+    assert schedule(s6).status_code == 201
+    run_due_payments(FIRST)
+    retry_day = FIRST + timedelta(days=settings.RETRY_DELAY_DAYS)
+    with pytest.raises(SimulatedCrash):
+        run_due_payments(retry_day)
+    assert crashing.pending_seen[-1] == [(retry_key, DUES_CENTS)]
+    assert _attempts(s6) == [(1, "Failed"), (2, "Pending")]
+
+    seed.set_dues(s6.communities["MR"], DUES_CENTS + 100)
+    crashing.crash = False
+    assert run_due_payments(retry_day).charged == 1
+    assert crashing.calls == [(GOOD_TOKEN, DUES_CENTS, first_key),
+                              (GOOD_TOKEN, DUES_CENTS, retry_key),
+                              (GOOD_TOKEN, DUES_CENTS, retry_key)]
+    assert [(r["attempt"], r["status"], r["amount_cents"]) for r in history(s6)] == [
+        (1, "Failed", DUES_CENTS), (2, "Paid", DUES_CENTS)]
+
+
+def test_ac22_unavailable_processor_during_retry_keeps_it_pending(s6):
+    # D16, D26: an unavailable retry stays Pending without using an attempt; the next run
+    # replays key :2 and makes no further attempt.
+    from app.payments import RunResult, run_due_payments
+
+    _require_retries()
+    assert schedule(s6, token=DECLINED_TOKEN).status_code == 201
+    run_due_payments(FIRST)
+    retry_day = FIRST + timedelta(days=settings.RETRY_DELAY_DAYS)
+    s6.fake.unavailable = True
+    assert run_due_payments(retry_day) == RunResult(charged=0, failed=0, skipped=1)
+    assert _attempts(s6) == [(1, "Failed"), (2, "Pending")]
+    s6.fake.unavailable = False
+    assert run_due_payments(retry_day + timedelta(days=1)).failed == 1
+    assert _attempts(s6) == [(1, "Failed"), (2, "Failed")]
+    assert [call[2] for call in s6.fake.calls] == [_key(s6, 1), _key(s6, 2), _key(s6, 2)]
+
+
+def test_ac22_manual_payment_before_retry_prevents_it(s6):
+    # R3, D25, D27: a manual payment recorded after the decline stops the retry.
+    from app.payments import RunResult, record_manual_payment, run_due_payments
+
+    _require_retries()
+    assert schedule(s6, token=DECLINED_TOKEN).status_code == 201
+    run_due_payments(FIRST)
+    record_manual_payment(s6.units["MR-12"], MONTH)
+    retry_day = FIRST + timedelta(days=settings.RETRY_DELAY_DAYS)
+    assert run_due_payments(retry_day) == RunResult(charged=0, failed=0, skipped=1)
+    assert len(s6.fake.calls) == 1
+    assert [(r["attempt"], r["method"], r["status"]) for r in history(s6)] == [
+        (1, "debit", "Failed"), (1, "manual", "Paid")]
+
+
+def test_ac22_manual_payment_racing_retry_creation_prevents_charge(s6, monkeypatch):
+    # F-01, D27: the manual payment commits after the run's pre-checks but before the retry
+    # is claimed. The locked re-check sees it, so attempt 2 is never created or charged.
+    from app import db
+    from app.payments import RunResult, record_manual_payment, run_due_payments
+
+    _require_retries()
+    assert schedule(s6, token=DECLINED_TOKEN).status_code == 201
+    run_due_payments(FIRST)
+    real_latest_payment = db.latest_payment
+
+    def manual_payment_in_window(unit_id, billing_month):
+        prior = real_latest_payment(unit_id, billing_month)
+        record_manual_payment(s6.units["MR-12"], MONTH)
+        return prior
+
+    monkeypatch.setattr(db, "latest_payment", manual_payment_in_window)
+    result = run_due_payments(FIRST + timedelta(days=settings.RETRY_DELAY_DAYS))
+    assert result == RunResult(charged=0, failed=0, skipped=1)
+    assert len(s6.fake.calls) == 1
+    assert [(r["attempt"], r["method"], r["status"]) for r in history(s6)] == [
+        (1, "debit", "Failed"), (1, "manual", "Paid")]
+
+
+def test_ac22_manual_payment_while_retry_pending_raises_payment_pending(s6):
+    # D27: while attempt 2 is Pending, a manual payment raises PaymentPending and records
+    # nothing.
+    from app.payments import PaymentPending, record_manual_payment, run_due_payments
+
+    _require_retries()
+    assert schedule(s6, token=DECLINED_TOKEN).status_code == 201
+    run_due_payments(FIRST)
+    s6.fake.unavailable = True
+    run_due_payments(FIRST + timedelta(days=settings.RETRY_DELAY_DAYS))
+    with pytest.raises(PaymentPending):
+        record_manual_payment(s6.units["MR-12"], MONTH)
+    assert _attempts(s6) == [(1, "Failed"), (2, "Pending")]
+
+
+def test_ac22_retry_uses_current_dues_and_replay_uses_stored_amount(s6):
+    # D30, D35: a new retry takes the dues at its creation; replaying that Pending retry
+    # later uses its stored amount even after the dues change again.
+    from app import seed
+    from app.payments import run_due_payments
+
+    _require_retries()
+    assert schedule(s6, token=DECLINED_TOKEN).status_code == 201
+    run_due_payments(FIRST)
+    seed.set_dues(s6.communities["MR"], DUES_CENTS + 100)
+    s6.fake.unavailable = True
+    retry_day = FIRST + timedelta(days=settings.RETRY_DELAY_DAYS)
+    run_due_payments(retry_day)
+    seed.set_dues(s6.communities["MR"], DUES_CENTS + 200)
+    s6.fake.unavailable = False
+    run_due_payments(retry_day + timedelta(days=1))
+    assert [(r["attempt"], r["amount_cents"]) for r in history(s6)] == [
+        (1, DUES_CENTS), (2, DUES_CENTS + 100)]
+    assert [call[1] for call in s6.fake.calls] == [
+        DUES_CENTS, DUES_CENTS + 100, DUES_CENTS + 100]
+
+
+def test_ac22_new_month_starts_again_at_attempt_1(s6):
+    # D17, D25: after the last allowed attempt fails in December, January starts at
+    # attempt 1 with its own key, and December keeps its attempts.
+    from app.payments import run_due_payments
+
+    _require_retries()
+    maximum, delay = settings.MAX_PAYMENT_ATTEMPTS, settings.RETRY_DELAY_DAYS
+    assert schedule(s6, token=DECLINED_TOKEN).status_code == 201
+    for n in range(maximum):
+        run_due_payments(FIRST + timedelta(days=n * delay))
+    assert len(history(s6)) == maximum
+    assert run_due_payments(date(2027, 1, DUE_DAY)).failed == 1
+    assert _attempts(s6, month="2027-01") == [(1, "Failed")]
+    assert s6.fake.calls[-1][2] == _key(s6, 1, month="2027-01")
+    assert len(history(s6)) == maximum
+
+
+def test_ac22_decline_is_not_retried_in_a_later_month(s6, monkeypatch):
+    # D17, D25, D35 (OQ3 stays open): a decline on 2026-11-28 whose retry date falls in
+    # December is never retried for November; December gets its own attempt 1.
+    from app.payments import run_due_payments
+
+    declined_day = date(2026, 11, 28)
+    monkeypatch.setattr(settings, "RETRY_DELAY_DAYS", (date(2026, 12, 1) - declined_day).days)
+    _require_retries()
+    assert schedule(s6, day=28, token=DECLINED_TOKEN).status_code == 201
+    assert run_due_payments(declined_day).failed == 1
+    for today in (date(2026, 11, 29), date(2026, 11, 30), date(2026, 12, 1),
+                  date(2026, 12, 28)):
+        run_due_payments(today)
+    assert _attempts(s6, month="2026-11") == [(1, "Failed")]
+    assert _attempts(s6, month="2026-12") == [(1, "Failed")]
+
+
+def test_ac22_failed_row_without_failed_on_is_never_retried(s6):
+    # D35 (Prompt 55 decision 3): a Failed attempt stored without failed_on, as before the
+    # migration, is never retried. It is built with app.db functions, so no SQL is added.
+    from app.payments import RunResult, run_due_payments
+
+    _require_retries()
+    assert schedule(s6, token=DECLINED_TOKEN).status_code == 201
+    _record_attempt(s6, "Failed")
+    for day in range(FIRST.day, 32):
+        assert run_due_payments(date(2026, 12, day)) == RunResult()
+    assert s6.fake.calls == []
+    assert _attempts(s6) == [(1, "Failed")]
+
+
+def test_ac22_init_db_again_keeps_payments_and_retry_still_works(s6):
+    # D35 (Prompt 58 SF-7): the failed_on migration is repeatable. Running init_db() again
+    # keeps an existing Failed payment and its failed_on, and the next eligible run retries it.
+    from app import db
+    from app.payments import RunResult, run_due_payments
+
+    _require_retries()
+    assert schedule(s6, token=DECLINED_TOKEN).status_code == 201
+    run_due_payments(FIRST)
+    before = history(s6)
+    db.init_db()
+    db.init_db()
+    assert history(s6) == before
+    assert _failed_on(s6) == FIRST.isoformat()
+    retry_day = FIRST + timedelta(days=settings.RETRY_DELAY_DAYS)
+    assert run_due_payments(retry_day) == RunResult(charged=0, failed=1, skipped=0)
+    assert _attempts(s6) == [(1, "Failed"), (2, "Failed")]
+
+
+def test_ac22_claim_refuses_an_attempt_beyond_max_attempts(s6):
+    # D17, D35: under the lock, attempt 2 is refused when max_attempts allows only one
+    # attempt, and inserted when it allows two, on the same eligible day.
+    attempt = 2
+    _failed_attempt_1(s6, FIRST)
+    retry = {"today": FIRST + timedelta(days=settings.RETRY_DELAY_DAYS),
+             "retry_delay_days": settings.RETRY_DELAY_DAYS}
+    assert _claim(s6, attempt, max_attempts=attempt - 1, **retry) == (None, "Exists")
+    assert _attempts(s6) == [(1, "Failed")]
+    payment_id, conflict = _claim(s6, attempt, max_attempts=attempt, **retry)
+    assert conflict is None and payment_id is not None
+    assert _attempts(s6) == [(1, "Failed"), (2, "Pending")]
+
+
+def test_ac22_claim_refuses_a_skipped_attempt_number(s6):
+    # D17, D35: a retry must be the latest attempt + 1, so attempt 3 after a Failed attempt 1
+    # is refused even when enough attempts are allowed; attempt 2 is then inserted.
+    skipped = 3
+    _failed_attempt_1(s6, FIRST)
+    retry = {"today": FIRST + timedelta(days=settings.RETRY_DELAY_DAYS),
+             "retry_delay_days": settings.RETRY_DELAY_DAYS, "max_attempts": skipped}
+    assert _claim(s6, skipped, **retry) == (None, "Exists")
+    assert _attempts(s6) == [(1, "Failed")]
+    payment_id, conflict = _claim(s6, skipped - 1, **retry)
+    assert conflict is None and payment_id is not None
+    assert _attempts(s6) == [(1, "Failed"), (2, "Pending")]
+
+
+@pytest.mark.parametrize("missing", ["today", "retry_delay_days", "max_attempts"])
+def test_ac22_claim_retry_needs_every_retry_argument(s6, missing):
+    # D35: a retry claim without today, retry_delay_days or max_attempts raises ValueError
+    # before any database work, and nothing is stored.
+    attempt = 2
+    _failed_attempt_1(s6, FIRST)
+    retry = {"today": FIRST + timedelta(days=settings.RETRY_DELAY_DAYS),
+             "retry_delay_days": settings.RETRY_DELAY_DAYS, "max_attempts": attempt}
+    retry[missing] = None
+    with pytest.raises(ValueError):
+        _claim(s6, attempt, **retry)
+    assert _attempts(s6) == [(1, "Failed")]
+
+
+def test_f11_finish_payment_never_overwrites_a_completed_payment(s6):
+    # D4 (AGENT-03 F-11): only a Pending payment can be completed. Finishing a Paid or a
+    # Failed payment again changes nothing and returns False.
+    from app import db
+
+    paid = _record_attempt(s6, "Paid")
+    assert db.finish_payment(paid, "Failed", "late_result", "2026-12-09") is False
+    assert _attempts(s6) == [(1, "Paid")]
+    unit = s6.units["MR-20"]
+    failed = db.create_pending_payment(
+        unit, MONTH, DUES_CENTS, "debit", f"{unit}:{MONTH}:1", "2026-11-20T12:00:00Z")
+    assert db.finish_payment(failed, "Failed", "first_result", "2026-12-05") is True
+    assert db.finish_payment(failed, "Paid", "late_result") is False
+    assert _attempts(s6, user="R3") == [(1, "Failed")]
+
+
+def test_f11_agreeing_completion_is_left_unchanged_and_not_counted(s6, install_processor):
+    # Prompt 56 decision 2 (F-11, D16): the row was already completed with the processor's
+    # own result, so the run leaves it as it is and counts no second completion.
+    from app.payments import RunResult, run_due_payments
+
+    install_processor(_completing_processor("Paid"))
+    assert schedule(s6).status_code == 201
+    assert run_due_payments(FIRST) == RunResult()
+    assert _attempts(s6) == [(1, "Paid")]
+    assert _failed_on(s6) is None  # a date passed with Paid is not stored (D35)
+
+
+@pytest.mark.parametrize("stored, token", [("Failed", GOOD_TOKEN), ("Paid", DECLINED_TOKEN)])
+def test_f11_conflicting_completion_stops_the_run_without_overwriting(s6, install_processor,
+                                                                      stored, token):
+    # Prompt 56 decision 2 (F-11, D31; Prompt 58 SF-5): the row is already stored with the
+    # opposite of the processor's result (Failed vs success, or Paid vs decline), so the run
+    # stops with an error and the stored row, including its failed_on, is kept.
+    from app.payments import run_due_payments
+
+    install_processor(_completing_processor(stored))
+    assert schedule(s6, token=token).status_code == 201
+    with pytest.raises(RuntimeError, match="processor reported"):
+        run_due_payments(FIRST)
+    assert _attempts(s6) == [(1, stored)]
+    assert _failed_on(s6) == (FIRST.isoformat() if stored == "Failed" else None)
+
+
+def test_f01_locking_transactions_use_read_committed(s6, monkeypatch):
+    # Prompt 56 decision 1: the scheduled claim and record_manual_payment open their
+    # unit-lock transaction on a connection set to READ COMMITTED before its first query.
+    import psycopg
+    from app import db
+    from app.payments import record_manual_payment, run_due_payments
+
+    seen = []
+    real_connect = db.connect_read_committed
+
+    def spy():
+        conn = real_connect()
+        seen.append((conn.isolation_level, conn.info.transaction_status))
+        return conn
+
+    monkeypatch.setattr(db, "connect_read_committed", spy)
+    record_manual_payment(s6.units["MR-20"], MONTH)
+    assert schedule(s6).status_code == 201
+    run_due_payments(FIRST)
+    expected = (psycopg.IsolationLevel.READ_COMMITTED, psycopg.pq.TransactionStatus.IDLE)
+    assert seen == [expected, expected]
+    assert _attempts(s6) == [(1, "Paid")]

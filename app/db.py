@@ -1,5 +1,6 @@
 """PostgreSQL storage (docs/design/S-1.md section 5, D12, D16)."""
 
+from datetime import date, timedelta
 import re
 
 import psycopg
@@ -83,6 +84,17 @@ def connect() -> psycopg.Connection:
     )
 
 
+def connect_read_committed() -> psycopg.Connection:
+    """connect() with READ COMMITTED set before the first query (AGENT-03 F-01, AC-22).
+
+    The unit-row-locking transactions re-read payments after FOR UPDATE; at READ COMMITTED
+    that read sees rows another transaction committed while this one waited for the lock.
+    """
+    conn = connect()
+    conn.isolation_level = psycopg.IsolationLevel.READ_COMMITTED
+    return conn
+
+
 def init_db() -> None:
     """Create DATABASE_SCHEMA and the section 5 tables if they are missing (D16)."""
     with connect() as conn:
@@ -90,6 +102,10 @@ def init_db() -> None:
         conn.execute(TABLES)
         conn.execute("ALTER TABLE communities ADD COLUMN IF NOT EXISTS dues_amount_cents "
                      "BIGINT CHECK (dues_amount_cents > 0)")
+        # AC-22 (S-6 D35): additive, repeatable migration. failed_on is the `today` of the run
+        # in which an attempt became Failed; it is NULL for every other row, including old ones.
+        conn.execute("ALTER TABLE payments ADD COLUMN IF NOT EXISTS failed_on TEXT "
+                     "CHECK (failed_on ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$')")
 
 
 def due_schedules() -> list[dict]:
@@ -108,8 +124,8 @@ def due_schedules() -> list[dict]:
 def latest_payment(unit_id: int, billing_month: str) -> dict | None:
     with connect() as conn:
         return conn.execute(
-            "SELECT status FROM payments WHERE unit_id = %s AND billing_month = %s "
-            "ORDER BY attempt DESC, id DESC LIMIT 1", (unit_id, billing_month)
+            "SELECT status, attempt, failed_on FROM payments WHERE unit_id = %s "
+            "AND billing_month = %s ORDER BY attempt DESC, id DESC LIMIT 1", (unit_id, billing_month)
         ).fetchone()
 
 
@@ -126,44 +142,93 @@ def create_pending_payment(unit_id: int, billing_month: str, amount_cents: int,
 
 
 def claim_pending_payment(unit_id: int, billing_month: str, amount_cents: int,
-                          method: str, key: str, created_at: str) -> tuple[int | None, str | None]:
-    """Insert attempt 1 as Pending only while the month has no Payment (D4, D25; AGENT-03 F-01).
+                          method: str, key: str, created_at: str, attempt: int = 1,
+                          today: date | None = None, retry_delay_days: int | None = None,
+                          max_attempts: int | None = None) -> tuple[int | None, str | None]:
+    """Insert a scheduled attempt as Pending only while the month allows it (D4, D17, D25).
 
     Locks the unit row, as create_manual_payment does, so a scheduled attempt and a manual
-    payment for the same unit are serialized and each sees the other's committed row. The
-    transaction commits before returning; the processor is called afterwards, outside it.
-    Return (payment_id, None), or (None, 'Paid') / (None, 'Exists') when the month already
-    has a Paid payment / another payment.
+    payment for the same unit are serialized and each sees the other's committed row
+    (AGENT-03 F-01; READ COMMITTED is set before the first query). Under the lock: any Paid
+    payment gives (None, 'Paid') and any Pending payment gives (None, 'Exists'). Attempt 1
+    needs no payment for the month. A retry, attempt N > 1, needs _retry_allowed (D17, D35).
+    Otherwise (None, 'Exists'). The transaction commits before returning; the processor is
+    called afterwards, outside it. Return (payment_id, None) when the attempt was inserted.
     """
-    with connect() as conn:
+    if attempt > 1 and None in (today, retry_delay_days, max_attempts):
+        raise ValueError("A retry claim needs today, retry_delay_days and max_attempts")
+    with connect_read_committed() as conn:
         unit = conn.execute(
             "SELECT id FROM units WHERE id = %s FOR UPDATE", (unit_id,)
         ).fetchone()
         if unit is None:
             raise ValueError("Unknown unit")
         states = conn.execute(
-            "SELECT status FROM payments WHERE unit_id = %s AND billing_month = %s",
+            "SELECT status, attempt, failed_on FROM payments "
+            "WHERE unit_id = %s AND billing_month = %s ORDER BY attempt DESC, id DESC",
             (unit_id, billing_month),
         ).fetchall()
         if any(p["status"] == "Paid" for p in states):
             return None, "Paid"
-        if states:
+        if any(p["status"] == "Pending" for p in states):
+            return None, "Exists"
+        if attempt == 1:
+            if states:
+                return None, "Exists"
+        elif not _retry_allowed(states, attempt, today, retry_delay_days, max_attempts):
             return None, "Exists"
         row = conn.execute(
             "INSERT INTO payments (unit_id, billing_month, amount_cents, method, "
             "status, attempt, idempotency_key, processor_id, created_at) "
-            "VALUES (%s, %s, %s, %s, 'Pending', 1, %s, NULL, %s) RETURNING id",
-            (unit_id, billing_month, amount_cents, method, key, created_at),
+            "VALUES (%s, %s, %s, %s, 'Pending', %s, %s, NULL, %s) RETURNING id",
+            (unit_id, billing_month, amount_cents, method, attempt, key, created_at),
         ).fetchone()
         return row["id"], None
 
 
-def finish_payment(payment_id: int, status: str, processor_id: str) -> None:
+def _retry_allowed(states: list[dict], attempt: int, today: date, retry_delay_days: int,
+                   max_attempts: int) -> bool:
+    """D17 eligibility for retry attempt `attempt`, checked under the unit lock (D35).
+
+    `states` are the month's payments, latest attempt first. The latest must be attempt - 1
+    and Failed with a failed_on date at least retry_delay_days before today, and attempt
+    must not exceed max_attempts. A Failed row without failed_on is never retried.
+    """
+    if not states or attempt > max_attempts:
+        return False
+    latest = states[0]
+    if latest["status"] != "Failed" or latest["attempt"] != attempt - 1:
+        return False
+    if latest["failed_on"] is None:
+        return False
+    return date.fromisoformat(latest["failed_on"]) + timedelta(days=retry_delay_days) <= today
+
+
+def finish_payment(payment_id: int, status: str, processor_id: str,
+                   failed_on: str | None = None) -> bool:
+    """Complete a Pending payment as Paid or Failed (D4, D17; AGENT-03 F-11).
+
+    Only a Pending row changes, so a completed payment is never overwritten. failed_on is
+    the `today` (YYYY-MM-DD) of the run in which the attempt became Failed; it is stored
+    only for Failed. The run always passes it; it defaults to None only for older callers
+    such as test helpers. Return True if the row changed.
+    """
     with connect() as conn:
-        conn.execute(
-            "UPDATE payments SET status = %s, processor_id = %s WHERE id = %s",
-            (status, processor_id, payment_id),
+        cur = conn.execute(
+            "UPDATE payments SET status = %s, processor_id = %s, failed_on = %s "
+            "WHERE id = %s AND status = 'Pending'",
+            (status, processor_id, failed_on if status == "Failed" else None, payment_id),
         )
+        return cur.rowcount == 1
+
+
+def payment_status(payment_id: int) -> str | None:
+    """The stored status of one payment, or None if it does not exist (AGENT-03 F-11)."""
+    with connect() as conn:
+        row = conn.execute(
+            "SELECT status FROM payments WHERE id = %s", (payment_id,)
+        ).fetchone()
+        return None if row is None else row["status"]
 
 
 
@@ -195,7 +260,7 @@ def create_manual_payment(unit_id: int, billing_month: str, created_at: str) -> 
     Lock the unit row to serialize manual entries for the same unit. A single
     payment runner remains the design's operational assumption (D32).
     """
-    with connect() as conn:
+    with connect_read_committed() as conn:  # READ COMMITTED before the first query (F-01)
         unit = conn.execute(
             "SELECT c.dues_amount_cents FROM units u "
             "JOIN communities c ON c.id = u.community_id "
