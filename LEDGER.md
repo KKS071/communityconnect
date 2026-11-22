@@ -841,26 +841,26 @@ risk: The Paid-payment guard is not atomic with processor charging. Concurrent m
 
 ## Entry 52 — AGENT-03 F-01 and F-03 Payment Safety Remediation
 
-**Artifact:** `app/db.py`, `app/payments.py`, `tests/test_s6_payments.py`.
+Artifact: `app/db.py`, `app/payments.py`, `tests/test_s6_payments.py`.
 
-**Tool:** Claude Code (combined investigation and implementation preparation); ChatGPT GPT-6 (review); human reviewer (application and testing).
+Tool: Claude Code (combined investigation and implementation preparation); ChatGPT GPT-6 (review); human reviewer (application and testing).
 
-**Prompt:** `prompts/52-s6-fix-AGENT-03-F01-F03.md` — Combined F-01 concurrency and F-03 crash-recovery remediation. Claude was instructed to preserve existing acceptance tests, follow the approval-first workflow, and avoid unauthorized repository changes.
+Prompt: `prompts/52-s6-fix-AGENT-03-F01-F03.md` — Combined F-01 concurrency and F-03 crash-recovery remediation. Claude was instructed to preserve existing acceptance tests, follow the approval-first workflow, and avoid unauthorized repository changes.
 
-**Review:** F-01 introduced database-level protection for concurrent manual and scheduled payment operations. F-03 strengthened crash-recovery testing to verify Pending persistence, idempotency-key reuse, original payment amount, and prevention of duplicate attempts. Three regression tests were added without modifying existing acceptance-test assertions.
+Review: F-01 introduced database-level protection for concurrent manual and scheduled payment operations. F-03 strengthened crash-recovery testing to verify Pending persistence, idempotency-key reuse, original payment amount, and prevention of duplicate attempts. Three regression tests were added without modifying existing acceptance-test assertions.
 
-**Checks:**
+Checks:
 - S-6 tests: 13 passed, 1 skipped, 1 warning (37.39 seconds).
 - Full regression suite: 103 passed, 1 skipped, 1 warning (214.85 seconds).
 - AC-18 through AC-21 passed.
 - All three new F-01/F-03 regression tests passed.
 - AC-22 remains skipped.
 
-**Evidence:** Committed changes to `app/db.py`, `app/payments.py`, and `tests/test_s6_payments.py`; saved Prompt 52; implementation commit 8b04c21; pytest results recorded above.
+Evidence: Committed changes to `app/db.py`, `app/payments.py`, and `tests/test_s6_payments.py`; saved Prompt 52; implementation commit 8b04c21; pytest results recorded above.
 
-**Risk:** The concurrency protection follows the single-runner assumption (D32). Multiple concurrent scheduled-payment runners are not covered. OQ5 remains unresolved.
+Risk: The concurrency protection follows the single-runner assumption (D32). Multiple concurrent scheduled-payment runners are not covered. OQ5 remains unresolved.
 
-**Decision:** F-01 and F-03 remediation accepted under the documented design assumptions, based on successful regression testing.
+Decision: F-01 and F-03 remediation accepted under the documented design assumptions, based on successful regression testing.
 
 ## Entry 53 — AGENT-03 F-04, F-05 and F-25 Remediation
 
@@ -868,7 +868,7 @@ artifact: `app/access.py`, `app/main.py`, `tests/test_s6_payments.py`, `docs/des
 
 tool: Claude Code prepared the implementation proposal and coordinated security-reviewer, test-analyst and code-reviewer reviews. ChatGPT (GPT-6) assisted with review decisions. Human reviewer approved, applied and tested the changes.
 
-prompts: `prompts/53-s6-fix-AGENT-03-F04-F05-F25.md` — Combined remediation, independent review and approved v2 revision.
+prompts: `prompts/53-s6-AGENT-03 F-04 F-05 F-25.md` — Combined remediation, independent review and approved v2 revision.
 
 review: F-04 added negative and authorization regression coverage. F-05 centralized payment-viewing authorization in `app/access.py`, preserving community isolation and documented role restrictions. F-25 corrected outdated S-6 implementation-status wording. Reviewer recommendations strengthened cross-community tests, clarified documentation and avoided encoding unresolved design decisions.
 
@@ -884,3 +884,27 @@ evidence: Committed application code, regression tests, S-6 design documentation
 risk: AC-22 retry behavior remains unimplemented. OQ2, OQ4 and OQ5 remain unresolved. The resident-without-unit case now fails closed with 404. Some stale wording outside the approved file scope remains for a separate cleanup.
 
 decision: Accept F-04, F-05 and F-25 remediation based on the successful focused and full regression tests, subject to final commit review.
+
+## Entry 54 — S-6 AC-22 Scheduled Payment Retry Implementation
+
+Date: 2026-11-22
+
+Branch: `fix/agent03-ac22-payment-retry`
+
+Commit: `719aecc` — `fix(s6): implement AC-22 scheduled payment retries`
+
+Task: Implement AC-22 scheduled payment retries while preserving the existing S-6 payment protections and acceptance criteria.
+
+Tool: Claude Code prepared the implementation patches and coordinated independent security, test and code reviews. ChatGPT (GPT-6) assisted with reviewing findings and approving corrective decisions. The human reviewer applied the final patch, ran the tests and committed the implementation.
+
+Prompts: Prompts 54–59 — AC-22 investigation, implementation, independent reviews, revisions and final patch correction.
+
+Review: The implementation introduces configurable retry delay and maximum-attempt settings, records the actual failure date using `failed_on`, and rechecks retry eligibility under the unit-row lock. It preserves payment idempotency, Pending replay behavior, manual-payment protections and existing payment-state rules. The final review addressed SF-1 through SF-7 without expanding the approved scope.
+
+Tests: `python3 -m pytest tests/test_s6_payments.py -v` — 107 passed, 1 warning. `python3 -m pytest` — 197 passed, 1 warning, 0 skipped. The existing AC-22 acceptance test is now enabled and passes.
+
+evidence: `app/settings.py`, `app/db.py`, `app/payments.py`, `tests/test_s6_payments.py`, `docs/design/S-6.md` — committed AC-22 implementation, retry configuration, failure-date migration, payment-state safeguards, regression tests, and updated design documentation (commit `719aecc`).
+
+Risk: D35 documents an accepted residual risk under D32. If the single-runner assumption is violated, a conflicting processor result can leave a payment recorded as Failed even when an external charge succeeded, potentially allowing a duplicate charge on a later retry. Conflict reconciliation remains outside this implementation.
+
+Status: AC-22 implemented and tests passed. Documentation and evidence updates remain to be committed.

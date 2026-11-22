@@ -15,3 +15,8 @@ DATABASE_URL = os.environ.get(
     "postgresql://postgres:postgres@localhost:5432/communityconnect",
 )
 DATABASE_SCHEMA = os.environ.get("COMMUNITYCONNECT_DB_SCHEMA", "public")
+
+# S-6 D15: provisional defaults from our proposal, not from interviews. Code reads them as
+# settings.NAME when used, so tests can override them.
+RETRY_DELAY_DAYS = 3
+MAX_PAYMENT_ATTEMPTS = 2
