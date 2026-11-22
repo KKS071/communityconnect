@@ -125,6 +125,39 @@ def create_pending_payment(unit_id: int, billing_month: str, amount_cents: int,
         return row["id"]
 
 
+def claim_pending_payment(unit_id: int, billing_month: str, amount_cents: int,
+                          method: str, key: str, created_at: str) -> tuple[int | None, str | None]:
+    """Insert attempt 1 as Pending only while the month has no Payment (D4, D25; AGENT-03 F-01).
+
+    Locks the unit row, as create_manual_payment does, so a scheduled attempt and a manual
+    payment for the same unit are serialized and each sees the other's committed row. The
+    transaction commits before returning; the processor is called afterwards, outside it.
+    Return (payment_id, None), or (None, 'Paid') / (None, 'Exists') when the month already
+    has a Paid payment / another payment.
+    """
+    with connect() as conn:
+        unit = conn.execute(
+            "SELECT id FROM units WHERE id = %s FOR UPDATE", (unit_id,)
+        ).fetchone()
+        if unit is None:
+            raise ValueError("Unknown unit")
+        states = conn.execute(
+            "SELECT status FROM payments WHERE unit_id = %s AND billing_month = %s",
+            (unit_id, billing_month),
+        ).fetchall()
+        if any(p["status"] == "Paid" for p in states):
+            return None, "Paid"
+        if states:
+            return None, "Exists"
+        row = conn.execute(
+            "INSERT INTO payments (unit_id, billing_month, amount_cents, method, "
+            "status, attempt, idempotency_key, processor_id, created_at) "
+            "VALUES (%s, %s, %s, %s, 'Pending', 1, %s, NULL, %s) RETURNING id",
+            (unit_id, billing_month, amount_cents, method, key, created_at),
+        ).fetchone()
+        return row["id"], None
+
+
 def finish_payment(payment_id: int, status: str, processor_id: str) -> None:
     with connect() as conn:
         conn.execute(

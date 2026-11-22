@@ -79,10 +79,15 @@ def run_due_payments(today: date) -> RunResult:
             # Failed retries are AC-22.
             continue
         key = f'{s["unit_id"]}:{month}:1'
-        payment_id = db.create_pending_payment(
+        payment_id, conflict = db.claim_pending_payment(
             s["unit_id"], month, s["dues_amount_cents"], s["method"], key,
             _timestamp(),
-        )  # Committed before the processor call (D4/D31).
+        )  # Re-checked under the unit lock; committed before the charge (D4/D31; F-01).
+        if conflict == "Paid":
+            skipped += 1  # a manual payment committed first (D25, D27; F-01)
+            continue
+        if conflict is not None:
+            continue  # another payment appeared; D25 makes no new attempt
         status = _charge_pending(payment_id, s["token"],
                                  s["dues_amount_cents"], key)
         if status == "Paid":
