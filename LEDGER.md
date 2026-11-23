@@ -969,7 +969,7 @@ Review: Independent gap check completed against S-6 design and referenced requir
 
 Checks: Read-only document inspection. No commands or tests were run.
 
-Evidence: Full Claude Gap Check 2 response, containing 54 findings (G-01–G-25, C-01–C-10, P-01–P-11, U-01–U-08).
+Evidence: Full Gap Check 2 response in docs/design/S-6-gap-check-2.md (54 findings). This file was committed in 71e0faa7dfa37348e1e45ba37b08e5f1c52b2026.
 
 Risk: Potential contradictions in retry rules, ACH scope, acceptance-test wording, and remaining implementation boundaries require triage before acceptance-test locking.
 
@@ -983,11 +983,11 @@ Prompts: prompts/70-Milestone-2-Gap-Check.md
 
 Review: Reviewed the findings and approved the recommended decisions for AC-18, ACH scope, future-month payments, replay counting, documentation clarifications, and deferred limitations.
 
-Checks: Claude inspected the design, requirements, code, and tests. No application tests or shell commands were run. Documentation changes require separate verification.
+Checks: Claude inspected design, requirements, code, and tests; no application tests or shell commands were run by Claude. The resulting design and backlog changes are present in commit 71e0faa7dfa37348e1e45ba37b08e5f1c52b2026. Local patch-check output was not independently captured.
 
-Evidence: docs/design/S-6-gap-check-2.md; human decisions recorded in LEDGER.md. The Prompt 70 response was reviewed in the Claude Code session but has not been saved as a separate evidence file.
+Evidence: docs/design/S-6-gap-check-2.md and human decisions in LEDGER.md. Design and backlog changes: commit 71e0faa7dfa37348e1e45ba37b08e5f1c52b2026. Prompt 70 and 71 files and ledger updates: commit c964c2f3aea320db48d2626533b4297dbec4410b. The Prompt 70 response was reviewed in Claude Code but was not separately saved.
 
-Risk: Approved documentation changes still require application and verification. Acceptance tests must be audited before locking.
+Risk: The documentation changes are committed, but application tests and acceptance-test audit/locking remain outstanding.
 
 ### Entry 60 — Finalize S-6 Gap Check Decisions (Prompt 71)
 
@@ -999,11 +999,11 @@ Prompts: prompts/71-Finalize-S-6-Gap-Check-Decisions.md
 
 Review: Reviewed the proposed AC-18 amendment, ACH scope limitation, future-month payment behavior, replay counting limitation, and remaining design clarifications. All recommended policy decisions were approved by the human on November 23, 2026.
 
-Checks: Claude inspected relevant documentation and code. No application tests or shell commands were executed. The AGENT-07 patch requires human verification before application.
+Checks: Claude inspected relevant documentation and code; no application tests or shell commands were run by Claude. The resulting S-6 design and backlog changes are present in commit 71e0faa7dfa37348e1e45ba37b08e5f1c52b2026. Local patch-validation output was not independently captured.
 
-Evidence: Prompt 71 Claude Code response and approved decisions recorded in LEDGER.md.
+Evidence: docs/audits/Prompt-71-Claude-reply.md and human decisions in LEDGER.md. Design/backlog updates: commit 71e0faa7dfa37348e1e45ba37b08e5f1c52b2026. Saved Prompt 71 reply and ledger updates: commit c964c2f3aea320db48d2626533b4297dbec4410b.
 
-Risk: The proposed patch may contain an incorrect hunk header. Traceability documentation may still reference the original AC-18 wording. Acceptance tests have not yet been locked.
+Risk: The historical patch-format concern was resolved by the committed documentation changes. Acceptance tests remain unlocked; test execution and Milestone 2 evidence are outstanding.
 
 ### Entry 61 — S-6 Traceability Documentation Update (Prompt 72)
 
@@ -1015,8 +1015,8 @@ Prompts: prompts/72-Update-S-6-Traceability-Doc.md.
 
 Review: Reviewed the proposed correction to outdated Milestone 1 statements. Confirmed that S-6 implementation status, settled OQ1–OQ5 decisions, the human-approved AC-18 JSON amendment, and deferred ACH settlement are documented without changing evidence IDs, AC IDs, or test paths.
 
-Checks: AGENT-08 v2 patch requires git apply --check and git diff --check. No application tests were run by Claude.
+Checks: GitHub confirms that the traceability correction was committed in 6bf470969b2c0e4cc2ccb0ac34f5c9cc1b8cdaba. The terminal output of git apply --check and git diff --check was not provided for independent verification. Claude did not run application tests.
 
-Evidence: docs/requirements/traceability.md and agent-patches/AGENT-08-S6-traceability-v2.patch.
+Evidence: docs/requirements/traceability.md (committed with Entry 61 in 6bf470969b2c0e4cc2ccb0ac34f5c9cc1b8cdaba). The local proposed patch is agent-patches/AGENT-08-S6-traceability-v2.patch; its GitHub commit status was not verified.
 
 Risk: Acceptance tests have not yet been moved to tests/acceptance/ or locked. Test execution and final Milestone 2 evidence remain pending.
