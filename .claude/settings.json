@@ -7,10 +7,19 @@
     "blockReadsOutsideWorkingDirectories": true,
     "blockWritesOutsideWorkingDirectories": true,
     "allow": [
-      "Edit(./agent-patches/**)"
+      "Edit(./agent-patches/**)",
+      "Bash(python -m pytest)",
+      "Bash(python -m pytest --cov=app --cov-branch --cov-report=term-missing --cov-fail-under=80)"
     ],
     "deny": [
-      "Bash",
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Bash(git push)",
+      "Bash(git push *)",
+      "Bash(rm -rf *)",
+      "Bash(rm -fr *)",
+      "Bash(rm -r *)",
+      "Bash(rm -R *)",
       "NotebookEdit"
     ]
   }

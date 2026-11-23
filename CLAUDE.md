@@ -1,41 +1,37 @@
+@AGENTS.md
+
 # CommunityConnect — Claude Code Instructions
 
 ## Source of truth
 
-Read AGENTS.md before every task.
-
 Follow:
 - docs/design/S-1.md for S-1 requirements.
-- docs/design/S-6.md for S-6 requirements.
+- docs/design/S-6.md for S-6 requirements, including the settled OQ1–OQ5 decisions in §8.
 - docs/plans/S-6-plan.md for S-6 implementation planning.
-- tests/ for existing acceptance criteria.
+- docs/requirements/backlog.md for acceptance criteria, and tests/ for the tests that carry their AC IDs.
+- handout/CS690_Milestone2_Handout.pdf for the Milestone 2 deliverables.
 
 If instructions conflict, stop and ask the human reviewer.
 
-## Project 2 agent workflow
+## Agent workflow
 
-1. Analyze the requested acceptance criterion.
-2. Delegate independent analysis to appropriate subagents.
+1. Analyze the requested task and its acceptance criterion.
+2. Delegate independent analysis to the appropriate subagent.
 3. Report findings, risks, and unresolved design questions.
 4. Propose an exact list of files and intended changes.
-5. Wait for explicit human approval before implementation.
-6. Modify only approved files, under separately configured
-   tool-enforced permissions.
-7. Run the approved tests.
+5. Wait for explicit human approval before any change.
+6. Prepare approved changes only through the patch workflow below,
+   under the tool-enforced permissions in .claude/settings.json.
+7. Run only the test commands those permissions allow, and report real results.
 8. Review the diff and report any unexpected changes.
-9. Stop after completing the approved acceptance criterion.
+9. Stop after completing the approved task.
 10. Provide evidence for the human-maintained provenance ledger.
 
-## Current authorization
-
-This configuration task authorizes only:
-- CLAUDE.md
-- .claude/settings.json
-- .claude/agents/test-analyst.md
-- .claude/agents/security-reviewer.md
-- .claude/agents/code-reviewer.md
+## Current status
 
 AC-18 through AC-22 are implemented, tested and merged into `main` (merge commit `5c87562`). AC-22 was implemented under Prompts 54–59; see LEDGER.md Entry 54 (implementation commit `719aecc`, documentation commit `1f820df`).
+
+The S-6 acceptance tests have not yet been moved to `tests/acceptance/` or locked.
 
 Do not modify application code, tests, requirements,
 design documents, plans, prompts, or LEDGER.md.
@@ -61,8 +57,13 @@ Creating a patch file does not authorize applying its contents.
 
 ## Delegation
 
-Use these project subagents for independent analysis:
+Use these project subagents:
 
+- test-writer: checks and writes tests from the acceptance criteria and the design doc,
+  with AC IDs; never edits application code or weakens a test. Under the patch-only
+  workflow it proposes test changes as new patches in `agent-patches/`.
+- reviewer: read-only review of code against the design doc and the acceptance criteria;
+  each finding gives file, line, AC ID, severity (blocking or minor) and problem.
 - test-analyst: acceptance tests, coverage, mutations,
   property-based testing, and test gaps.
 - security-reviewer: authorization, payment integrity,
@@ -73,11 +74,12 @@ Use these project subagents for independent analysis:
 The main agent must review subagent findings and identify
 disagreements instead of silently resolving them.
 
-Subagents are reviewers, not implementation agents.
+Subagents never edit application code. Only test-writer may prepare test changes,
+and only as patches while the patch-only workflow applies.
 
 ## Safety
 
-Never use permission-bypass options.
+Never use permission-bypass options, `--dangerously-skip-permissions`, or `--bare`.
 
 Never execute destructive commands, install dependencies,
 alter Git history, or access production payment systems
