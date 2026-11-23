@@ -1,0 +1,370 @@
+===== app.payments.x__count_outcome__mutmut_1 =====
+# app.payments.x__count_outcome__mutmut_1: killed
+--- app/payments.py
++++ app/payments.py
+@@ -4,7 +4,7 @@
+     'Paid' counts as charged, 'Failed' as failed and None (still Pending) as skipped.
+     'Unchanged' was already completed and counted, so it is not counted again (F-11).
+     """
+-    if status == "Paid":
++    if status != "Paid":
+         counts["charged"] += 1
+     elif status == "Failed":
+         counts["failed"] += 1
+===== app.payments.x__count_outcome__mutmut_2 =====
+# app.payments.x__count_outcome__mutmut_2: killed
+--- app/payments.py
++++ app/payments.py
+@@ -4,7 +4,7 @@
+     'Paid' counts as charged, 'Failed' as failed and None (still Pending) as skipped.
+     'Unchanged' was already completed and counted, so it is not counted again (F-11).
+     """
+-    if status == "Paid":
++    if status == "XXPaidXX":
+         counts["charged"] += 1
+     elif status == "Failed":
+         counts["failed"] += 1
+===== app.payments.x__count_outcome__mutmut_3 =====
+# app.payments.x__count_outcome__mutmut_3: killed
+--- app/payments.py
++++ app/payments.py
+@@ -4,7 +4,7 @@
+     'Paid' counts as charged, 'Failed' as failed and None (still Pending) as skipped.
+     'Unchanged' was already completed and counted, so it is not counted again (F-11).
+     """
+-    if status == "Paid":
++    if status == "paid":
+         counts["charged"] += 1
+     elif status == "Failed":
+         counts["failed"] += 1
+===== app.payments.x__count_outcome__mutmut_5 =====
+# app.payments.x__count_outcome__mutmut_5: not checked
+--- app/payments.py
++++ app/payments.py
+@@ -5,7 +5,7 @@
+     'Unchanged' was already completed and counted, so it is not counted again (F-11).
+     """
+     if status == "Paid":
+-        counts["charged"] += 1
++        counts["charged"] = 1
+     elif status == "Failed":
+         counts["failed"] += 1
+     elif status is None:
+===== app.payments.x__count_outcome__mutmut_19 =====
+# app.payments.x__count_outcome__mutmut_19: not checked
+--- app/payments.py
++++ app/payments.py
+@@ -8,5 +8,5 @@
+         counts["charged"] += 1
+     elif status == "Failed":
+         counts["failed"] += 1
+-    elif status is None:
++    elif status is not None:
+         counts["skipped"] += 1
+===== app.payments.x__count_outcome__mutmut_20 =====
+# app.payments.x__count_outcome__mutmut_20: not checked
+--- app/payments.py
++++ app/payments.py
+@@ -9,4 +9,4 @@
+     elif status == "Failed":
+         counts["failed"] += 1
+     elif status is None:
+-        counts["skipped"] += 1
++        counts["skipped"] = 1
+===== app.payments.x_run_due_payments__mutmut_1 =====
+# app.payments.x_run_due_payments__mutmut_1: killed
+--- app/payments.py
++++ app/payments.py
+@@ -1,6 +1,6 @@
+ def run_due_payments(today: date) -> RunResult:
+     """Replay Pending attempts from any month, then process current due schedules."""
+-    month = today.strftime("%Y-%m")
++    month = None
+     counts = {"charged": 0, "failed": 0, "skipped": 0}
+ 
+     # D26: recover persisted attempts first, reusing the original key, amount and attempt.
+===== app.payments.x_run_due_payments__mutmut_2 =====
+# app.payments.x_run_due_payments__mutmut_2: killed
+--- app/payments.py
++++ app/payments.py
+@@ -1,6 +1,6 @@
+ def run_due_payments(today: date) -> RunResult:
+     """Replay Pending attempts from any month, then process current due schedules."""
+-    month = today.strftime("%Y-%m")
++    month = today.strftime(None)
+     counts = {"charged": 0, "failed": 0, "skipped": 0}
+ 
+     # D26: recover persisted attempts first, reusing the original key, amount and attempt.
+===== app.payments.x_run_due_payments__mutmut_3 =====
+# app.payments.x_run_due_payments__mutmut_3: killed
+--- app/payments.py
++++ app/payments.py
+@@ -1,6 +1,6 @@
+ def run_due_payments(today: date) -> RunResult:
+     """Replay Pending attempts from any month, then process current due schedules."""
+-    month = today.strftime("%Y-%m")
++    month = today.strftime("XX%Y-%mXX")
+     counts = {"charged": 0, "failed": 0, "skipped": 0}
+ 
+     # D26: recover persisted attempts first, reusing the original key, amount and attempt.
+===== app.payments.x_run_due_payments__mutmut_9 =====
+# app.payments.x_run_due_payments__mutmut_9: not checked
+--- app/payments.py
++++ app/payments.py
+@@ -1,7 +1,7 @@
+ def run_due_payments(today: date) -> RunResult:
+     """Replay Pending attempts from any month, then process current due schedules."""
+     month = today.strftime("%Y-%m")
+-    counts = {"charged": 0, "failed": 0, "skipped": 0}
++    counts = {"charged": 1, "failed": 0, "skipped": 0}
+ 
+     # D26: recover persisted attempts first, reusing the original key, amount and attempt.
+     for p in db.pending_payments():
+===== app.payments.x_run_due_payments__mutmut_69 =====
+# app.payments.x_run_due_payments__mutmut_69: not checked
+--- app/payments.py
++++ app/payments.py
+@@ -16,7 +16,7 @@
+     for s in db.due_schedules():
+         scheduled_day = date(today.year, today.month, s["day_of_month"])
+         created_day = date.fromisoformat(s["created_at"][:10])
+-        if today < scheduled_day or scheduled_day <= created_day:
++        if today <= scheduled_day or scheduled_day <= created_day:
+             continue
+         if s["method"] == "ach":
+             continue  # ACH settlement remains OQ2.
+===== app.payments.x_run_due_payments__mutmut_78 =====
+# app.payments.x_run_due_payments__mutmut_78: not checked
+--- app/payments.py
++++ app/payments.py
+@@ -20,7 +20,7 @@
+             continue
+         if s["method"] == "ach":
+             continue  # ACH settlement remains OQ2.
+-        if db.has_paid_payment(s["unit_id"], month):
++        if db.has_paid_payment(None, month):
+             counts["skipped"] += 1  # D25: the month is Paid (R1, R3); AGENT-03 F-02.
+             continue
+         prior = db.latest_payment(s["unit_id"], month)
+===== app.payments.x_run_due_payments__mutmut_89 =====
+# app.payments.x_run_due_payments__mutmut_89: not checked
+--- app/payments.py
++++ app/payments.py
+@@ -22,7 +22,7 @@
+             continue  # ACH settlement remains OQ2.
+         if db.has_paid_payment(s["unit_id"], month):
+             counts["skipped"] += 1  # D25: the month is Paid (R1, R3); AGENT-03 F-02.
+-            continue
++            break
+         prior = db.latest_payment(s["unit_id"], month)
+         if prior is None:
+             attempt = 1
+===== app.payments.x_run_due_payments__mutmut_97 =====
+# app.payments.x_run_due_payments__mutmut_97: not checked
+--- app/payments.py
++++ app/payments.py
+@@ -24,7 +24,7 @@
+             counts["skipped"] += 1  # D25: the month is Paid (R1, R3); AGENT-03 F-02.
+             continue
+         prior = db.latest_payment(s["unit_id"], month)
+-        if prior is None:
++        if prior is not None:
+             attempt = 1
+         elif (prior["status"] == "Failed"
+               and prior["attempt"] < settings.MAX_PAYMENT_ATTEMPTS):
+===== app.payments.x_run_due_payments__mutmut_109 =====
+# app.payments.x_run_due_payments__mutmut_109: not checked
+--- app/payments.py
++++ app/payments.py
+@@ -27,7 +27,7 @@
+         if prior is None:
+             attempt = 1
+         elif (prior["status"] == "Failed"
+-              and prior["attempt"] < settings.MAX_PAYMENT_ATTEMPTS):
++              and prior["attempt"] <= settings.MAX_PAYMENT_ATTEMPTS):
+             attempt = prior["attempt"] + 1  # D17 retry; the delay is checked under the lock
+         else:
+             # D25: a Pending left after the D26 replay gets no new attempt; D17: after the
+===== app.payments.x_run_due_payments__mutmut_114 =====
+# app.payments.x_run_due_payments__mutmut_114: not checked
+--- app/payments.py
++++ app/payments.py
+@@ -28,7 +28,7 @@
+             attempt = 1
+         elif (prior["status"] == "Failed"
+               and prior["attempt"] < settings.MAX_PAYMENT_ATTEMPTS):
+-            attempt = prior["attempt"] + 1  # D17 retry; the delay is checked under the lock
++            attempt = prior["attempt"] + 2  # D17 retry; the delay is checked under the lock
+         else:
+             # D25: a Pending left after the D26 replay gets no new attempt; D17: after the
+             # last allowed attempt fails, nothing more happens this month.
+===== app.payments.x_run_due_payments__mutmut_128 =====
+# app.payments.x_run_due_payments__mutmut_128: not checked
+--- app/payments.py
++++ app/payments.py
+@@ -36,7 +36,7 @@
+         key = f'{s["unit_id"]}:{month}:{attempt}'
+         payment_id, conflict = db.claim_pending_payment(
+             s["unit_id"], month, s["dues_amount_cents"], s["method"], key, _timestamp(),
+-            attempt=attempt, today=today, retry_delay_days=settings.RETRY_DELAY_DAYS,
++            attempt=attempt, today=today, retry_delay_days=None,
+             max_attempts=settings.MAX_PAYMENT_ATTEMPTS,
+         )  # Re-checked under the unit lock; committed before the charge (D4/D31; F-01).
+         if conflict == "Paid":
+===== app.payments.x_run_due_payments__mutmut_146 =====
+# app.payments.x_run_due_payments__mutmut_146: not checked
+--- app/payments.py
++++ app/payments.py
+@@ -39,7 +39,7 @@
+             attempt=attempt, today=today, retry_delay_days=settings.RETRY_DELAY_DAYS,
+             max_attempts=settings.MAX_PAYMENT_ATTEMPTS,
+         )  # Re-checked under the unit lock; committed before the charge (D4/D31; F-01).
+-        if conflict == "Paid":
++        if conflict != "Paid":
+             counts["skipped"] += 1  # a manual payment committed first (D25, D27; F-01)
+             continue
+         if conflict is not None:
+===== app.payments.x_run_due_payments__mutmut_174 =====
+# app.payments.x_run_due_payments__mutmut_174: not checked
+--- app/payments.py
++++ app/payments.py
+@@ -46,5 +46,5 @@
+             continue  # another payment appeared, or the retry is not due yet (D17, D25)
+         status = _charge_pending(payment_id, s["token"],
+                                  s["dues_amount_cents"], key, today)
+-        _count_outcome(counts, status)
++        _count_outcome(counts, None)
+     return RunResult(**counts)
+===== app.payments.x__charge_pending__mutmut_4 =====
+# app.payments.x__charge_pending__mutmut_4: not checked
+--- app/payments.py
++++ app/payments.py
+@@ -8,7 +8,7 @@
+     result, raise RuntimeError so the run stops without overwriting it (D31).
+     """
+     try:
+-        result = processor.get_processor().charge(token, amount_cents, idempotency_key)
++        result = processor.get_processor().charge(token, amount_cents, None)
+     except processor.ProcessorUnavailable:
+         return None
+     if result.status not in ("succeeded", "declined"):
+===== app.payments.x__charge_pending__mutmut_29 =====
+# app.payments.x__charge_pending__mutmut_29: not checked
+--- app/payments.py
++++ app/payments.py
+@@ -14,7 +14,7 @@
+     if result.status not in ("succeeded", "declined"):
+         raise ValueError(f"Unexpected processor result: {result.status!r}")
+     status = "Paid" if result.status == "succeeded" else "Failed"
+-    if db.finish_payment(payment_id, status, result.processor_id, today.isoformat()):
++    if db.finish_payment(payment_id, status, result.processor_id, None):
+         return status
+     stored = db.payment_status(payment_id)
+     if stored != status:
+===== app.payments.x__charge_pending__mutmut_36 =====
+# app.payments.x__charge_pending__mutmut_36: not checked
+--- app/payments.py
++++ app/payments.py
+@@ -17,7 +17,7 @@
+     if db.finish_payment(payment_id, status, result.processor_id, today.isoformat()):
+         return status
+     stored = db.payment_status(payment_id)
+-    if stored != status:
++    if stored == status:
+         raise RuntimeError(f"Payment {payment_id} is stored as {stored!r} but the processor "
+                            f"reported {status!r}; stopping the run (AGENT-03 F-11, D31)")
+     return "Unchanged"  # already completed with this result; not counted again (F-11, D16)
+===== app.payments.x__charge_pending__mutmut_38 =====
+# app.payments.x__charge_pending__mutmut_38: not checked
+--- app/payments.py
++++ app/payments.py
+@@ -20,4 +20,4 @@
+     if stored != status:
+         raise RuntimeError(f"Payment {payment_id} is stored as {stored!r} but the processor "
+                            f"reported {status!r}; stopping the run (AGENT-03 F-11, D31)")
+-    return "Unchanged"  # already completed with this result; not counted again (F-11, D16)
++    return "XXUnchangedXX"  # already completed with this result; not counted again (F-11, D16)
+===== app.db.x__retry_allowed__mutmut_1 =====
+# app.db.x__retry_allowed__mutmut_1: killed
+--- app/db.py
++++ app/db.py
+@@ -6,7 +6,7 @@
+     and Failed with a failed_on date at least retry_delay_days before today, and attempt
+     must not exceed max_attempts. A Failed row without failed_on is never retried.
+     """
+-    if not states or attempt > max_attempts:
++    if not states and attempt > max_attempts:
+         return False
+     latest = states[0]
+     if latest["status"] != "Failed" or latest["attempt"] != attempt - 1:
+===== app.db.x__retry_allowed__mutmut_2 =====
+# app.db.x__retry_allowed__mutmut_2: killed
+--- app/db.py
++++ app/db.py
+@@ -6,7 +6,7 @@
+     and Failed with a failed_on date at least retry_delay_days before today, and attempt
+     must not exceed max_attempts. A Failed row without failed_on is never retried.
+     """
+-    if not states or attempt > max_attempts:
++    if states or attempt > max_attempts:
+         return False
+     latest = states[0]
+     if latest["status"] != "Failed" or latest["attempt"] != attempt - 1:
+===== app.db.x__retry_allowed__mutmut_3 =====
+# app.db.x__retry_allowed__mutmut_3: killed
+--- app/db.py
++++ app/db.py
+@@ -6,7 +6,7 @@
+     and Failed with a failed_on date at least retry_delay_days before today, and attempt
+     must not exceed max_attempts. A Failed row without failed_on is never retried.
+     """
+-    if not states or attempt > max_attempts:
++    if not states or attempt >= max_attempts:
+         return False
+     latest = states[0]
+     if latest["status"] != "Failed" or latest["attempt"] != attempt - 1:
+===== app.db.x__retry_allowed__mutmut_17 =====
+# app.db.x__retry_allowed__mutmut_17: not checked
+--- app/db.py
++++ app/db.py
+@@ -9,7 +9,7 @@
+     if not states or attempt > max_attempts:
+         return False
+     latest = states[0]
+-    if latest["status"] != "Failed" or latest["attempt"] != attempt - 1:
++    if latest["status"] != "Failed" or latest["attempt"] != attempt + 1:
+         return False
+     if latest["failed_on"] is None:
+         return False
+===== app.db.x__retry_allowed__mutmut_22 =====
+# app.db.x__retry_allowed__mutmut_22: not checked
+--- app/db.py
++++ app/db.py
+@@ -11,6 +11,6 @@
+     latest = states[0]
+     if latest["status"] != "Failed" or latest["attempt"] != attempt - 1:
+         return False
+-    if latest["failed_on"] is None:
++    if latest["failed_on"] is not None:
+         return False
+     return date.fromisoformat(latest["failed_on"]) + timedelta(days=retry_delay_days) <= today
+===== app.db.x__retry_allowed__mutmut_24 =====
+# app.db.x__retry_allowed__mutmut_24: not checked
+--- app/db.py
++++ app/db.py
+@@ -13,4 +13,4 @@
+         return False
+     if latest["failed_on"] is None:
+         return False
+-    return date.fromisoformat(latest["failed_on"]) + timedelta(days=retry_delay_days) <= today
++    return date.fromisoformat(latest["failed_on"]) - timedelta(days=retry_delay_days) <= today
+===== app.db.x__retry_allowed__mutmut_29 =====
+# app.db.x__retry_allowed__mutmut_29: not checked
+--- app/db.py
++++ app/db.py
+@@ -13,4 +13,4 @@
+         return False
+     if latest["failed_on"] is None:
+         return False
+-    return date.fromisoformat(latest["failed_on"]) + timedelta(days=retry_delay_days) <= today
++    return date.fromisoformat(latest["failed_on"]) + timedelta(days=retry_delay_days) < today

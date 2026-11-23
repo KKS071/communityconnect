@@ -1,0 +1,694 @@
+=== BASELINE B: WITH HYPOTHESIS ===
+9474ad4afc5a8374ecf46f6b24cd594f3a08a8ad
+mutmut, version 3.8.1
+[tool.mutmut]
+source_paths = ["app"]
+only_mutate = ["app/payments.py", "app/db.py"]
+also_copy = ["pytest.ini"]
+pytest_add_cli_args_test_selection = [
+    "tests/test_s6_payments.py",
+    "tests/acceptance",
+    "tests/test_s6_properties.py",
+]
+=== SELECTED MUTANTS ===
+app.payments.x__count_outcome__mutmut_1
+app.payments.x__count_outcome__mutmut_2
+app.payments.x__count_outcome__mutmut_3
+app.payments.x__count_outcome__mutmut_5
+app.payments.x__count_outcome__mutmut_19
+app.payments.x__count_outcome__mutmut_20
+app.payments.x_run_due_payments__mutmut_1
+app.payments.x_run_due_payments__mutmut_2
+app.payments.x_run_due_payments__mutmut_3
+app.payments.x_run_due_payments__mutmut_9
+app.payments.x_run_due_payments__mutmut_69
+app.payments.x_run_due_payments__mutmut_78
+app.payments.x_run_due_payments__mutmut_89
+app.payments.x_run_due_payments__mutmut_97
+app.payments.x_run_due_payments__mutmut_109
+app.payments.x_run_due_payments__mutmut_114
+app.payments.x_run_due_payments__mutmut_128
+app.payments.x_run_due_payments__mutmut_146
+app.payments.x_run_due_payments__mutmut_174
+app.payments.x__charge_pending__mutmut_4
+app.payments.x__charge_pending__mutmut_29
+app.payments.x__charge_pending__mutmut_36
+app.payments.x__charge_pending__mutmut_38
+app.db.x__retry_allowed__mutmut_1
+app.db.x__retry_allowed__mutmut_2
+app.db.x__retry_allowed__mutmut_3
+app.db.x__retry_allowed__mutmut_17
+app.db.x__retry_allowed__mutmut_22
+app.db.x__retry_allowed__mutmut_24
+app.db.x__retry_allowed__mutmut_29
+=== MUTATION RUN ===
+⠋ Generating mutants⠙ Generating mutants⠹ Generating mutants⠸ Generating mutants⠼ Generating mutants⠴ Generating mutants⠦ Generating mutants⠧ Generating mutants⠇ Generating mutants⠏ Generating mutants⠋ Generating mutants⠙ Generating mutants⠹ Generating mutants⠸ Generating mutants⠼ Generating mutants⠴ Generating mutants⠦ Generating mutants⠧ Generating mutants⠇ Generating mutants⠏ Generating mutants⠋ Generating mutants⠙ Generating mutants⠹ Generating mutants⠸ Generating mutants⠼ Generating mutants⠴ Generating mutants⠦ Generating mutants⠧ Generating mutants⠇ Generating mutants⠏ Generating mutants⠋ Generating mutants⠙ Generating mutants⠹ Generating mutants⠸ Generating mutants⠼ Generating mutants⠴ Generating mutants⠦ Generating mutants⠧ Generating mutants⠇ Generating mutants⠏ Generating mutants⠋ Generating mutants⠙ Generating mutants⠹ Generating mutants⠸ Generating mutants⠼ Generating mutants⠴ Generating mutants⠦ Generating mutants⠧ Generating mutants⠇ Generating mutants⠏ Generating mutants⠋ Generating mutants⠙ Generating mutants⠹ Generating mutants⠸ Generating mutants⠼ Generating mutants⠴ Generating mutants⠦ Generating mutants
+    done in 3449ms (2 files mutated, 8 ignored, 0 unmodified)
+⠧ Running stats     ⠇ Running stats⠏ Running stats⠋ Running stats⠙ Running stats⠹ Running stats⠸ Running stats⠼ Running stats⠴ Running stats⠦ Running stats⠧ Running stats⠇ Running stats⠏ Running stats⠋ Running stats⠙ Running stats⠹ Running stats⠸ Running stats⠼ Running stats⠴ Running stats⠦ Running stats⠧ Running stats⠇ Running stats⠏ Running stats⠋ Running stats⠙ Running stats⠹ Running stats⠸ Running stats⠼ Running stats⠴ Running stats⠦ Running stats⠧ Running stats⠇ Running stats⠏ Running stats⠋ Running stats⠙ Running stats⠹ Running stats⠸ Running stats⠼ Running stats⠴ Running stats⠦ Running stats⠧ Running stats⠇ Running stats⠏ Running stats⠋ Running stats⠙ Running stats⠹ Running stats⠸ Running stats⠼ Running stats⠴ Running stats⠦ Running stats⠧ Running stats⠇ Running stats⠏ Running stats⠋ Running stats⠙ Running stats⠹ Running stats⠸ Running stats⠼ Running stats⠴ Running stats⠦ Running stats⠧ Running stats⠇ Running stats⠏ Running stats⠋ Running stats⠙ Running stats⠹ Running stats⠸ Running stats⠼ Running stats⠴ Running stats⠦ Running stats⠧ Running stats⠇ Running stats⠏ Running stats⠋ Running stats⠙ Running stats⠹ Running stats⠸ Running stats⠼ Running stats⠴ Running stats⠦ Running stats⠧ Running stats⠇ Running stats⠏ Running stats⠋ Running stats⠙ Running stats⠹ Running stats⠸ Running stats⠼ Running stats⠴ Running stats⠦ Running stats⠧ Running stats⠇ Running stats⠏ Running stats⠋ Running stats⠙ Running stats⠹ Running stats⠸ Running stats⠼ Running stats⠴ Running stats⠦ Running stats⠧ Running stats⠇ Running stats⠏ Running stats⠋ Running stats⠙ Running stats⠹ Running stats⠸ Running stats⠼ Running stats⠴ Running stats⠦ Running stats⠧ Running stats⠇ Running stats⠏ Running stats⠋ Running stats⠙ Running stats⠹ Running stats⠸ Running stats⠼ Running stats⠴ Running stats⠦ Running stats⠧ Running stats⠇ Running stats⠏ Running stats⠋ Running stats
+    done
+⠙ Running clean tests⠹ Running clean tests⠸ Running clean tests⠼ Running clean tests⠴ Running clean tests⠦ Running clean tests⠧ Running clean tests⠇ Running clean tests⠏ Running clean tests⠋ Running clean tests⠙ Running clean tests⠹ Running clean tests⠸ Running clean tests⠼ Running clean tests⠴ Running clean tests⠦ Running clean tests⠧ Running clean tests⠇ Running clean tests⠏ Running clean tests⠋ Running clean tests⠙ Running clean tests⠹ Running clean tests⠸ Running clean tests⠼ Running clean tests⠴ Running clean tests⠦ Running clean tests⠧ Running clean tests⠇ Running clean tests⠏ Running clean tests⠋ Running clean tests⠙ Running clean tests⠹ Running clean tests⠸ Running clean tests⠼ Running clean tests⠴ Running clean tests⠦ Running clean tests⠧ Running clean tests⠇ Running clean tests⠏ Running clean tests⠋ Running clean tests⠙ Running clean tests⠹ Running clean tests⠸ Running clean tests⠼ Running clean tests⠴ Running clean tests⠦ Running clean tests⠧ Running clean tests⠇ Running clean tests⠏ Running clean tests⠋ Running clean tests⠙ Running clean tests⠹ Running clean tests
+    done
+⠸ Running forced fail test⠼ Running forced fail test⠴ Running forced fail test⠦ Running forced fail test⠧ Running forced fail test⠇ Running forced fail test⠏ Running forced fail test⠋ Running forced fail test⠙ Running forced fail test⠹ Running forced fail test⠸ Running forced fail test⠼ Running forced fail test
+    done
+Running mutation testing
+⠴ 0/603  🎉 0 🫥 0  ⏰ 0  🤔 0  🙁 0  🔇 0  🧙 0⠦ 0/603  🎉 0 🫥 0  ⏰ 0  🤔 0  🙁 0  🔇 0  🧙 0⠧ 1/603  🎉 1 🫥 0  ⏰ 0  🤔 0  🙁 0  🔇 0  🧙 0⠇ 2/603  🎉 2 🫥 0  ⏰ 0  🤔 0  🙁 0  🔇 0  🧙 0⠏ 3/603  🎉 3 🫥 0  ⏰ 0  🤔 0  🙁 0  🔇 0  🧙 0⠋ 4/603  🎉 4 🫥 0  ⏰ 0  🤔 0  🙁 0  🔇 0  🧙 0⠙ 5/603  🎉 5 🫥 0  ⏰ 0  🤔 0  🙁 0  🔇 0  🧙 0⠹ 6/603  🎉 6 🫥 0  ⏰ 0  🤔 0  🙁 0  🔇 0  🧙 0⠸ 7/603  🎉 7 🫥 0  ⏰ 0  🤔 0  🙁 0  🔇 0  🧙 0⠼ 8/603  🎉 8 🫥 0  ⏰ 0  🤔 0  🙁 0  🔇 0  🧙 0⠴ 9/603  🎉 9 🫥 0  ⏰ 0  🤔 0  🙁 0  🔇 0  🧙 0⠦ 10/603  🎉 10 🫥 0  ⏰ 0  🤔 0  🙁 0  🔇 0  🧙 0⠧ 11/603  🎉 10 🫥 0  ⏰ 0  🤔 0  🙁 1  🔇 0  🧙 0⠇ 12/603  🎉 11 🫥 0  ⏰ 0  🤔 0  🙁 1  🔇 0  🧙 0⠏ 13/603  🎉 11 🫥 0  ⏰ 0  🤔 0  🙁 2  🔇 0  🧙 0⠋ 14/603  🎉 12 🫥 0  ⏰ 0  🤔 0  🙁 2  🔇 0  🧙 0⠙ 15/603  🎉 13 🫥 0  ⏰ 0  🤔 0  🙁 2  🔇 0  🧙 0⠹ 16/603  🎉 14 🫥 0  ⏰ 0  🤔 0  🙁 2  🔇 0  🧙 0⠸ 17/603  🎉 14 🫥 0  ⏰ 0  🤔 0  🙁 3  🔇 0  🧙 0⠼ 18/603  🎉 15 🫥 0  ⏰ 0  🤔 0  🙁 3  🔇 0  🧙 0⠴ 19/603  🎉 16 🫥 0  ⏰ 0  🤔 0  🙁 3  🔇 0  🧙 0⠦ 20/603  🎉 17 🫥 0  ⏰ 0  🤔 0  🙁 3  🔇 0  🧙 0⠧ 21/603  🎉 18 🫥 0  ⏰ 0  🤔 0  🙁 3  🔇 0  🧙 0⠇ 22/603  🎉 19 🫥 0  ⏰ 0  🤔 0  🙁 3  🔇 0  🧙 0⠏ 23/603  🎉 20 🫥 0  ⏰ 0  🤔 0  🙁 3  🔇 0  🧙 0⠋ 24/603  🎉 20 🫥 0  ⏰ 0  🤔 0  🙁 4  🔇 0  🧙 0⠙ 25/603  🎉 21 🫥 0  ⏰ 0  🤔 0  🙁 4  🔇 0  🧙 0⠹ 26/603  🎉 21 🫥 0  ⏰ 0  🤔 0  🙁 5  🔇 0  🧙 0⠸ 27/603  🎉 22 🫥 0  ⏰ 0  🤔 0  🙁 5  🔇 0  🧙 0⠼ 28/603  🎉 23 🫥 0  ⏰ 0  🤔 0  🙁 5  🔇 0  🧙 0⠴ 30/603  🎉 25 🫥 0  ⏰ 0  🤔 0  🙁 5  🔇 0  🧙 0
+0.02 mutations/second
+
+Mutant results
+--------------
+🎉 app.db.x__retry_allowed__mutmut_1
+🎉 app.db.x__retry_allowed__mutmut_17
+🎉 app.db.x__retry_allowed__mutmut_2
+🎉 app.db.x__retry_allowed__mutmut_22
+🎉 app.db.x__retry_allowed__mutmut_24
+🎉 app.db.x__retry_allowed__mutmut_29
+🎉 app.db.x__retry_allowed__mutmut_3
+🎉 app.payments.x__charge_pending__mutmut_29
+🎉 app.payments.x__charge_pending__mutmut_36
+🙁 app.payments.x__charge_pending__mutmut_38
+🎉 app.payments.x__charge_pending__mutmut_4
+🎉 app.payments.x__count_outcome__mutmut_1
+🎉 app.payments.x__count_outcome__mutmut_19
+🎉 app.payments.x__count_outcome__mutmut_2
+🙁 app.payments.x__count_outcome__mutmut_20
+🎉 app.payments.x__count_outcome__mutmut_3
+🙁 app.payments.x__count_outcome__mutmut_5
+🎉 app.payments.x_run_due_payments__mutmut_1
+🙁 app.payments.x_run_due_payments__mutmut_109
+🎉 app.payments.x_run_due_payments__mutmut_114
+🎉 app.payments.x_run_due_payments__mutmut_128
+🎉 app.payments.x_run_due_payments__mutmut_146
+🎉 app.payments.x_run_due_payments__mutmut_174
+🎉 app.payments.x_run_due_payments__mutmut_2
+🎉 app.payments.x_run_due_payments__mutmut_3
+🎉 app.payments.x_run_due_payments__mutmut_69
+🎉 app.payments.x_run_due_payments__mutmut_78
+🙁 app.payments.x_run_due_payments__mutmut_89
+🎉 app.payments.x_run_due_payments__mutmut_9
+🎉 app.payments.x_run_due_payments__mutmut_97
+
+MUTMUT_RUN_EXIT_STATUS=0
+=== MUTANT RESULTS ===
+    app.db.x__schema__mutmut_1: not checked
+    app.db.x__schema__mutmut_2: not checked
+    app.db.x__schema__mutmut_3: not checked
+    app.db.x__schema__mutmut_4: not checked
+    app.db.x_connect__mutmut_1: not checked
+    app.db.x_connect__mutmut_2: not checked
+    app.db.x_connect__mutmut_3: not checked
+    app.db.x_connect__mutmut_4: not checked
+    app.db.x_connect__mutmut_5: not checked
+    app.db.x_connect__mutmut_6: not checked
+    app.db.x_connect_read_committed__mutmut_1: not checked
+    app.db.x_connect_read_committed__mutmut_2: not checked
+    app.db.x_init_db__mutmut_1: not checked
+    app.db.x_init_db__mutmut_2: not checked
+    app.db.x_init_db__mutmut_3: not checked
+    app.db.x_init_db__mutmut_4: not checked
+    app.db.x_init_db__mutmut_5: not checked
+    app.db.x_init_db__mutmut_6: not checked
+    app.db.x_init_db__mutmut_7: not checked
+    app.db.x_init_db__mutmut_8: not checked
+    app.db.x_init_db__mutmut_9: not checked
+    app.db.x_init_db__mutmut_10: not checked
+    app.db.x_init_db__mutmut_11: not checked
+    app.db.x_init_db__mutmut_12: not checked
+    app.db.x_init_db__mutmut_13: not checked
+    app.db.x_init_db__mutmut_14: not checked
+    app.db.x_init_db__mutmut_15: not checked
+    app.db.x_init_db__mutmut_16: not checked
+    app.db.x_due_schedules__mutmut_1: not checked
+    app.db.x_due_schedules__mutmut_2: not checked
+    app.db.x_due_schedules__mutmut_3: not checked
+    app.db.x_due_schedules__mutmut_4: not checked
+    app.db.x_due_schedules__mutmut_5: not checked
+    app.db.x_due_schedules__mutmut_6: not checked
+    app.db.x_due_schedules__mutmut_7: not checked
+    app.db.x_due_schedules__mutmut_8: not checked
+    app.db.x_due_schedules__mutmut_9: not checked
+    app.db.x_due_schedules__mutmut_10: not checked
+    app.db.x_due_schedules__mutmut_11: not checked
+    app.db.x_due_schedules__mutmut_12: not checked
+    app.db.x_due_schedules__mutmut_13: not checked
+    app.db.x_due_schedules__mutmut_14: not checked
+    app.db.x_due_schedules__mutmut_15: not checked
+    app.db.x_due_schedules__mutmut_16: not checked
+    app.db.x_due_schedules__mutmut_17: not checked
+    app.db.x_due_schedules__mutmut_18: not checked
+    app.db.x_due_schedules__mutmut_19: not checked
+    app.db.x_latest_payment__mutmut_1: not checked
+    app.db.x_latest_payment__mutmut_2: not checked
+    app.db.x_latest_payment__mutmut_3: not checked
+    app.db.x_latest_payment__mutmut_4: not checked
+    app.db.x_latest_payment__mutmut_5: not checked
+    app.db.x_latest_payment__mutmut_6: not checked
+    app.db.x_latest_payment__mutmut_7: not checked
+    app.db.x_latest_payment__mutmut_8: not checked
+    app.db.x_latest_payment__mutmut_9: not checked
+    app.db.x_latest_payment__mutmut_10: not checked
+    app.db.x_create_pending_payment__mutmut_1: not checked
+    app.db.x_create_pending_payment__mutmut_2: not checked
+    app.db.x_create_pending_payment__mutmut_3: not checked
+    app.db.x_create_pending_payment__mutmut_4: not checked
+    app.db.x_create_pending_payment__mutmut_5: not checked
+    app.db.x_create_pending_payment__mutmut_6: not checked
+    app.db.x_create_pending_payment__mutmut_7: not checked
+    app.db.x_create_pending_payment__mutmut_8: not checked
+    app.db.x_create_pending_payment__mutmut_9: not checked
+    app.db.x_create_pending_payment__mutmut_10: not checked
+    app.db.x_create_pending_payment__mutmut_11: not checked
+    app.db.x_create_pending_payment__mutmut_12: not checked
+    app.db.x_create_pending_payment__mutmut_13: not checked
+    app.db.x_create_pending_payment__mutmut_14: not checked
+    app.db.x_create_pending_payment__mutmut_15: not checked
+    app.db.x_claim_pending_payment__mutmut_1: not checked
+    app.db.x_claim_pending_payment__mutmut_2: not checked
+    app.db.x_claim_pending_payment__mutmut_3: not checked
+    app.db.x_claim_pending_payment__mutmut_4: not checked
+    app.db.x_claim_pending_payment__mutmut_5: not checked
+    app.db.x_claim_pending_payment__mutmut_6: not checked
+    app.db.x_claim_pending_payment__mutmut_7: not checked
+    app.db.x_claim_pending_payment__mutmut_8: not checked
+    app.db.x_claim_pending_payment__mutmut_9: not checked
+    app.db.x_claim_pending_payment__mutmut_10: not checked
+    app.db.x_claim_pending_payment__mutmut_11: not checked
+    app.db.x_claim_pending_payment__mutmut_12: not checked
+    app.db.x_claim_pending_payment__mutmut_13: not checked
+    app.db.x_claim_pending_payment__mutmut_14: not checked
+    app.db.x_claim_pending_payment__mutmut_15: not checked
+    app.db.x_claim_pending_payment__mutmut_16: not checked
+    app.db.x_claim_pending_payment__mutmut_17: not checked
+    app.db.x_claim_pending_payment__mutmut_18: not checked
+    app.db.x_claim_pending_payment__mutmut_19: not checked
+    app.db.x_claim_pending_payment__mutmut_20: not checked
+    app.db.x_claim_pending_payment__mutmut_21: not checked
+    app.db.x_claim_pending_payment__mutmut_22: not checked
+    app.db.x_claim_pending_payment__mutmut_23: not checked
+    app.db.x_claim_pending_payment__mutmut_24: not checked
+    app.db.x_claim_pending_payment__mutmut_25: not checked
+    app.db.x_claim_pending_payment__mutmut_26: not checked
+    app.db.x_claim_pending_payment__mutmut_27: not checked
+    app.db.x_claim_pending_payment__mutmut_28: not checked
+    app.db.x_claim_pending_payment__mutmut_29: not checked
+    app.db.x_claim_pending_payment__mutmut_30: not checked
+    app.db.x_claim_pending_payment__mutmut_31: not checked
+    app.db.x_claim_pending_payment__mutmut_32: not checked
+    app.db.x_claim_pending_payment__mutmut_33: not checked
+    app.db.x_claim_pending_payment__mutmut_34: not checked
+    app.db.x_claim_pending_payment__mutmut_35: not checked
+    app.db.x_claim_pending_payment__mutmut_36: not checked
+    app.db.x_claim_pending_payment__mutmut_37: not checked
+    app.db.x_claim_pending_payment__mutmut_38: not checked
+    app.db.x_claim_pending_payment__mutmut_39: not checked
+    app.db.x_claim_pending_payment__mutmut_40: not checked
+    app.db.x_claim_pending_payment__mutmut_41: not checked
+    app.db.x_claim_pending_payment__mutmut_42: not checked
+    app.db.x_claim_pending_payment__mutmut_43: not checked
+    app.db.x_claim_pending_payment__mutmut_44: not checked
+    app.db.x_claim_pending_payment__mutmut_45: not checked
+    app.db.x_claim_pending_payment__mutmut_46: not checked
+    app.db.x_claim_pending_payment__mutmut_47: not checked
+    app.db.x_claim_pending_payment__mutmut_48: not checked
+    app.db.x_claim_pending_payment__mutmut_49: not checked
+    app.db.x_claim_pending_payment__mutmut_50: not checked
+    app.db.x_claim_pending_payment__mutmut_51: not checked
+    app.db.x_claim_pending_payment__mutmut_52: not checked
+    app.db.x_claim_pending_payment__mutmut_53: not checked
+    app.db.x_claim_pending_payment__mutmut_54: not checked
+    app.db.x_claim_pending_payment__mutmut_55: not checked
+    app.db.x_claim_pending_payment__mutmut_56: not checked
+    app.db.x_claim_pending_payment__mutmut_57: not checked
+    app.db.x_claim_pending_payment__mutmut_58: not checked
+    app.db.x_claim_pending_payment__mutmut_59: not checked
+    app.db.x_claim_pending_payment__mutmut_60: not checked
+    app.db.x_claim_pending_payment__mutmut_61: not checked
+    app.db.x_claim_pending_payment__mutmut_62: not checked
+    app.db.x_claim_pending_payment__mutmut_63: not checked
+    app.db.x_claim_pending_payment__mutmut_64: not checked
+    app.db.x_claim_pending_payment__mutmut_65: not checked
+    app.db.x_claim_pending_payment__mutmut_66: not checked
+    app.db.x_claim_pending_payment__mutmut_67: not checked
+    app.db.x_claim_pending_payment__mutmut_68: not checked
+    app.db.x_claim_pending_payment__mutmut_69: not checked
+    app.db.x_claim_pending_payment__mutmut_70: not checked
+    app.db.x_claim_pending_payment__mutmut_71: not checked
+    app.db.x_claim_pending_payment__mutmut_72: not checked
+    app.db.x_claim_pending_payment__mutmut_73: not checked
+    app.db.x_claim_pending_payment__mutmut_74: not checked
+    app.db.x_claim_pending_payment__mutmut_75: not checked
+    app.db.x_claim_pending_payment__mutmut_76: not checked
+    app.db.x_claim_pending_payment__mutmut_77: not checked
+    app.db.x_claim_pending_payment__mutmut_78: not checked
+    app.db.x_claim_pending_payment__mutmut_79: not checked
+    app.db.x_claim_pending_payment__mutmut_80: not checked
+    app.db.x_claim_pending_payment__mutmut_81: not checked
+    app.db.x_claim_pending_payment__mutmut_82: not checked
+    app.db.x_claim_pending_payment__mutmut_83: not checked
+    app.db.x_claim_pending_payment__mutmut_84: not checked
+    app.db.x_claim_pending_payment__mutmut_85: not checked
+    app.db.x_claim_pending_payment__mutmut_86: not checked
+    app.db.x_claim_pending_payment__mutmut_87: not checked
+    app.db.x__retry_allowed__mutmut_1: killed
+    app.db.x__retry_allowed__mutmut_2: killed
+    app.db.x__retry_allowed__mutmut_3: killed
+    app.db.x__retry_allowed__mutmut_4: not checked
+    app.db.x__retry_allowed__mutmut_5: not checked
+    app.db.x__retry_allowed__mutmut_6: not checked
+    app.db.x__retry_allowed__mutmut_7: not checked
+    app.db.x__retry_allowed__mutmut_8: not checked
+    app.db.x__retry_allowed__mutmut_9: not checked
+    app.db.x__retry_allowed__mutmut_10: not checked
+    app.db.x__retry_allowed__mutmut_11: not checked
+    app.db.x__retry_allowed__mutmut_12: not checked
+    app.db.x__retry_allowed__mutmut_13: not checked
+    app.db.x__retry_allowed__mutmut_14: not checked
+    app.db.x__retry_allowed__mutmut_15: not checked
+    app.db.x__retry_allowed__mutmut_16: not checked
+    app.db.x__retry_allowed__mutmut_17: killed
+    app.db.x__retry_allowed__mutmut_18: not checked
+    app.db.x__retry_allowed__mutmut_19: not checked
+    app.db.x__retry_allowed__mutmut_20: not checked
+    app.db.x__retry_allowed__mutmut_21: not checked
+    app.db.x__retry_allowed__mutmut_22: killed
+    app.db.x__retry_allowed__mutmut_23: not checked
+    app.db.x__retry_allowed__mutmut_24: killed
+    app.db.x__retry_allowed__mutmut_25: not checked
+    app.db.x__retry_allowed__mutmut_26: not checked
+    app.db.x__retry_allowed__mutmut_27: not checked
+    app.db.x__retry_allowed__mutmut_28: not checked
+    app.db.x__retry_allowed__mutmut_29: killed
+    app.db.x_finish_payment__mutmut_1: not checked
+    app.db.x_finish_payment__mutmut_2: not checked
+    app.db.x_finish_payment__mutmut_3: not checked
+    app.db.x_finish_payment__mutmut_4: not checked
+    app.db.x_finish_payment__mutmut_5: not checked
+    app.db.x_finish_payment__mutmut_6: not checked
+    app.db.x_finish_payment__mutmut_7: not checked
+    app.db.x_finish_payment__mutmut_8: not checked
+    app.db.x_finish_payment__mutmut_9: not checked
+    app.db.x_finish_payment__mutmut_10: not checked
+    app.db.x_finish_payment__mutmut_11: not checked
+    app.db.x_finish_payment__mutmut_12: not checked
+    app.db.x_finish_payment__mutmut_13: not checked
+    app.db.x_finish_payment__mutmut_14: not checked
+    app.db.x_finish_payment__mutmut_15: not checked
+    app.db.x_finish_payment__mutmut_16: not checked
+    app.db.x_finish_payment__mutmut_17: not checked
+    app.db.x_finish_payment__mutmut_18: not checked
+    app.db.x_finish_payment__mutmut_19: not checked
+    app.db.x_payment_status__mutmut_1: not checked
+    app.db.x_payment_status__mutmut_2: not checked
+    app.db.x_payment_status__mutmut_3: not checked
+    app.db.x_payment_status__mutmut_4: not checked
+    app.db.x_payment_status__mutmut_5: not checked
+    app.db.x_payment_status__mutmut_6: not checked
+    app.db.x_payment_status__mutmut_7: not checked
+    app.db.x_payment_status__mutmut_8: not checked
+    app.db.x_payment_status__mutmut_9: not checked
+    app.db.x_payment_status__mutmut_10: not checked
+    app.db.x_payment_status__mutmut_11: not checked
+    app.db.x_payment_status__mutmut_12: not checked
+    app.db.x_payment_status__mutmut_13: not checked
+    app.db.x_pending_payments__mutmut_1: not checked
+    app.db.x_pending_payments__mutmut_2: not checked
+    app.db.x_pending_payments__mutmut_3: not checked
+    app.db.x_pending_payments__mutmut_4: not checked
+    app.db.x_pending_payments__mutmut_5: not checked
+    app.db.x_pending_payments__mutmut_6: not checked
+    app.db.x_pending_payments__mutmut_7: not checked
+    app.db.x_pending_payments__mutmut_8: not checked
+    app.db.x_pending_payments__mutmut_9: not checked
+    app.db.x_pending_payments__mutmut_10: not checked
+    app.db.x_pending_payments__mutmut_11: not checked
+    app.db.x_pending_payments__mutmut_12: not checked
+    app.db.x_has_paid_payment__mutmut_1: not checked
+    app.db.x_has_paid_payment__mutmut_2: not checked
+    app.db.x_has_paid_payment__mutmut_3: not checked
+    app.db.x_has_paid_payment__mutmut_4: not checked
+    app.db.x_has_paid_payment__mutmut_5: not checked
+    app.db.x_has_paid_payment__mutmut_6: not checked
+    app.db.x_has_paid_payment__mutmut_7: not checked
+    app.db.x_has_paid_payment__mutmut_8: not checked
+    app.db.x_has_paid_payment__mutmut_9: not checked
+    app.db.x_has_paid_payment__mutmut_10: not checked
+    app.db.x_has_paid_payment__mutmut_11: not checked
+    app.db.x_create_manual_payment__mutmut_1: not checked
+    app.db.x_create_manual_payment__mutmut_2: not checked
+    app.db.x_create_manual_payment__mutmut_3: not checked
+    app.db.x_create_manual_payment__mutmut_4: not checked
+    app.db.x_create_manual_payment__mutmut_5: not checked
+    app.db.x_create_manual_payment__mutmut_6: not checked
+    app.db.x_create_manual_payment__mutmut_7: not checked
+    app.db.x_create_manual_payment__mutmut_8: not checked
+    app.db.x_create_manual_payment__mutmut_9: not checked
+    app.db.x_create_manual_payment__mutmut_10: not checked
+    app.db.x_create_manual_payment__mutmut_11: not checked
+    app.db.x_create_manual_payment__mutmut_12: not checked
+    app.db.x_create_manual_payment__mutmut_13: not checked
+    app.db.x_create_manual_payment__mutmut_14: not checked
+    app.db.x_create_manual_payment__mutmut_15: not checked
+    app.db.x_create_manual_payment__mutmut_16: not checked
+    app.db.x_create_manual_payment__mutmut_17: not checked
+    app.db.x_create_manual_payment__mutmut_18: not checked
+    app.db.x_create_manual_payment__mutmut_19: not checked
+    app.db.x_create_manual_payment__mutmut_20: not checked
+    app.db.x_create_manual_payment__mutmut_21: not checked
+    app.db.x_create_manual_payment__mutmut_22: not checked
+    app.db.x_create_manual_payment__mutmut_23: not checked
+    app.db.x_create_manual_payment__mutmut_24: not checked
+    app.db.x_create_manual_payment__mutmut_25: not checked
+    app.db.x_create_manual_payment__mutmut_26: not checked
+    app.db.x_create_manual_payment__mutmut_27: not checked
+    app.db.x_create_manual_payment__mutmut_28: not checked
+    app.db.x_create_manual_payment__mutmut_29: not checked
+    app.db.x_create_manual_payment__mutmut_30: not checked
+    app.db.x_create_manual_payment__mutmut_31: not checked
+    app.db.x_create_manual_payment__mutmut_32: not checked
+    app.db.x_create_manual_payment__mutmut_33: not checked
+    app.db.x_create_manual_payment__mutmut_34: not checked
+    app.db.x_create_manual_payment__mutmut_35: not checked
+    app.db.x_create_manual_payment__mutmut_36: not checked
+    app.db.x_create_manual_payment__mutmut_37: not checked
+    app.db.x_create_manual_payment__mutmut_38: not checked
+    app.db.x_create_manual_payment__mutmut_39: not checked
+    app.db.x_create_manual_payment__mutmut_40: not checked
+    app.db.x_create_manual_payment__mutmut_41: not checked
+    app.db.x_create_manual_payment__mutmut_42: not checked
+    app.db.x_create_manual_payment__mutmut_43: not checked
+    app.db.x_create_manual_payment__mutmut_44: not checked
+    app.db.x_create_manual_payment__mutmut_45: not checked
+    app.db.x_create_manual_payment__mutmut_46: not checked
+    app.db.x_create_manual_payment__mutmut_47: not checked
+    app.db.x_create_manual_payment__mutmut_48: not checked
+    app.db.x_create_manual_payment__mutmut_49: not checked
+    app.db.x_create_manual_payment__mutmut_50: not checked
+    app.db.x_create_manual_payment__mutmut_51: not checked
+    app.db.x_create_manual_payment__mutmut_52: not checked
+    app.db.x_create_manual_payment__mutmut_53: not checked
+    app.db.x_create_manual_payment__mutmut_54: not checked
+    app.db.x_create_manual_payment__mutmut_55: not checked
+    app.db.x_create_manual_payment__mutmut_56: not checked
+    app.db.x_create_manual_payment__mutmut_57: not checked
+    app.db.x_create_manual_payment__mutmut_58: not checked
+    app.db.x_create_manual_payment__mutmut_59: not checked
+    app.db.x_create_manual_payment__mutmut_60: not checked
+    app.db.x_create_manual_payment__mutmut_61: not checked
+    app.db.x_create_manual_payment__mutmut_62: not checked
+    app.db.x_create_manual_payment__mutmut_63: not checked
+    app.db.x_create_manual_payment__mutmut_64: not checked
+    app.db.x_create_manual_payment__mutmut_65: not checked
+    app.db.x_create_manual_payment__mutmut_66: not checked
+    app.db.x_create_manual_payment__mutmut_67: not checked
+    app.db.x_create_manual_payment__mutmut_68: not checked
+    app.db.x_create_manual_payment__mutmut_69: not checked
+    app.db.x_create_manual_payment__mutmut_70: not checked
+    app.db.x_create_manual_payment__mutmut_71: not checked
+    app.db.x_create_manual_payment__mutmut_72: not checked
+    app.payments.x__timestamp__mutmut_1: not checked
+    app.payments.x__timestamp__mutmut_2: not checked
+    app.payments.x__timestamp__mutmut_3: not checked
+    app.payments.x__timestamp__mutmut_4: not checked
+    app.payments.x__charge_pending__mutmut_1: not checked
+    app.payments.x__charge_pending__mutmut_2: not checked
+    app.payments.x__charge_pending__mutmut_3: not checked
+    app.payments.x__charge_pending__mutmut_4: killed
+    app.payments.x__charge_pending__mutmut_5: not checked
+    app.payments.x__charge_pending__mutmut_6: not checked
+    app.payments.x__charge_pending__mutmut_7: not checked
+    app.payments.x__charge_pending__mutmut_8: not checked
+    app.payments.x__charge_pending__mutmut_9: not checked
+    app.payments.x__charge_pending__mutmut_10: not checked
+    app.payments.x__charge_pending__mutmut_11: not checked
+    app.payments.x__charge_pending__mutmut_12: not checked
+    app.payments.x__charge_pending__mutmut_13: not checked
+    app.payments.x__charge_pending__mutmut_14: not checked
+    app.payments.x__charge_pending__mutmut_15: not checked
+    app.payments.x__charge_pending__mutmut_16: not checked
+    app.payments.x__charge_pending__mutmut_17: not checked
+    app.payments.x__charge_pending__mutmut_18: not checked
+    app.payments.x__charge_pending__mutmut_19: not checked
+    app.payments.x__charge_pending__mutmut_20: not checked
+    app.payments.x__charge_pending__mutmut_21: not checked
+    app.payments.x__charge_pending__mutmut_22: not checked
+    app.payments.x__charge_pending__mutmut_23: not checked
+    app.payments.x__charge_pending__mutmut_24: not checked
+    app.payments.x__charge_pending__mutmut_25: not checked
+    app.payments.x__charge_pending__mutmut_26: not checked
+    app.payments.x__charge_pending__mutmut_27: not checked
+    app.payments.x__charge_pending__mutmut_28: not checked
+    app.payments.x__charge_pending__mutmut_29: killed
+    app.payments.x__charge_pending__mutmut_30: not checked
+    app.payments.x__charge_pending__mutmut_31: not checked
+    app.payments.x__charge_pending__mutmut_32: not checked
+    app.payments.x__charge_pending__mutmut_33: not checked
+    app.payments.x__charge_pending__mutmut_34: not checked
+    app.payments.x__charge_pending__mutmut_35: not checked
+    app.payments.x__charge_pending__mutmut_36: killed
+    app.payments.x__charge_pending__mutmut_37: not checked
+    app.payments.x__charge_pending__mutmut_38: survived
+    app.payments.x__charge_pending__mutmut_39: not checked
+    app.payments.x__charge_pending__mutmut_40: not checked
+    app.payments.x__count_outcome__mutmut_1: killed
+    app.payments.x__count_outcome__mutmut_2: killed
+    app.payments.x__count_outcome__mutmut_3: killed
+    app.payments.x__count_outcome__mutmut_4: not checked
+    app.payments.x__count_outcome__mutmut_5: survived
+    app.payments.x__count_outcome__mutmut_6: not checked
+    app.payments.x__count_outcome__mutmut_7: not checked
+    app.payments.x__count_outcome__mutmut_8: not checked
+    app.payments.x__count_outcome__mutmut_9: not checked
+    app.payments.x__count_outcome__mutmut_10: not checked
+    app.payments.x__count_outcome__mutmut_11: not checked
+    app.payments.x__count_outcome__mutmut_12: not checked
+    app.payments.x__count_outcome__mutmut_13: not checked
+    app.payments.x__count_outcome__mutmut_14: not checked
+    app.payments.x__count_outcome__mutmut_15: not checked
+    app.payments.x__count_outcome__mutmut_16: not checked
+    app.payments.x__count_outcome__mutmut_17: not checked
+    app.payments.x__count_outcome__mutmut_18: not checked
+    app.payments.x__count_outcome__mutmut_19: killed
+    app.payments.x__count_outcome__mutmut_20: survived
+    app.payments.x__count_outcome__mutmut_21: not checked
+    app.payments.x__count_outcome__mutmut_22: not checked
+    app.payments.x__count_outcome__mutmut_23: not checked
+    app.payments.x__count_outcome__mutmut_24: not checked
+    app.payments.x_run_due_payments__mutmut_1: killed
+    app.payments.x_run_due_payments__mutmut_2: killed
+    app.payments.x_run_due_payments__mutmut_3: killed
+    app.payments.x_run_due_payments__mutmut_4: not checked
+    app.payments.x_run_due_payments__mutmut_5: not checked
+    app.payments.x_run_due_payments__mutmut_6: not checked
+    app.payments.x_run_due_payments__mutmut_7: not checked
+    app.payments.x_run_due_payments__mutmut_8: not checked
+    app.payments.x_run_due_payments__mutmut_9: killed
+    app.payments.x_run_due_payments__mutmut_10: not checked
+    app.payments.x_run_due_payments__mutmut_11: not checked
+    app.payments.x_run_due_payments__mutmut_12: not checked
+    app.payments.x_run_due_payments__mutmut_13: not checked
+    app.payments.x_run_due_payments__mutmut_14: not checked
+    app.payments.x_run_due_payments__mutmut_15: not checked
+    app.payments.x_run_due_payments__mutmut_16: not checked
+    app.payments.x_run_due_payments__mutmut_17: not checked
+    app.payments.x_run_due_payments__mutmut_18: not checked
+    app.payments.x_run_due_payments__mutmut_19: not checked
+    app.payments.x_run_due_payments__mutmut_20: not checked
+    app.payments.x_run_due_payments__mutmut_21: not checked
+    app.payments.x_run_due_payments__mutmut_22: not checked
+    app.payments.x_run_due_payments__mutmut_23: not checked
+    app.payments.x_run_due_payments__mutmut_24: not checked
+    app.payments.x_run_due_payments__mutmut_25: not checked
+    app.payments.x_run_due_payments__mutmut_26: not checked
+    app.payments.x_run_due_payments__mutmut_27: not checked
+    app.payments.x_run_due_payments__mutmut_28: not checked
+    app.payments.x_run_due_payments__mutmut_29: not checked
+    app.payments.x_run_due_payments__mutmut_30: not checked
+    app.payments.x_run_due_payments__mutmut_31: not checked
+    app.payments.x_run_due_payments__mutmut_32: not checked
+    app.payments.x_run_due_payments__mutmut_33: not checked
+    app.payments.x_run_due_payments__mutmut_34: not checked
+    app.payments.x_run_due_payments__mutmut_35: not checked
+    app.payments.x_run_due_payments__mutmut_36: not checked
+    app.payments.x_run_due_payments__mutmut_37: not checked
+    app.payments.x_run_due_payments__mutmut_38: not checked
+    app.payments.x_run_due_payments__mutmut_39: not checked
+    app.payments.x_run_due_payments__mutmut_40: not checked
+    app.payments.x_run_due_payments__mutmut_41: not checked
+    app.payments.x_run_due_payments__mutmut_42: not checked
+    app.payments.x_run_due_payments__mutmut_43: not checked
+    app.payments.x_run_due_payments__mutmut_44: not checked
+    app.payments.x_run_due_payments__mutmut_45: not checked
+    app.payments.x_run_due_payments__mutmut_46: not checked
+    app.payments.x_run_due_payments__mutmut_47: not checked
+    app.payments.x_run_due_payments__mutmut_48: not checked
+    app.payments.x_run_due_payments__mutmut_49: not checked
+    app.payments.x_run_due_payments__mutmut_50: not checked
+    app.payments.x_run_due_payments__mutmut_51: not checked
+    app.payments.x_run_due_payments__mutmut_52: not checked
+    app.payments.x_run_due_payments__mutmut_53: not checked
+    app.payments.x_run_due_payments__mutmut_54: not checked
+    app.payments.x_run_due_payments__mutmut_55: not checked
+    app.payments.x_run_due_payments__mutmut_56: not checked
+    app.payments.x_run_due_payments__mutmut_57: not checked
+    app.payments.x_run_due_payments__mutmut_58: not checked
+    app.payments.x_run_due_payments__mutmut_59: not checked
+    app.payments.x_run_due_payments__mutmut_60: not checked
+    app.payments.x_run_due_payments__mutmut_61: not checked
+    app.payments.x_run_due_payments__mutmut_62: not checked
+    app.payments.x_run_due_payments__mutmut_63: not checked
+    app.payments.x_run_due_payments__mutmut_64: not checked
+    app.payments.x_run_due_payments__mutmut_65: not checked
+    app.payments.x_run_due_payments__mutmut_66: not checked
+    app.payments.x_run_due_payments__mutmut_67: not checked
+    app.payments.x_run_due_payments__mutmut_68: not checked
+    app.payments.x_run_due_payments__mutmut_69: killed
+    app.payments.x_run_due_payments__mutmut_70: not checked
+    app.payments.x_run_due_payments__mutmut_71: not checked
+    app.payments.x_run_due_payments__mutmut_72: not checked
+    app.payments.x_run_due_payments__mutmut_73: not checked
+    app.payments.x_run_due_payments__mutmut_74: not checked
+    app.payments.x_run_due_payments__mutmut_75: not checked
+    app.payments.x_run_due_payments__mutmut_76: not checked
+    app.payments.x_run_due_payments__mutmut_77: not checked
+    app.payments.x_run_due_payments__mutmut_78: killed
+    app.payments.x_run_due_payments__mutmut_79: not checked
+    app.payments.x_run_due_payments__mutmut_80: not checked
+    app.payments.x_run_due_payments__mutmut_81: not checked
+    app.payments.x_run_due_payments__mutmut_82: not checked
+    app.payments.x_run_due_payments__mutmut_83: not checked
+    app.payments.x_run_due_payments__mutmut_84: not checked
+    app.payments.x_run_due_payments__mutmut_85: not checked
+    app.payments.x_run_due_payments__mutmut_86: not checked
+    app.payments.x_run_due_payments__mutmut_87: not checked
+    app.payments.x_run_due_payments__mutmut_88: not checked
+    app.payments.x_run_due_payments__mutmut_89: survived
+    app.payments.x_run_due_payments__mutmut_90: not checked
+    app.payments.x_run_due_payments__mutmut_91: not checked
+    app.payments.x_run_due_payments__mutmut_92: not checked
+    app.payments.x_run_due_payments__mutmut_93: not checked
+    app.payments.x_run_due_payments__mutmut_94: not checked
+    app.payments.x_run_due_payments__mutmut_95: not checked
+    app.payments.x_run_due_payments__mutmut_96: not checked
+    app.payments.x_run_due_payments__mutmut_97: killed
+    app.payments.x_run_due_payments__mutmut_98: not checked
+    app.payments.x_run_due_payments__mutmut_99: not checked
+    app.payments.x_run_due_payments__mutmut_100: not checked
+    app.payments.x_run_due_payments__mutmut_101: not checked
+    app.payments.x_run_due_payments__mutmut_102: not checked
+    app.payments.x_run_due_payments__mutmut_103: not checked
+    app.payments.x_run_due_payments__mutmut_104: not checked
+    app.payments.x_run_due_payments__mutmut_105: not checked
+    app.payments.x_run_due_payments__mutmut_106: not checked
+    app.payments.x_run_due_payments__mutmut_107: not checked
+    app.payments.x_run_due_payments__mutmut_108: not checked
+    app.payments.x_run_due_payments__mutmut_109: survived
+    app.payments.x_run_due_payments__mutmut_110: not checked
+    app.payments.x_run_due_payments__mutmut_111: not checked
+    app.payments.x_run_due_payments__mutmut_112: not checked
+    app.payments.x_run_due_payments__mutmut_113: not checked
+    app.payments.x_run_due_payments__mutmut_114: killed
+    app.payments.x_run_due_payments__mutmut_115: not checked
+    app.payments.x_run_due_payments__mutmut_116: not checked
+    app.payments.x_run_due_payments__mutmut_117: not checked
+    app.payments.x_run_due_payments__mutmut_118: not checked
+    app.payments.x_run_due_payments__mutmut_119: not checked
+    app.payments.x_run_due_payments__mutmut_120: not checked
+    app.payments.x_run_due_payments__mutmut_121: not checked
+    app.payments.x_run_due_payments__mutmut_122: not checked
+    app.payments.x_run_due_payments__mutmut_123: not checked
+    app.payments.x_run_due_payments__mutmut_124: not checked
+    app.payments.x_run_due_payments__mutmut_125: not checked
+    app.payments.x_run_due_payments__mutmut_126: not checked
+    app.payments.x_run_due_payments__mutmut_127: not checked
+    app.payments.x_run_due_payments__mutmut_128: killed
+    app.payments.x_run_due_payments__mutmut_129: not checked
+    app.payments.x_run_due_payments__mutmut_130: not checked
+    app.payments.x_run_due_payments__mutmut_131: not checked
+    app.payments.x_run_due_payments__mutmut_132: not checked
+    app.payments.x_run_due_payments__mutmut_133: not checked
+    app.payments.x_run_due_payments__mutmut_134: not checked
+    app.payments.x_run_due_payments__mutmut_135: not checked
+    app.payments.x_run_due_payments__mutmut_136: not checked
+    app.payments.x_run_due_payments__mutmut_137: not checked
+    app.payments.x_run_due_payments__mutmut_138: not checked
+    app.payments.x_run_due_payments__mutmut_139: not checked
+    app.payments.x_run_due_payments__mutmut_140: not checked
+    app.payments.x_run_due_payments__mutmut_141: not checked
+    app.payments.x_run_due_payments__mutmut_142: not checked
+    app.payments.x_run_due_payments__mutmut_143: not checked
+    app.payments.x_run_due_payments__mutmut_144: not checked
+    app.payments.x_run_due_payments__mutmut_145: not checked
+    app.payments.x_run_due_payments__mutmut_146: killed
+    app.payments.x_run_due_payments__mutmut_147: not checked
+    app.payments.x_run_due_payments__mutmut_148: not checked
+    app.payments.x_run_due_payments__mutmut_149: not checked
+    app.payments.x_run_due_payments__mutmut_150: not checked
+    app.payments.x_run_due_payments__mutmut_151: not checked
+    app.payments.x_run_due_payments__mutmut_152: not checked
+    app.payments.x_run_due_payments__mutmut_153: not checked
+    app.payments.x_run_due_payments__mutmut_154: not checked
+    app.payments.x_run_due_payments__mutmut_155: not checked
+    app.payments.x_run_due_payments__mutmut_156: not checked
+    app.payments.x_run_due_payments__mutmut_157: not checked
+    app.payments.x_run_due_payments__mutmut_158: not checked
+    app.payments.x_run_due_payments__mutmut_159: not checked
+    app.payments.x_run_due_payments__mutmut_160: not checked
+    app.payments.x_run_due_payments__mutmut_161: not checked
+    app.payments.x_run_due_payments__mutmut_162: not checked
+    app.payments.x_run_due_payments__mutmut_163: not checked
+    app.payments.x_run_due_payments__mutmut_164: not checked
+    app.payments.x_run_due_payments__mutmut_165: not checked
+    app.payments.x_run_due_payments__mutmut_166: not checked
+    app.payments.x_run_due_payments__mutmut_167: not checked
+    app.payments.x_run_due_payments__mutmut_168: not checked
+    app.payments.x_run_due_payments__mutmut_169: not checked
+    app.payments.x_run_due_payments__mutmut_170: not checked
+    app.payments.x_run_due_payments__mutmut_171: not checked
+    app.payments.x_run_due_payments__mutmut_172: not checked
+    app.payments.x_run_due_payments__mutmut_173: not checked
+    app.payments.x_run_due_payments__mutmut_174: killed
+    app.payments.x_run_due_payments__mutmut_175: not checked
+    app.payments.x_run_due_payments__mutmut_176: not checked
+    app.payments.x_record_manual_payment__mutmut_1: not checked
+    app.payments.x_record_manual_payment__mutmut_2: not checked
+    app.payments.x_record_manual_payment__mutmut_3: not checked
+    app.payments.x_record_manual_payment__mutmut_4: not checked
+    app.payments.x_record_manual_payment__mutmut_5: not checked
+    app.payments.x_record_manual_payment__mutmut_6: not checked
+    app.payments.x_record_manual_payment__mutmut_7: not checked
+    app.payments.x_record_manual_payment__mutmut_8: not checked
+    app.payments.x_record_manual_payment__mutmut_9: not checked
+    app.payments.x_record_manual_payment__mutmut_10: not checked
+    app.payments.x_record_manual_payment__mutmut_11: not checked
+    app.payments.x_record_manual_payment__mutmut_12: not checked
+    app.payments.x_record_manual_payment__mutmut_13: not checked
+    app.payments.x_record_manual_payment__mutmut_14: not checked
+    app.payments.x_record_manual_payment__mutmut_15: not checked
+    app.payments.x_record_manual_payment__mutmut_16: not checked
+    app.payments.x_record_manual_payment__mutmut_17: not checked
+    app.payments.x_record_manual_payment__mutmut_18: not checked
+    app.payments.x_record_manual_payment__mutmut_19: not checked
+    app.payments.x_record_manual_payment__mutmut_20: not checked
+    app.payments.x_record_manual_payment__mutmut_21: not checked
+    app.payments.x_record_manual_payment__mutmut_22: not checked
+    app.payments.x_record_manual_payment__mutmut_23: not checked
+    app.payments.x_record_manual_payment__mutmut_24: not checked
+    app.payments.x_record_manual_payment__mutmut_25: not checked
+    app.payments.x_record_manual_payment__mutmut_26: not checked
+    app.payments.x_record_manual_payment__mutmut_27: not checked
+    app.payments.x_record_manual_payment__mutmut_28: not checked
+    app.payments.x_record_manual_payment__mutmut_29: not checked
+    app.payments.x_record_manual_payment__mutmut_30: not checked
+    app.payments.x_record_manual_payment__mutmut_31: not checked
+    app.payments.x_record_manual_payment__mutmut_32: not checked
+    app.payments.x_record_manual_payment__mutmut_33: not checked
+    app.payments.x_record_manual_payment__mutmut_34: not checked
+    app.payments.x_record_manual_payment__mutmut_35: not checked
+    app.payments.x_record_manual_payment__mutmut_36: not checked
+    app.payments.x_record_manual_payment__mutmut_37: not checked
+    app.payments.x_record_manual_payment__mutmut_38: not checked
+    app.payments.x_record_manual_payment__mutmut_39: not checked
+    app.payments.x_record_manual_payment__mutmut_40: not checked
+    app.payments.x_record_manual_payment__mutmut_41: not checked
+    app.payments.x_record_manual_payment__mutmut_42: not checked
+    app.payments.x_record_manual_payment__mutmut_43: not checked
+    app.payments.x_record_manual_payment__mutmut_44: not checked

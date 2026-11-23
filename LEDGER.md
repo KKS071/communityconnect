@@ -1182,3 +1182,30 @@ Evidence: `evidence/properties.txt` contains the raw focused Hypothesis statisti
 Risk: Each Hypothesis example creates a database schema, increasing test runtime and requiring an available PostgreSQL test database. The tests exercise bounded generated examples rather than exhaustively proving the properties.
 
 Decision: Accept the two property-based tests and their successful verification. Preserve the locked acceptance tests and existing GREEN/REFACTOR tags. Commit the property tests, dependency, prompts, patches, evidence and ledger entry as a separate milestone activity.
+
+### Entry 69 — Milestone 2 Mutation Testing and Survivor Remediation (Prompts 83–88)
+
+Artifact: `pyproject.toml`; `.gitignore`; `requirements.txt`; `tests/test_s6_payments.py`; `evidence/mutation-pilot.txt`; `evidence/mutation-pilot-extended.txt`; `evidence/mutation-baseline.txt`; `evidence/mutation-properties.txt`; `evidence/mutation-selected-diffs.txt`; `evidence/mutation-after.txt`; `evidence/mutation-regression-tests.txt`; `docs/audits/mutation-summary.md`; `agent-patches/AGENT-18-M2-mutmut-config.patch`; `agent-patches/AGENT-18-M2-mutmut-gitignore.patch`; `agent-patches/AGENT-18-M2-mutmut-dependency.patch`; `agent-patches/AGENT-21-M2-mutation-killing-tests.patch`; `agent-patches/AGENT-22-M2-final-documentation-v2.patch`.
+
+Tool: Claude Code main agent, no subagents (AGENT-17 mutation plan; AGENT-18 configuration patches; AGENT-19 mutant selection; AGENT-20 survivor analysis; AGENT-21 regression-test patch; AGENT-22 summary and ledger draft); ChatGPT GPT-6 (review of the AGENT-22 response); human reviewer (patch application, mutmut and pytest execution, database and integrity checks). [Human to confirm whether ChatGPT GPT-6 or another tool also reviewed Prompts 83–87.]
+
+Prompts: `prompts/83-Milestone-2-Mutation-Testing-Plan.md`; `prompts/84-Milestone-2-Mutation-Configuration.md`; `prompts/85-Milestone-2-Controlled-Mutation-Comparison.md`; `prompts/AGENT-20-Mutation-Survivor-Analys.md`; `prompts/86-AGENT-20-Follow-up-Resolve-Mutation-Analysis-Uncertainties.md`; `prompts/87-AGENT-21-Prepare-Three-Mutation-Killing-Regression-Tests.md`; `prompts/88-AGENT-22-M2-Mutation-Evidence-Ledger-Final-Audit.md`.
+
+Review: mutmut 3.8.1 was configured for `app/payments.py` and `app/db.py` and generated 603 mutants. The human approved a controlled set of 30 mutants from `_count_outcome`, `run_due_payments`, `_charge_pending` and `db._retry_allowed`, including the nine pilot mutants. Baseline A (regression and acceptance tests) and Baseline B (A plus the Hypothesis properties) each killed 25 of 30, and the same five mutants survived both. AGENT-20 found that three survivors (`_count_outcome__mutmut_5`, `_count_outcome__mutmut_20`, `run_due_payments__mutmut_89`) were genuine test gaps that need two units in one run. The human-run verbose Hypothesis output showed that all 10 Property 1 examples used a single resident. AGENT-21 prepared three deterministic regression tests grounded in D16, R4 and D25; the human reviewed and applied them. The remaining survivors were not targeted: `run_due_payments__mutmut_109` is an unresolved concurrency-policy question that depends on a concurrent manual payment (D16/D25 versus D35), and `_charge_pending__mutmut_38` is equivalent through the public API but not at the private-function level. ChatGPT GPT-6 reviewed the AGENT-22 response; the human reviewed and applied the AGENT-22 v2 documentation patch.
+
+Checks:
+- Pilot — 9 of 9 mutants killed.
+- Baseline A — 25 killed, 5 survived (83.33%).
+- Baseline B with Hypothesis — 25 killed, 5 survived (83.33%).
+- Focused regression tests — 3 passed, 102 deselected.
+- After the regression tests — 28 killed, 2 survived, no timeouts (93.33%); `MUTMUT_RUN_EXIT_STATUS=0`.
+- Full suite with branch-aware coverage — 202 passed, 1 warning, 487.74 seconds; coverage 94.34%, above the required 80%.
+- Protected-file comparison against `m2-tests-locked` — passed (`PROTECTED-UNCHANGED`).
+- Test database — `communityconnect_test|0`; no `test_` schemas left.
+
+Evidence: The raw mutmut output is in `evidence/mutation-pilot.txt`, `evidence/mutation-pilot-extended.txt`, `evidence/mutation-baseline.txt`, `evidence/mutation-properties.txt` and `evidence/mutation-after.txt`. The selected mutant diffs are in `evidence/mutation-selected-diffs.txt`, and the raw full-suite coverage output is in `evidence/mutation-regression-tests.txt`. These raw evidence files are preserved unchanged. `docs/audits/mutation-summary.md` is an agent-prepared summary of those files, not tool output. The protected-file check, database check, focused test run, verbose Hypothesis run and `mutmut tests-for-mutant` result were reported by the human and are not saved as evidence files. Configuration commit SHA, 9474ad4. Regression-test and documentation commit SHA: [pending; to be recorded after the human commits].
+
+Risk: The scores apply to the 30 selected mutants, not to all 603. The after-run reused the existing `mutants/` workspace: mutmut warned that non-Python files had changed and that cached results were kept, and its output does not print the test-selection configuration. The `_109` counting question is unresolved, and its race behavior was analyzed by reading code only. The Hypothesis properties added no mutation kills with their bounded examples.
+
+Decision: Human approved the mutation-testing results and documentation.
+Accept the three regression tests and the 28/30 result on the selected mutants. Record `_109` as an unresolved concurrency-policy question for a human decision and `_38` as equivalent through the public API. Commit the tests, evidence, prompts, patches and this entry as a separate milestone activity.

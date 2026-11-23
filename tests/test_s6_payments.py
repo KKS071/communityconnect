@@ -1159,3 +1159,53 @@ def test_f01_locking_transactions_use_read_committed(s6, monkeypatch):
     expected = (psycopg.IsolationLevel.READ_COMMITTED, psycopg.pq.TransactionStatus.IDLE)
     assert seen == [expected, expected]
     assert _attempts(s6) == [(1, "Paid")]
+
+
+# AGENT-21 regression tests for the AGENT-20 mutation survivors: two units in one run.
+# Expected values come from S-6 R4, D16 and D25. MR-12 is created before MR-20 and
+# due_schedules() orders by unit_id (app/db.py), so a run reaches MR-12 first.
+
+
+def test_d16_two_units_charged_in_one_run_are_both_counted(s6):
+    # D16: charged counts every Payment that became Paid in the run (mutant _count_outcome_5).
+    from app.payments import RunResult, run_due_payments
+
+    for user in ("R1", "R3"):
+        assert schedule(s6, user=user).status_code == 201
+    assert run_due_payments(FIRST) == RunResult(charged=2, failed=0, skipped=0)
+    rows = history(s6, user="M1")  # the manager sees every unit's Payments (D8, D23)
+    assert sorted((r["unit_id"], r["attempt"], r["status"]) for r in rows) == sorted([
+        (s6.units["MR-12"], 1, "Paid"), (s6.units["MR-20"], 1, "Paid")])
+    assert len(s6.fake.calls) == 2
+
+
+def test_d16_two_unavailable_charges_are_both_counted_as_skipped(s6):
+    # D16, R4: an unavailable processor leaves each due Payment Pending and counts it as
+    # skipped (mutant _count_outcome_20).
+    from app.payments import RunResult, run_due_payments
+
+    s6.fake.unavailable = True
+    for user in ("R1", "R3"):
+        assert schedule(s6, user=user).status_code == 201
+    assert run_due_payments(FIRST) == RunResult(charged=0, failed=0, skipped=2)
+    rows = history(s6, user="M1")
+    assert sorted((r["unit_id"], r["attempt"], r["status"]) for r in rows) == sorted([
+        (s6.units["MR-12"], 1, "Pending"), (s6.units["MR-20"], 1, "Pending")])
+
+
+def test_r4_paid_unit_does_not_stop_the_run_for_a_later_unit(s6):
+    # R4, D25: a unit skipped because its month is Paid must not stop the run before a later
+    # due unit (mutant run_due_payments_89).
+    from app import db
+    from app.payments import RunResult, record_manual_payment, run_due_payments
+
+    for user in ("R1", "R3"):
+        assert schedule(s6, user=user).status_code == 201
+    # The run must reach the Paid unit first, or this test cannot detect a stopped run.
+    assert [s["unit_id"] for s in db.due_schedules()] == [s6.units["MR-12"], s6.units["MR-20"]]
+    record_manual_payment(s6.units["MR-12"], MONTH)
+    assert run_due_payments(FIRST) == RunResult(charged=1, failed=0, skipped=1)
+    rows = history(s6, user="M1")
+    assert sorted((r["unit_id"], r["attempt"], r["method"], r["status"]) for r in rows) == [
+        (s6.units["MR-12"], 1, "manual", "Paid"), (s6.units["MR-20"], 1, "debit", "Paid")]
+    assert [key for _, _, key in s6.fake.calls] == [f'{s6.units["MR-20"]}:{MONTH}:1']
