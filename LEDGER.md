@@ -1004,3 +1004,19 @@ Checks: Claude inspected relevant documentation and code. No application tests o
 Evidence: Prompt 71 Claude Code response and approved decisions recorded in LEDGER.md.
 
 Risk: The proposed patch may contain an incorrect hunk header. Traceability documentation may still reference the original AC-18 wording. Acceptance tests have not yet been locked.
+
+### Entry 61 — S-6 Traceability Documentation Update (Prompt 72)
+
+Artifact: docs/requirements/traceability.md.
+
+Tool: Claude Code, main agent (patch preparation); human verification and application.
+
+Prompts: prompts/72-Update-S-6-Traceability-Doc.md.
+
+Review: Reviewed the proposed correction to outdated Milestone 1 statements. Confirmed that S-6 implementation status, settled OQ1–OQ5 decisions, the human-approved AC-18 JSON amendment, and deferred ACH settlement are documented without changing evidence IDs, AC IDs, or test paths.
+
+Checks: AGENT-08 v2 patch requires git apply --check and git diff --check. No application tests were run by Claude.
+
+Evidence: docs/requirements/traceability.md and agent-patches/AGENT-08-S6-traceability-v2.patch.
+
+Risk: Acceptance tests have not yet been moved to tests/acceptance/ or locked. Test execution and final Milestone 2 evidence remain pending.
