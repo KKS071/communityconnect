@@ -975,7 +975,7 @@ Risk: Potential contradictions in retry rules, ACH scope, acceptance-test wordin
 
 ### Entry 59 — S-6 Gap Check 2 Triage (Prompt 70)
 
-Artifact: agent-patches/AGENT-06-S6-gap-triage.patch and Gap Check 2 triage findings.
+Artifact: S-6 Gap Check 2 triage of 54 findings and approved documentation decisions.
 
 Tool: Claude Code, main agent (read-only analysis and patch preparation).
 
