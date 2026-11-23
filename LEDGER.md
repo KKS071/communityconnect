@@ -1132,3 +1132,28 @@ Evidence: `evidence/green.txt` contains the raw pytest output from both successf
 Risk: GREEN verification confirms that the already implemented system passes the locked tests. It does not establish that the implementation was developed after the lock. Historical RED reconstruction produced setup errors rather than failing assertions. REFACTOR evidence remains incomplete.
 
 Decision: Accept the successful tests and coverage as GREEN verification evidence. Preserve the locked acceptance tests without modification. Commit the evidence and ledger entry, verify protected-file integrity, and create `m2-green` after the checks pass. Perform any approved refactor separately afterward.
+
+### Entry 67 — Milestone 2 Behavior-Preserving REFACTOR (Prompt 81)
+
+Artifact: `app/payments.py`; `agent-patches/AGENT-15-M2-refactor.patch`; `evidence/refactor.txt`; `prompts/81-Milestone-2-Controlled-Refactor.md`.
+
+Tool: Claude Code main agent (patch preparation); ChatGPT GPT-6 (patch review); human reviewer (patch application, test execution and verification).
+
+Prompt: `prompts/81-Milestone-2-Controlled-Refactor.md`.
+
+Review: AGENT-15 identified duplicated payment-outcome counting logic in the two processing loops of `run_due_payments()`. The agent prepared a minimal patch introducing the private `_count_outcome()` helper and consolidating the three result counters into a dictionary. The human reviewed and applied the patch. The change preserved the public `RunResult` interface, payment processing order, idempotency, retry timing, database operations and exception behavior.
+
+Checks:
+- `git apply --check` — passed.
+- `git diff --check` — passed.
+- S-6 payment tests — 102 passed, 1 warning, 229.10 seconds.
+- S-6 acceptance tests — 5 passed, 1 warning, 12.39 seconds.
+- Full suite with branch-aware coverage — 197 passed, 1 warning, 457.04 seconds.
+- Branch-aware coverage — 94.34%, exceeding the required 80%.
+- Protected-file comparison against `m2-tests-locked` — passed (`PROTECTED-UNCHANGED`).
+
+Evidence: `evidence/refactor.txt` contains the raw pytest output for the focused payment tests, locked acceptance tests and full coverage run.
+
+Risk: The refactor replaces separate integer counters with a dictionary, creating a small risk of counter-key errors. The successful regression and acceptance tests provide evidence that the expected behavior is preserved. The refactor does not establish that the earlier GREEN implementation was developed after the acceptance-test lock.
+
+Decision: Accept the behavior-preserving refactor and its successful verification. Commit the implementation, patch, prompt, evidence and ledger entry without changing either existing milestone tag.

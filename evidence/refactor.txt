@@ -1,0 +1,181 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.2.0, pluggy-1.7.0 -- /home/garsande/CommunityConnect/.venv/bin/python
+cachedir: .pytest_cache
+hypothesis profile 'default'
+rootdir: /home/garsande/CommunityConnect
+configfile: pytest.ini
+plugins: hypothesis-6.170.15, anyio-4.16.0, cov-7.1.0, platformdirs-4.14.7
+collecting ... collected 102 items
+
+tests/test_s6_payments.py::test_f02_earlier_paid_then_later_failed_is_not_charged PASSED [  0%]
+tests/test_s6_payments.py::test_f02_paid_with_pending_is_not_charged_and_pending_unchanged PASSED [  1%]
+tests/test_s6_payments.py::test_f02_manual_payment_after_decline_is_not_charged PASSED [  2%]
+tests/test_s6_payments.py::test_f02_second_run_same_day_counts_paid_month_as_skipped PASSED [  3%]
+tests/test_s6_payments.py::test_f02_paid_in_another_month_does_not_block_this_month PASSED [  4%]
+tests/test_s6_payments.py::test_f02_paid_for_another_unit_does_not_block_this_unit PASSED [  5%]
+tests/test_s6_payments.py::test_f03_crash_recovery_reuses_pending_key_and_amount PASSED [  6%]
+tests/test_s6_payments.py::test_f01_manual_payment_committed_during_run_prevents_charge PASSED [  7%]
+tests/test_s6_payments.py::test_f01_manual_payment_during_charge_is_refused_as_pending PASSED [  8%]
+tests/test_s6_payments.py::test_f04_resident_sees_only_own_unit_payments PASSED [  9%]
+tests/test_s6_payments.py::test_f04_manager_sees_every_unit_of_managed_community PASSED [ 10%]
+tests/test_s6_payments.py::test_f04_payments_isolated_between_communities PASSED [ 11%]
+tests/test_s6_payments.py::test_f04_payments_hidden_from_other_callers[ADMIN] PASSED [ 12%]
+tests/test_s6_payments.py::test_f04_payments_hidden_from_other_callers[NOBODY] PASSED [ 13%]
+tests/test_s6_payments.py::test_f04_payments_hidden_from_other_callers[M2] PASSED [ 14%]
+tests/test_s6_payments.py::test_f04_payments_hidden_from_other_callers[R2] PASSED [ 15%]
+tests/test_s6_payments.py::test_f04_payments_unknown_community_is_not_found[999999999] PASSED [ 16%]
+tests/test_s6_payments.py::test_f04_payments_unknown_community_is_not_found[abc] PASSED [ 17%]
+tests/test_s6_payments.py::test_f04_payments_unknown_user_is_401 PASSED  [ 18%]
+tests/test_s6_payments.py::test_f04_payments_invalid_month_is_422[] PASSED [ 19%]
+tests/test_s6_payments.py::test_f04_payments_invalid_month_is_422[2026-13] PASSED [ 20%]
+tests/test_s6_payments.py::test_f04_payments_invalid_month_is_422[2026-00] PASSED [ 21%]
+tests/test_s6_payments.py::test_f04_payments_invalid_month_is_422[2026-1] PASSED [ 22%]
+tests/test_s6_payments.py::test_f04_payments_invalid_month_is_422[2026-12-01] PASSED [ 23%]
+tests/test_s6_payments.py::test_f04_payments_missing_month_is_422 PASSED [ 24%]
+tests/test_s6_payments.py::test_f04_payments_membership_checked_before_month[NOBODY] PASSED [ 25%]
+tests/test_s6_payments.py::test_f04_payments_membership_checked_before_month[ADMIN] PASSED [ 26%]
+tests/test_s6_payments.py::test_f04_payments_future_month_empty_and_rows_have_paymentout_fields PASSED [ 27%]
+tests/test_s6_payments.py::test_f05_payment_viewer_scope_for_residents_and_managers PASSED [ 28%]
+tests/test_s6_payments.py::test_f05_payment_viewer_refuses_other_callers[ADMIN-MR] PASSED [ 29%]
+tests/test_s6_payments.py::test_f05_payment_viewer_refuses_other_callers[NOBODY-MR] PASSED [ 30%]
+tests/test_s6_payments.py::test_f05_payment_viewer_refuses_other_callers[M2-MR] PASSED [ 31%]
+tests/test_s6_payments.py::test_f05_payment_viewer_refuses_other_callers[R1-PH] PASSED [ 32%]
+tests/test_s6_payments.py::test_f05_resident_without_unit_never_gets_manager_scope PASSED [ 33%]
+tests/test_s6_payments.py::test_f04_schedules_need_resident_of_community[M1] PASSED [ 34%]
+tests/test_s6_payments.py::test_f04_schedules_need_resident_of_community[ADMIN] PASSED [ 35%]
+tests/test_s6_payments.py::test_f04_schedules_need_resident_of_community[B1] PASSED [ 36%]
+tests/test_s6_payments.py::test_f04_schedules_need_resident_of_community[NOBODY] PASSED [ 37%]
+tests/test_s6_payments.py::test_f04_schedules_need_resident_of_community[R2] PASSED [ 38%]
+tests/test_s6_payments.py::test_f04_schedules_unknown_user_is_401 PASSED [ 39%]
+tests/test_s6_payments.py::test_f04_schedule_validation_is_422_and_stores_nothing[body0-Invalid request body] PASSED [ 40%]
+tests/test_s6_payments.py::test_f04_schedule_validation_is_422_and_stores_nothing[body1-Invalid request body] PASSED [ 41%]
+tests/test_s6_payments.py::test_f04_schedule_validation_is_422_and_stores_nothing[body2-Invalid request body] PASSED [ 42%]
+tests/test_s6_payments.py::test_f04_schedule_validation_is_422_and_stores_nothing[body3-Invalid request body] PASSED [ 43%]
+tests/test_s6_payments.py::test_f04_schedule_validation_is_422_and_stores_nothing[body4-Invalid request body] PASSED [ 44%]
+tests/test_s6_payments.py::test_f04_schedule_validation_is_422_and_stores_nothing[body5-Invalid request body] PASSED [ 45%]
+tests/test_s6_payments.py::test_f04_schedule_validation_is_422_and_stores_nothing[body6-Invalid request body] PASSED [ 46%]
+tests/test_s6_payments.py::test_f04_schedule_validation_is_422_and_stores_nothing[body7-Unknown method] PASSED [ 47%]
+tests/test_s6_payments.py::test_f04_schedule_validation_is_422_and_stores_nothing[body8-Unknown method] PASSED [ 48%]
+tests/test_s6_payments.py::test_f04_schedule_validation_is_422_and_stores_nothing[body9-Day must be 1 to 28] PASSED [ 49%]
+tests/test_s6_payments.py::test_f04_schedule_validation_is_422_and_stores_nothing[body10-Day must be 1 to 28] PASSED [ 50%]
+tests/test_s6_payments.py::test_f04_schedule_validation_is_422_and_stores_nothing[body11-Token is required] PASSED [ 50%]
+tests/test_s6_payments.py::test_f04_schedule_validation_is_422_and_stores_nothing[body12-Token is required] PASSED [ 51%]
+tests/test_s6_payments.py::test_f04_schedule_validation_is_422_and_stores_nothing[body13-Unknown method] PASSED [ 52%]
+tests/test_s6_payments.py::test_f04_schedule_validation_is_422_and_stores_nothing[body14-Day must be 1 to 28] PASSED [ 53%]
+tests/test_s6_payments.py::test_f04_schedule_body_must_be_json_object[kwargs0] PASSED [ 54%]
+tests/test_s6_payments.py::test_f04_schedule_body_must_be_json_object[kwargs1] PASSED [ 55%]
+tests/test_s6_payments.py::test_f04_second_schedule_is_409_only_after_validation PASSED [ 56%]
+tests/test_s6_payments.py::test_f04_schedule_post_response_omits_token_and_mine_is_per_unit PASSED [ 57%]
+tests/test_s6_payments.py::test_f04_manual_payment_twice_raises_already_paid PASSED [ 58%]
+tests/test_s6_payments.py::test_f04_manual_payment_while_pending_raises_payment_pending PASSED [ 59%]
+tests/test_s6_payments.py::test_f04_manual_payment_invalid_month_raises_value_error[2026-13] PASSED [ 60%]
+tests/test_s6_payments.py::test_f04_manual_payment_invalid_month_raises_value_error[2026-1] PASSED [ 61%]
+tests/test_s6_payments.py::test_f04_manual_payment_invalid_month_raises_value_error[] PASSED [ 62%]
+tests/test_s6_payments.py::test_f04_manual_payment_unknown_unit_raises_value_error[999999999] PASSED [ 63%]
+tests/test_s6_payments.py::test_f04_manual_payment_unknown_unit_raises_value_error[0] PASSED [ 64%]
+tests/test_s6_payments.py::test_f04_manual_payment_without_dues_raises_value_error PASSED [ 65%]
+tests/test_s6_payments.py::test_f04_unavailable_processor_leaves_pending_and_next_run_reuses_key PASSED [ 66%]
+tests/test_s6_payments.py::test_f04_run_continues_after_processor_unavailable_for_one_unit[R1] PASSED [ 67%]
+tests/test_s6_payments.py::test_f04_run_continues_after_processor_unavailable_for_one_unit[R3] PASSED [ 68%]
+tests/test_s6_payments.py::test_f04_declined_attempt_is_failed_and_counted PASSED [ 69%]
+tests/test_s6_payments.py::test_f04_not_due_before_day_and_caught_up_later_in_month PASSED [ 70%]
+tests/test_s6_payments.py::test_f04_first_due_month_follows_created_at PASSED [ 71%]
+tests/test_s6_payments.py::test_f04_day_after_creation_is_due_in_the_same_month PASSED [ 72%]
+tests/test_s6_payments.py::test_f04_community_without_dues_and_ach_schedules_are_not_charged PASSED [ 73%]
+tests/test_s6_payments.py::test_ac22_no_retry_before_retry_delay_days PASSED [ 74%]
+tests/test_s6_payments.py::test_ac22_exactly_one_retry_on_the_first_eligible_run PASSED [ 75%]
+tests/test_s6_payments.py::test_ac22_retry_follows_a_nondefault_retry_delay PASSED [ 76%]
+tests/test_s6_payments.py::test_ac22_late_run_still_makes_exactly_one_retry PASSED [ 77%]
+tests/test_s6_payments.py::test_ac22_attempts_stop_at_max_with_unique_keys PASSED [ 78%]
+tests/test_s6_payments.py::test_ac22_successful_retry_is_paid_and_nothing_is_charged_after PASSED [ 79%]
+tests/test_s6_payments.py::test_ac22_delay_counts_from_the_run_that_declined PASSED [ 80%]
+tests/test_s6_payments.py::test_ac22_crash_during_retry_replays_its_key_and_stored_amount PASSED [ 81%]
+tests/test_s6_payments.py::test_ac22_unavailable_processor_during_retry_keeps_it_pending PASSED [ 82%]
+tests/test_s6_payments.py::test_ac22_manual_payment_before_retry_prevents_it PASSED [ 83%]
+tests/test_s6_payments.py::test_ac22_manual_payment_racing_retry_creation_prevents_charge PASSED [ 84%]
+tests/test_s6_payments.py::test_ac22_manual_payment_while_retry_pending_raises_payment_pending PASSED [ 85%]
+tests/test_s6_payments.py::test_ac22_retry_uses_current_dues_and_replay_uses_stored_amount PASSED [ 86%]
+tests/test_s6_payments.py::test_ac22_new_month_starts_again_at_attempt_1 PASSED [ 87%]
+tests/test_s6_payments.py::test_ac22_decline_is_not_retried_in_a_later_month PASSED [ 88%]
+tests/test_s6_payments.py::test_ac22_failed_row_without_failed_on_is_never_retried PASSED [ 89%]
+tests/test_s6_payments.py::test_ac22_init_db_again_keeps_payments_and_retry_still_works PASSED [ 90%]
+tests/test_s6_payments.py::test_ac22_claim_refuses_an_attempt_beyond_max_attempts PASSED [ 91%]
+tests/test_s6_payments.py::test_ac22_claim_refuses_a_skipped_attempt_number PASSED [ 92%]
+tests/test_s6_payments.py::test_ac22_claim_retry_needs_every_retry_argument[today] PASSED [ 93%]
+tests/test_s6_payments.py::test_ac22_claim_retry_needs_every_retry_argument[retry_delay_days] PASSED [ 94%]
+tests/test_s6_payments.py::test_ac22_claim_retry_needs_every_retry_argument[max_attempts] PASSED [ 95%]
+tests/test_s6_payments.py::test_f11_finish_payment_never_overwrites_a_completed_payment PASSED [ 96%]
+tests/test_s6_payments.py::test_f11_agreeing_completion_is_left_unchanged_and_not_counted PASSED [ 97%]
+tests/test_s6_payments.py::test_f11_conflicting_completion_stops_the_run_without_overwriting[Failed-pm_card_visa] PASSED [ 98%]
+tests/test_s6_payments.py::test_f11_conflicting_completion_stops_the_run_without_overwriting[Paid-pm_card_chargeDeclined] PASSED [ 99%]
+tests/test_s6_payments.py::test_f01_locking_transactions_use_read_committed PASSED [100%]
+
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /home/garsande/CommunityConnect/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================== 102 passed, 1 warning in 229.10s (0:03:49) ==================
+
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.2.0, pluggy-1.7.0 -- /home/garsande/CommunityConnect/.venv/bin/python
+cachedir: .pytest_cache
+hypothesis profile 'default'
+rootdir: /home/garsande/CommunityConnect
+configfile: pytest.ini
+plugins: hypothesis-6.170.15, anyio-4.16.0, cov-7.1.0, platformdirs-4.14.7
+collecting ... collected 5 items
+
+tests/acceptance/test_s6_acceptance.py::test_ac18_schedule_shown_on_payments_page PASSED [ 20%]
+tests/acceptance/test_s6_acceptance.py::test_ac19_due_day_charges_exactly_once PASSED [ 40%]
+tests/acceptance/test_s6_acceptance.py::test_ac20_restart_mid_run_keeps_one_payment PASSED [ 60%]
+tests/acceptance/test_s6_acceptance.py::test_ac21_manual_payment_prevents_scheduled_charge PASSED [ 80%]
+tests/acceptance/test_s6_acceptance.py::test_ac22_declined_charge_retried_after_delay PASSED [100%]
+
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /home/garsande/CommunityConnect/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 5 passed, 1 warning in 12.39s =========================
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.2.0, pluggy-1.7.0
+rootdir: /home/garsande/CommunityConnect
+configfile: pytest.ini
+testpaths: tests
+plugins: hypothesis-6.170.15, anyio-4.16.0, cov-7.1.0, platformdirs-4.14.7
+collected 197 items
+
+tests/acceptance/test_s6_acceptance.py .....                             [  2%]
+tests/test_s1_requests.py .............................................. [ 25%]
+............................................                             [ 48%]
+tests/test_s6_payments.py .............................................. [ 71%]
+........................................................                 [100%]
+
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /home/garsande/CommunityConnect/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.12.3-final-0 ________________
+
+Name               Stmts   Miss Branch BrPart  Cover   Missing
+--------------------------------------------------------------
+app/__init__.py        0      0      0      0   100%
+app/access.py         19      0      8      0   100%
+app/auth.py           14      0      4      0   100%
+app/clock.py           3      1      0      0    67%   7
+app/db.py             91      4     30      4    93%   73, 165, 174, 177
+app/main.py          134      3     36      1    96%   219-221
+app/payments.py       83      2     42      2    97%   46, 81
+app/processor.py      32      1      4      0    97%   46
+app/seed.py           42      7     16      5    79%   19-20, 25, 31, 43, 61, 69
+app/settings.py        7      0      0      0   100%
+--------------------------------------------------------------
+TOTAL                425     18    140     12    94%
+Required test coverage of 80% reached. Total coverage: 94.34%
+================== 197 passed, 1 warning in 457.04s (0:07:37) ==================

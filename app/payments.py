@@ -54,10 +54,24 @@ def _charge_pending(payment_id: int, token: str, amount_cents: int,
     return "Unchanged"  # already completed with this result; not counted again (F-11, D16)
 
 
+def _count_outcome(counts: dict[str, int], status: str | None) -> None:
+    """Add one _charge_pending result to the run's counts (D16).
+
+    'Paid' counts as charged, 'Failed' as failed and None (still Pending) as skipped.
+    'Unchanged' was already completed and counted, so it is not counted again (F-11).
+    """
+    if status == "Paid":
+        counts["charged"] += 1
+    elif status == "Failed":
+        counts["failed"] += 1
+    elif status is None:
+        counts["skipped"] += 1
+
+
 def run_due_payments(today: date) -> RunResult:
     """Replay Pending attempts from any month, then process current due schedules."""
     month = today.strftime("%Y-%m")
-    charged = failed = skipped = 0
+    counts = {"charged": 0, "failed": 0, "skipped": 0}
 
     # D26: recover persisted attempts first, reusing the original key, amount and attempt.
     for p in db.pending_payments():
@@ -67,12 +81,7 @@ def run_due_payments(today: date) -> RunResult:
             continue  # ACH settlement remains OQ2.
         status = _charge_pending(p["id"], p["token"], p["amount_cents"],
                                  p["idempotency_key"], today)
-        if status == "Paid":
-            charged += 1
-        elif status == "Failed":
-            failed += 1
-        elif status is None:
-            skipped += 1
+        _count_outcome(counts, status)
 
     for s in db.due_schedules():
         scheduled_day = date(today.year, today.month, s["day_of_month"])
@@ -82,7 +91,7 @@ def run_due_payments(today: date) -> RunResult:
         if s["method"] == "ach":
             continue  # ACH settlement remains OQ2.
         if db.has_paid_payment(s["unit_id"], month):
-            skipped += 1  # D25: the month is Paid (R1, R3); AGENT-03 F-02.
+            counts["skipped"] += 1  # D25: the month is Paid (R1, R3); AGENT-03 F-02.
             continue
         prior = db.latest_payment(s["unit_id"], month)
         if prior is None:
@@ -101,19 +110,14 @@ def run_due_payments(today: date) -> RunResult:
             max_attempts=settings.MAX_PAYMENT_ATTEMPTS,
         )  # Re-checked under the unit lock; committed before the charge (D4/D31; F-01).
         if conflict == "Paid":
-            skipped += 1  # a manual payment committed first (D25, D27; F-01)
+            counts["skipped"] += 1  # a manual payment committed first (D25, D27; F-01)
             continue
         if conflict is not None:
             continue  # another payment appeared, or the retry is not due yet (D17, D25)
         status = _charge_pending(payment_id, s["token"],
                                  s["dues_amount_cents"], key, today)
-        if status == "Paid":
-            charged += 1
-        elif status == "Failed":
-            failed += 1
-        elif status is None:
-            skipped += 1
-    return RunResult(charged=charged, failed=failed, skipped=skipped)
+        _count_outcome(counts, status)
+    return RunResult(**counts)
 
 
 def record_manual_payment(unit_id: int, billing_month: str) -> dict:
