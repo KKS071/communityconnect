@@ -907,4 +907,4 @@ evidence: `app/settings.py`, `app/db.py`, `app/payments.py`, `tests/test_s6_paym
 
 Risk: D35 documents an accepted residual risk under D32. If the single-runner assumption is violated, a conflicting processor result can leave a payment recorded as Failed even when an external charge succeeded, potentially allowing a duplicate charge on a later retry. Conflict reconciliation remains outside this implementation.
 
-Status: AC-22 implemented and tests passed. Documentation and evidence updates remain to be committed.
+Status: AC-22 implemented and tests passed. Implementation commit `719aecc` and documentation/evidence commit `1f820df` are merged into `main` (merge commit `5c87562`). The D32/D35 residual risk recorded above remains open.

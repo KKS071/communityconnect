@@ -35,9 +35,7 @@ This configuration task authorizes only:
 - .claude/agents/security-reviewer.md
 - .claude/agents/code-reviewer.md
 
-AC-18 through AC-21 are implemented.
-
-AC-22 is not authorized for implementation yet.
+AC-18 through AC-22 are implemented, tested and merged into `main` (merge commit `5c87562`). AC-22 was implemented under Prompts 54–59; see LEDGER.md Entry 54 (implementation commit `719aecc`, documentation commit `1f820df`).
 
 Do not modify application code, tests, requirements,
 design documents, plans, prompts, or LEDGER.md.
