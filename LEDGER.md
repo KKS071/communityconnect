@@ -1080,7 +1080,7 @@ Checks:
 - `git diff --stat bd558d4 7104eed -- tests/conftest.py tests/helpers.py tests/__init__.py pytest.ini` — no differences reported.
 - `python -m pytest -v tests/acceptance/test_s6_acceptance.py` — 5 setup errors, 1 warning, in 9.45 seconds.
 
-Evidence: `evidence/red.txt` contains the captured pytest output. All five tests encountered `ImportError: cannot import name 'clock' from 'app'` during fixture setup. The test bodies and their assertions were not executed.
+Evidence: `evidence/red.txt` contains the captured pytest output. All five tests encountered `ImportError: cannot import name 'clock' from 'app'` during fixture setup. The test bodies and their assertions were not executed.Commit SHA, 740fce4.
 
 Risk: This is retrospective reconstruction, not a historical test-first RED run. The five results are setup errors rather than failed acceptance assertions, so the reconstruction does not establish that the original development followed RED–GREEN–REFACTOR. The acceptance-test lock remains pending.
 
@@ -1105,7 +1105,7 @@ Checks:
 - Post-denial SHA-256 verification — passed.
 - Post-denial Git diff verification — passed.
 
-Evidence: Claude Code returned `<tool_use_error>File is in a directory that is denied by your permission settings.</tool_use_error>`. The attempted edit was not permitted. The verification record is `evidence/permission-denied.md`.
+Evidence: Claude Code returned `<tool_use_error>File is in a directory that is denied by your permission settings.</tool_use_error>`. The attempted edit was not permitted. The verification record is `evidence/permission-denied.md`.Commit SHA, b46269f.
 
 Risk: Claude Code permission rules do not protect against human edits, externally applied patches or every possible indirect modification. The reviewer-agent naming conflict also requires final confirmation.
 
@@ -1127,7 +1127,7 @@ Checks:
 - Branch-aware coverage — 93.55%, exceeding the 80% threshold.
 - Acceptance-test integrity comparison against `m2-tests-locked` — to be verified before tagging.
 
-Evidence: `evidence/green.txt` contains the raw pytest output from both successful verification runs.
+Evidence: `evidence/green.txt` contains the raw pytest output from both successful verification runs.Commit SHA, 74bb7fc.
 
 Risk: GREEN verification confirms that the already implemented system passes the locked tests. It does not establish that the implementation was developed after the lock. Historical RED reconstruction produced setup errors rather than failing assertions. REFACTOR evidence remains incomplete.
 
@@ -1152,7 +1152,7 @@ Checks:
 - Branch-aware coverage — 94.34%, exceeding the required 80%.
 - Protected-file comparison against `m2-tests-locked` — passed (`PROTECTED-UNCHANGED`).
 
-Evidence: `evidence/refactor.txt` contains the raw pytest output for the focused payment tests, locked acceptance tests and full coverage run.
+Evidence: `evidence/refactor.txt` contains the raw pytest output for the focused payment tests, locked acceptance tests and full coverage run.Commit SHA, 35df1d9.
 
 Risk: The refactor replaces separate integer counters with a dictionary, creating a small risk of counter-key errors. The successful regression and acceptance tests provide evidence that the expected behavior is preserved. The refactor does not establish that the earlier GREEN implementation was developed after the acceptance-test lock.
 
@@ -1177,7 +1177,7 @@ Checks:
 - Branch-aware coverage — 94.34%, exceeding the required 80%.
 - Protected-file comparison against m2-tests-locked — passed (PROTECTED-UNCHANGED).
 
-Evidence: `evidence/properties.txt` contains the raw focused Hypothesis statistics and full-suite coverage output.
+Evidence: `evidence/properties.txt` contains the raw focused Hypothesis statistics and full-suite coverage output.Commit SHA, 1573ae3.
 
 Risk: Each Hypothesis example creates a database schema, increasing test runtime and requiring an available PostgreSQL test database. The tests exercise bounded generated examples rather than exhaustively proving the properties.
 
