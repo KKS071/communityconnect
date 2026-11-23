@@ -1,0 +1,268 @@
+diff --git a/docs/audits/mutation-summary.md b/docs/audits/mutation-summary.md
+new file mode 100644
+index 0000000..c4a17fb
+--- /dev/null
++++ b/docs/audits/mutation-summary.md
+@@ -0,0 +1,227 @@
++# Milestone 2 — S-6 Mutation Testing Summary
++
++**Story:** S-6 scheduled monthly dues payment (AC-19 to AC-22)
++**Tool:** mutmut 3.8.1 (Python 3.12.3, pytest 9.2.0, Hypothesis 6.170.15)
++**Prepared by:** Claude Code (AGENT-22, Prompt 88) from the evidence files named below, for human review.
++
++This summary is not tool output. Every result below is copied from a raw evidence file or from a
++check the human operator reported. Each item is marked:
++
++- **[Verified]**: recorded in a raw evidence file named in the item.
++- **[Reported]**: run and reported by the human operator; no raw evidence file holds the output.
++- **[Inferred]**: concluded from reading source code or tool source; not observed in a run.
++- **[Open]**: a design question that needs a human decision.
++
++## 1. Objective and scope
++
++The experiment asked whether the S-6 tests detect deliberate faults in the payment logic. It also
++asked whether the two Hypothesis properties (`tests/test_s6_properties.py`) detect faults that the
++regression and acceptance tests miss.
++
++mutmut generated 603 mutants for `app/payments.py` and `app/db.py`. **Only 30 selected mutants were
++executed.** Every score in this document refers to those 30 mutants, not to all 603.
++
++## 2. Source files under mutation
++
++`pyproject.toml` (configuration commit `9474ad4`):
++
++```toml
++[tool.mutmut]
++source_paths = ["app"]
++only_mutate = ["app/payments.py", "app/db.py"]
++also_copy = ["pytest.ini"]
++pytest_add_cli_args_test_selection = [
++    "tests/test_s6_payments.py",
++    "tests/acceptance",
++]
++```
++
++Of `app/db.py`, only `_retry_allowed` mutants were selected. It runs no SQL, so no selected mutant
++changed a database connection, schema or query.
++
++## 3. Selected mutants
++
++30 mutants from four functions. The nine pilot mutants are included.
++
++| Function | Selected mutants |
++|---|---|
++| `app.payments._count_outcome` | `_1`, `_2`, `_3`, `_5`, `_19`, `_20` |
++| `app.payments.run_due_payments` | `_1`, `_2`, `_3`, `_9`, `_69`, `_78`, `_89`, `_97`, `_109`, `_114`, `_128`, `_146`, `_174` |
++| `app.payments._charge_pending` | `_4`, `_29`, `_36`, `_38` |
++| `app.db._retry_allowed` | `_1`, `_2`, `_3`, `_17`, `_22`, `_24`, `_29` |
++
++The selection covers outcome counting, the guard against paying a month twice (idempotency), due-date
++boundaries, attempt numbering and limits, retry timing, and the handling of processor results. The
++exact diffs are in `evidence/mutation-selected-diffs.txt` **[Verified]**.
++
++Pilot: 9 of 9 pilot mutants were killed (`evidence/mutation-pilot.txt`,
++`evidence/mutation-pilot-extended.txt`) **[Verified]**.
++
++## 4. Test selections
++
++| Run | Tests selected | Source of this information |
++|---|---|---|
++| Baseline A | `tests/test_s6_payments.py`, `tests/acceptance` | config printed in `evidence/mutation-baseline.txt` **[Verified]** |
++| Baseline B | Baseline A plus `tests/test_s6_properties.py` | config printed in `evidence/mutation-properties.txt`, line 11 **[Verified]** |
++| After the regression tests | `tests/test_s6_payments.py`, `tests/acceptance`, now including the three new tests | `evidence/mutation-after.txt` does not print the config. The committed `pyproject.toml` has the Baseline A selection **[Inferred]** |
++
++## 5–6. Baseline A and Baseline B
++
++| Run | Killed | Survived | Timeout or other | Score |
++|---|---:|---:|---:|---:|
++| A: regression and acceptance tests | 25 | 5 | 0 | 83.33% |
++| B: A plus Hypothesis properties | 25 | 5 | 0 | 83.33% |
++
++**[Verified]** in `evidence/mutation-baseline.txt` and `evidence/mutation-properties.txt`. The same five
++mutants survived both runs:
++
++- `app.payments.x__count_outcome__mutmut_5`
++- `app.payments.x__count_outcome__mutmut_20`
++- `app.payments.x_run_due_payments__mutmut_89`
++- `app.payments.x_run_due_payments__mutmut_109`
++- `app.payments.x__charge_pending__mutmut_38`
++
++**Why the Hypothesis properties added no kills:**
++
++- `mutmut tests-for-mutant` confirmed that Property 1 was selected for `_count_outcome__mutmut_5`
++  **[Reported]**. mutmut's stats file lists the property under `app.payments.x__count_outcome`
++  (`mutants/mutmut-stats.json`) **[Verified]**.
++- A verbose Hypothesis run showed that all 10 Property 1 examples used a single resident
++  **[Reported]**. Property 1 can only kill `_5` with an example that schedules both residents and runs
++  on or after the due day.
++- Property 1 checks only `charged`, never `skipped`. Its processor is always available, and all units
++  share one due day. Property 2 uses one unit and checks only the payment history and the processor
++  calls **[Inferred]**.
++
++## 7. Three deterministic regression tests
++
++Added to `tests/test_s6_payments.py` (`agent-patches/AGENT-21-M2-mutation-killing-tests.patch`):
++
++| Test | Requirement | Expected result | Target mutant |
++|---|---|---|---|
++| `test_d16_two_units_charged_in_one_run_are_both_counted` | D16, R4 | `RunResult(charged=2, failed=0, skipped=0)`; both units Paid; two processor calls | `x__count_outcome__mutmut_5` (`charged = 1`) |
++| `test_d16_two_unavailable_charges_are_both_counted_as_skipped` | D16, R4 | `RunResult(charged=0, failed=0, skipped=2)`; both units Pending | `x__count_outcome__mutmut_20` (`skipped = 1`) |
++| `test_r4_paid_unit_does_not_stop_the_run_for_a_later_unit` | R4, D25, D27 | `due_schedules()` reaches MR-12 first; `RunResult(charged=1, failed=0, skipped=1)`; MR-12 has a manual Paid payment; MR-20 has an attempt-1 debit Paid payment; only MR-20 is charged | `x_run_due_payments__mutmut_89` (Paid `continue` becomes `break`) |
++
++The focused run gave 3 passed, 102 deselected **[Reported]**.
++
++## 8. After the regression tests
++
++| Run | Killed | Survived | Timeout or other | Score |
++|---|---:|---:|---:|---:|
++| After the regression tests | 28 | 2 | 0 | 93.33% |
++
++**[Verified]** in `evidence/mutation-after.txt`. Its "Mutant results" list shows 28 killed and 2
++survived, and the run ended with `MUTMUT_RUN_EXIT_STATUS=0`. `_5`, `_20` and `_89` are now killed.
++`_109` and `_38` survived.
++
++## 9. Comparison
++
++| Mutant | A | B | After |
++|---|---|---|---|
++| `x__count_outcome__mutmut_5` | survived | survived | **killed** |
++| `x__count_outcome__mutmut_20` | survived | survived | **killed** |
++| `x_run_due_payments__mutmut_89` | survived | survived | **killed** |
++| `x_run_due_payments__mutmut_109` | survived | survived | survived |
++| `x__charge_pending__mutmut_38` | survived | survived | survived |
++| the other 25 | killed | killed | killed |
++| **Score (30 selected mutants)** | **83.33%** | **83.33%** | **93.33%** |
++
++The score rose by 10 percentage points. The rise came from the deterministic regression tests, not
++from the Hypothesis properties.
++
++## 10. The two remaining survivors
++
++### `app.payments.x_run_due_payments__mutmut_109`
++
++The mutation is `prior["attempt"] < settings.MAX_PAYMENT_ATTEMPTS` becoming `<=`
++(`app/payments.py:100`).
++
++**Classification:** survived. It can be observed under concurrency, and the expected value is an
++unresolved design question **[Open]**. It is not equivalent in every case.
++
++- **Sequential runs [Inferred]:** the mutant claims an attempt beyond the maximum. The locked re-check
++  in `db._retry_allowed` refuses it (`attempt > max_attempts`, `app/db.py:197`), so the run continues
++  and counts nothing, as the original does.
++- **A concurrent manual payment [Inferred]:** suppose a manual payment commits between the Paid
++  pre-check (`app/payments.py:93`) and the claim for a schedule whose attempts are used up. The
++  mutant's claim then returns `"Paid"`, and the run adds 1 to `RunResult.skipped`
++  (`app/payments.py:112-113`). The original continues without counting. The same single-process
++  monkeypatch technique as `test_ac22_manual_payment_racing_retry_creation_prevents_charge`
++  (`tests/test_s6_payments.py:926`) could show this.
++- **Design question [Open]:** If a schedule has used up its automatic payment attempts and a manual
++  payment arrives between the Paid pre-check and the claim, should `RunResult.skipped` increase by one
++  or stay unchanged? D35 ("exhausted schedules are not counted in RunResult") supports *unchanged*.
++  D25's Paid-first check and D16's definition of `skipped` support *increase*. No test was added,
++  because neither value is specified.
++
++### `app.payments.x__charge_pending__mutmut_38`
++
++The mutation is `return "Unchanged"` becoming `return "XXUnchangedXX"` (`app/payments.py:54`).
++
++**Classification:** equivalent through the reviewed public API (`run_due_payments`, `RunResult`,
++payment history). It is not identical when the private function is called directly **[Inferred]**.
++
++- `_count_outcome` counts only `"Paid"`, `"Failed"` and `None` (`app/payments.py:63-68`), so both
++  markers are ignored.
++- `test_f11_agreeing_completion_is_left_unchanged_and_not_counted` (`tests/test_s6_payments.py:1112`)
++  asserts `RunResult()`, which holds for both markers.
++- A direct call to `_charge_pending` would return a different string. No test calls it, and none was
++  added to pin a private marker.
++
++## 11. Coverage and regression testing
++
++`python -m pytest --cov=app --cov-branch --cov-report=term-missing --cov-fail-under=80`:
++202 collected, 202 passed, 1 warning, 487.74 s. Total: 425 statements, 18 missed, 140 branches,
++12 partial. Coverage: **94.34%**, above the 80% threshold. **[Verified]** in
++`evidence/mutation-regression-tests.txt`.
++
++The warning is the existing `StarletteDeprecationWarning` about `httpx` with `starlette.testclient`.
++It does not fail any test.
++
++**Coverage versus mutation score:** branch coverage was 94.34% both before and after the three new
++tests. Over the same period the mutation score on the 30 selected mutants rose from 83.33% to
++93.33%. The lines of `_5`, `_20` and `_89` were already covered; they survived because no assertion
++distinguished their behavior.
++
++## 12. Protected-file verification
++
++```bash
++git diff --exit-code m2-tests-locked -- tests/acceptance tests/conftest.py tests/__init__.py conftest.py pytest.ini
++```
++
++The result was `PROTECTED-UNCHANGED` **[Reported]**.
++
++## 13. Database cleanup
++
++```bash
++psql "$COMMUNITYCONNECT_TEST_DATABASE_URL" -Atc "SELECT current_database(), (SELECT count(*) FROM pg_namespace WHERE nspname LIKE 'test_%')"
++```
++
++The result was `communityconnect_test|0`: no test schemas were left behind **[Reported]**.
++
++## 14. Reproducibility notes
++
++- All runs used one worker (`--max-children 1`) and named the 30 mutants explicitly.
++- **Cache warning [Verified]:** `evidence/mutation-after.txt` reports `0 files mutated, 8 ignored,
++  2 unmodified`. It also warns that 7 non-Python files had changed since the last full run and that
++  "cached results were kept". The after-run therefore reused the existing `mutants/` workspace:
++  mutants were not regenerated, and the 603 mutants were not freshly re-run.
++- **[Inferred]** mutmut 3.8.1 re-runs mutants that are named on the command line even when a result
++  is cached (`mutmut/__main__.py`, `_run`). The after-run's stats phase also ran again. The 30 named
++  mutants were therefore re-executed against the updated tests. The application source was unchanged
++  (`2 unmodified`), so the mutant code was the same as in A and B.
++- `evidence/mutation-after.txt` does not record the test-selection configuration (see section 4).
++- To reproduce from scratch: delete `mutants/`, then run the same 30 names with `--max-children 1`.
++
++## 15. Limitations and open questions
++
++1. The scores cover 30 selected mutants out of 603 generated, from four functions. They are not a
++   mutation score for the whole of `app/payments.py` or `app/db.py`.
++2. `_109`: the design question in section 10 needs a human decision **[Open]**.
++3. `_38`: equivalent only through the public API **[Inferred]**.
++4. The after-run used a cached workspace and does not print its configuration (section 14).
++5. The protected-file check, the database cleanup, the focused three-test run, the verbose Hypothesis
++   run and the `tests-for-mutant` check were reported by the human operator. Their output is not in
++   an evidence file.
++6. The race behavior of `_109` was analyzed by reading code only. No test has run it.
+diff --git a/LEDGER.md b/LEDGER.md
+--- a/LEDGER.md
++++ b/LEDGER.md
+@@ -1182,3 +1182,29 @@ Checks:
+ Risk: Each Hypothesis example creates a database schema, increasing test runtime and requiring an available PostgreSQL test database. The tests exercise bounded generated examples rather than exhaustively proving the properties.
+
+-Decision: Accept the two property-based tests and their successful verification. Preserve the locked acceptance tests and existing GREEN/REFACTOR tags. Commit the property tests, dependency, prompts, patches, evidence and ledger entry as a separate milestone activity.
+\ No newline at end of file
++Decision: Accept the two property-based tests and their successful verification. Preserve the locked acceptance tests and existing GREEN/REFACTOR tags. Commit the property tests, dependency, prompts, patches, evidence and ledger entry as a separate milestone activity.
++
++### Entry 69 — Milestone 2 Mutation Testing and Survivor Remediation (Prompts 83–88)
++
++Artifact: `pyproject.toml`; `.gitignore`; `requirements.txt`; `tests/test_s6_payments.py`; `evidence/mutation-pilot.txt`; `evidence/mutation-pilot-extended.txt`; `evidence/mutation-baseline.txt`; `evidence/mutation-properties.txt`; `evidence/mutation-selected-diffs.txt`; `evidence/mutation-after.txt`; `evidence/mutation-regression-tests.txt`; `docs/audits/mutation-summary.md`; `agent-patches/AGENT-18-M2-mutmut-config.patch`; `agent-patches/AGENT-18-M2-mutmut-gitignore.patch`; `agent-patches/AGENT-18-M2-mutmut-dependency.patch`; `agent-patches/AGENT-21-M2-mutation-killing-tests.patch`; `agent-patches/AGENT-22-M2-final-documentation-v2.patch`.
++
++Tool: Claude Code main agent, no subagents (AGENT-17 mutation plan; AGENT-18 configuration patches; AGENT-19 mutant selection; AGENT-20 survivor analysis; AGENT-21 regression-test patch; AGENT-22 summary and ledger draft); ChatGPT GPT-6 (review of the AGENT-22 response); human reviewer (patch application, mutmut and pytest execution, database and integrity checks). [Human to confirm whether ChatGPT GPT-6 or another tool also reviewed Prompts 83–87.]
++
++Prompts: `prompts/83-Milestone-2-Mutation-Testing-Plan.md`; `prompts/84-Milestone-2-Mutation-Configuration.md`; `prompts/85-Milestone-2-Controlled-Mutation-Comparison.md`; `prompts/AGENT-20-Mutation-Survivor-Analys.md`; `prompts/86-AGENT-20-Follow-up-Resolve-Mutation-Analysis-Uncertainties.md`; `prompts/87-AGENT-21-Prepare-Three-Mutation-Killing-Regression-Tests.md`; `prompts/88-AGENT-22-M2-Mutation-Evidence-Ledger-Final-Audit.md`.
++
++Review: mutmut 3.8.1 was configured for `app/payments.py` and `app/db.py` and generated 603 mutants. The human approved a controlled set of 30 mutants from `_count_outcome`, `run_due_payments`, `_charge_pending` and `db._retry_allowed`, including the nine pilot mutants. Baseline A (regression and acceptance tests) and Baseline B (A plus the Hypothesis properties) each killed 25 of 30, and the same five mutants survived both. AGENT-20 found that three survivors (`_count_outcome__mutmut_5`, `_count_outcome__mutmut_20`, `run_due_payments__mutmut_89`) were genuine test gaps that need two units in one run. The human-run verbose Hypothesis output showed that all 10 Property 1 examples used a single resident. AGENT-21 prepared three deterministic regression tests grounded in D16, R4 and D25; the human reviewed and applied them. The remaining survivors were not targeted: `run_due_payments__mutmut_109` is an unresolved concurrency-policy question that depends on a concurrent manual payment (D16/D25 versus D35), and `_charge_pending__mutmut_38` is equivalent through the public API but not at the private-function level. ChatGPT GPT-6 reviewed the AGENT-22 response; the AGENT-22 documentation patch is awaiting human review.
++
++Checks:
++- Pilot — 9 of 9 mutants killed.
++- Baseline A — 25 killed, 5 survived (83.33%).
++- Baseline B with Hypothesis — 25 killed, 5 survived (83.33%).
++- Focused regression tests — 3 passed, 102 deselected.
++- After the regression tests — 28 killed, 2 survived, no timeouts (93.33%); `MUTMUT_RUN_EXIT_STATUS=0`.
++- Full suite with branch-aware coverage — 202 passed, 1 warning, 487.74 seconds; coverage 94.34%, above the required 80%.
++- Protected-file comparison against `m2-tests-locked` — passed (`PROTECTED-UNCHANGED`).
++- Test database — `communityconnect_test|0`; no `test_` schemas left.
++
++Evidence: The raw mutmut output is in `evidence/mutation-pilot.txt`, `evidence/mutation-pilot-extended.txt`, `evidence/mutation-baseline.txt`, `evidence/mutation-properties.txt` and `evidence/mutation-after.txt`. The selected mutant diffs are in `evidence/mutation-selected-diffs.txt`, and the raw full-suite coverage output is in `evidence/mutation-regression-tests.txt`. These raw evidence files are preserved unchanged. `docs/audits/mutation-summary.md` is an agent-prepared summary of those files, not tool output. The protected-file check, database check, focused test run, verbose Hypothesis run and `mutmut tests-for-mutant` result were reported by the human and are not saved as evidence files. Configuration commit SHA, 9474ad4. Regression-test and documentation commit SHA: [pending; to be recorded after the human commits].
++
++Risk: The scores apply to the 30 selected mutants, not to all 603. The after-run reused the existing `mutants/` workspace: mutmut warned that non-Python files had changed and that cached results were kept, and its output does not print the test-selection configuration. The `_109` counting question is unresolved, and its race behavior was analyzed by reading code only. The Hypothesis properties added no mutation kills with their bounded examples.
++
++Decision: [Pending human approval.] Accept the three regression tests and the 28/30 result on the selected mutants. Record `_109` as an unresolved concurrency-policy question for a human decision and `_38` as equivalent through the public API. Commit the tests, evidence, prompts, patches and this entry as a separate milestone activity.

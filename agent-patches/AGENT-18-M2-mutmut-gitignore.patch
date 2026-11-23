@@ -1,0 +1,12 @@
+diff --git a/.gitignore b/.gitignore
+index 5d9690b..ae78d03 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -9,4 +9,5 @@ env/
+ /agent-patches
+ .coverage
+ .coverage.*
+-htmlcov/
+\ No newline at end of file
++htmlcov/
++mutants/

@@ -1,0 +1,14 @@
+diff --git a/pyproject.toml b/pyproject.toml
+new file mode 100644
+index 0000000..9daf0c3
+--- /dev/null
++++ b/pyproject.toml
+@@ -0,0 +1,8 @@
++[tool.mutmut]
++source_paths = ["app"]
++only_mutate = ["app/payments.py", "app/db.py"]
++also_copy = ["pytest.ini"]
++pytest_add_cli_args_test_selection = [
++    "tests/test_s6_payments.py",
++    "tests/acceptance",
++]

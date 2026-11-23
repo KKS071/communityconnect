@@ -1,0 +1,9 @@
+diff --git a/requirements.txt b/requirements.txt
+index da7f203..7746f95 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -5,3 +5,4 @@ pytest-cov>=5.0
+ uvicorn>=0.29
+ psycopg[binary]>=3.1
+ hypothesis>=6.100
++mutmut>=3.8,<4
