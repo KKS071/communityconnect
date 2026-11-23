@@ -1305,20 +1305,21 @@ Risk: The scores apply to the 30 selected mutants, not to all 603. The after-run
 Decision: Human approved the mutation-testing results and documentation. Accept the three regression tests and the 28/30 result on the selected mutants. Record `_109` as an unresolved concurrency-policy question for a human decision and `_38` as equivalent through the public API. The regression tests, evidence, prompts and original combined ledger entry
 were committed in 0f000db; the agent patches were preserved in f1b56c0. This expanded ledger documentation will be committed separately.
 
+
 ### Entry 75 — Milestone 2 Mutation Ledger Traceability (Prompt 89, AGENT-23)
 
-**Artifact:** `LEDGER.md`; `prompts/89-AGENT-23-Expand-Mutation-Testing-Ledger.md`; `agent-patches/AGENT-23-M2-ledger-traceability-v2.patch`.
+Artifact: `LEDGER.md`; `prompts/89-AGENT-23-Expand-Mutation-Testing-Ledger.md`; `agent-patches/AGENT-23-M2-ledger-traceability-v2.patch`.
 
-**Tool:** Claude Code (AGENT-23, patch preparation); ChatGPT GPT-6 (review of the ledger expansion); human reviewer (final corrections and approval).
+Tool: Claude Code (AGENT-23, patch preparation); ChatGPT GPT-6 (review of the ledger expansion); human reviewer (final corrections and approval).
 
-**Prompts:** Prompt 89 and follow-up clarification.
+Prompts: prompts/89-AGENT-23-Expand-Mutation-Testing-Ledger
 
-**Review:** Expanded the original combined Entry 69 into six separate Entries 69–74. Verified the configuration, mutation-testing, and patch-preservation commit SHAs. Corrected unverified AI review statements and updated the historical commit language.
+Review: Expanded the original combined Entry 69 into six separate Entries 69–74. Verified the configuration, mutation-testing, and patch-preservation commit SHAs. Corrected unverified AI review statements and updated the historical commit language.
 
-**Checks:** Reviewed the ledger entries, verified the Git changes, and confirmed that local `main` and `origin/main` reference the same commit.
+Checks: Reviewed the ledger entries, verified the Git changes, and confirmed that local `main` and `origin/main` reference the same commit.
 
-**Evidence:** Documentation commit SHA: `f4402b1`. Earlier artifact commits: `9474ad4`, `0f000db`, and `f1b56c0`.
+Evidence: Documentation commit SHA: `f4402b1`. Earlier artifact commits: `9474ad4`, `0f000db`, and `f1b56c0`.
 
-**Risk:** The AGENT-23 v2 patch represents the original agent-generated proposal; the committed ledger also includes subsequent human corrections.
+Risk: The AGENT-23 v2 patch represents the original agent-generated proposal; the committed ledger also includes subsequent human corrections.
 
-**Decision:** Accept the expanded ledger and its verified commit references as the final mutation-testing traceability record.
+Decision: Accept the expanded ledger and its verified commit references as the final mutation-testing traceability record.
