@@ -66,7 +66,8 @@ The tests need a running PostgreSQL server. Each test gets its own schema.
 
 ## Files and folders you must not change
 
-- `tests/acceptance/`, and the expected values of any test.
+- The acceptance-test lock scope: `tests/acceptance/`, `tests/conftest.py`, `tests/__init__.py`, a
+  root `conftest.py` and `pytest.ini` (denied in `.claude/settings.json`); and any test's expected value.
 - `docs/` (design docs, requirements, plans): read only. Humans change these.
 - `LEDGER.md`, `prompts/` and `evidence/`: humans write these; evidence files are tool output only.
 - `AGENTS.md`, `CLAUDE.md`, `.claude/`, `README.md`, `requirements.txt`, `pytest.ini`.

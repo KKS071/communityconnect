@@ -1085,3 +1085,28 @@ Evidence: `evidence/red.txt` contains the captured pytest output. All five tests
 Risk: This is retrospective reconstruction, not a historical test-first RED run. The five results are setup errors rather than failed acceptance assertions, so the reconstruction does not establish that the original development followed RED–GREEN–REFACTOR. The acceptance-test lock remains pending.
 
 Decision: Retain the raw reconstruction output as accurately labeled historical evidence. Do not report the five errors as five failed assertions or claim that the required RED–GREEN development order was followed.
+
+### Entry 65 — Milestone 2 Acceptance-Test Permission Lock (Prompt 79)
+
+Artifact: `agent-patches/AGENT-13-M2-acceptance-lock-config.patch`; `.claude/settings.json`; `AGENTS.md`; `CLAUDE.md`; `evidence/permission-denied.md`.
+
+Tool: Claude Code main agent (patch preparation and permission-enforcement attempt); ChatGPT GPT-6 (review and verification guidance); human reviewer (patch application, configuration validation and integrity checks).
+
+Prompt: `prompts/79-Milestone-2-Acceptance-Test-Lock-Config.md`.
+
+Review: AGENT-13 prepared a patch adding five explicit Edit deny rules covering the S-6 acceptance tests, shared fixtures, package initialization files, root conftest.py and pytest.ini. The human applied the patch. The existing patch-only workflow was preserved.
+
+Checks:
+- `git diff --check` — passed.
+- JSON validation of `.claude/settings.json` — passed.
+- All five required Edit deny rules — confirmed.
+- Claude Code `/permissions` — displayed the required restrictions.
+- Attempted Edit of `tests/acceptance/test_s6_acceptance.py` — denied by the tool.
+- Post-denial SHA-256 verification — passed.
+- Post-denial Git diff verification — passed.
+
+Evidence: Claude Code returned `<tool_use_error>File is in a directory that is denied by your permission settings.</tool_use_error>`. The attempted edit was not permitted. The verification record is `evidence/permission-denied.md`.
+
+Risk: Claude Code permission rules do not protect against human edits, externally applied patches or every possible indirect modification. The reviewer-agent naming conflict also requires final confirmation.
+
+Decision: Accept the observed Edit-tool denial as evidence that the configured restriction is enforced for the tested path. Complete the remaining integrity and reviewer checks before creating `m2-tests-locked`.

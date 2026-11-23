@@ -20,6 +20,11 @@
       "Bash(rm -fr *)",
       "Bash(rm -r *)",
       "Bash(rm -R *)",
+      "Edit(./tests/acceptance/**)",
+      "Edit(./tests/conftest.py)",
+      "Edit(./tests/__init__.py)",
+      "Edit(./conftest.py)",
+      "Edit(./pytest.ini)",
       "NotebookEdit"
     ]
   }

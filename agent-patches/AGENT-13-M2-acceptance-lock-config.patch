@@ -1,0 +1,37 @@
+diff --git a/.claude/settings.json b/.claude/settings.json
+--- a/.claude/settings.json
++++ b/.claude/settings.json
+@@ -20,6 +20,11 @@
+       "Bash(rm -fr *)",
+       "Bash(rm -r *)",
+       "Bash(rm -R *)",
++      "Edit(./tests/acceptance/**)",
++      "Edit(./tests/conftest.py)",
++      "Edit(./tests/__init__.py)",
++      "Edit(./conftest.py)",
++      "Edit(./pytest.ini)",
+       "NotebookEdit"
+     ]
+   }
+diff --git a/AGENTS.md b/AGENTS.md
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -66,7 +66,8 @@
+
+ ## Files and folders you must not change
+
+-- `tests/acceptance/`, and the expected values of any test.
++- The acceptance-test lock scope: `tests/acceptance/`, `tests/conftest.py`, `tests/__init__.py`, a
++  root `conftest.py` and `pytest.ini` (denied in `.claude/settings.json`); and any test's expected value.
+ - `docs/` (design docs, requirements, plans): read only. Humans change these.
+ - `LEDGER.md`, `prompts/` and `evidence/`: humans write these; evidence files are tool output only.
+ - `AGENTS.md`, `CLAUDE.md`, `.claude/`, `README.md`, `requirements.txt`, `pytest.ini`.
+diff --git a/CLAUDE.md b/CLAUDE.md
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -33,4 +33,4 @@
+
+-The five S-6 acceptance tests (AC-18 to AC-22) are in `tests/acceptance/test_s6_acceptance.py`, and the S-6 regression tests are in `tests/test_s6_payments.py`. The acceptance tests have not yet been locked.
++The five S-6 acceptance tests (AC-18 to AC-22) are in `tests/acceptance/test_s6_acceptance.py`, and the S-6 regression tests are in `tests/test_s6_payments.py`. Agent edits to the acceptance-test lock scope (`tests/acceptance/**`, `tests/conftest.py`, `tests/__init__.py`, a root `conftest.py` and `pytest.ini`) are denied in `.claude/settings.json`. The acceptance tests have not yet been locked: a human creates the `m2-tests-locked` tag after verifying the denial.
+
+ Do not modify application code, tests, requirements,
