@@ -956,3 +956,51 @@ Checks: AGENT-04 passed git apply --check. Both patches were applied by the huma
 Evidence: docs/design/S-6.md and the AGENT-04 and AGENT-05-v2 patch files.
 
 Risk: Independent Gap Check 2, acceptance-test locking, and final test evidence are still pending.
+
+### Entry 58 — Independent S-6 Gap Check 2 (Prompt 69)
+
+Artifact: docs/design/S-6-gap-check-2.md
+
+Tool: Claude Code, main agent in a fresh session (read-only review).
+
+Prompts: prompts/69-Execute-S-6-Gap-Check.md
+
+Review: Independent gap check completed against S-6 design and referenced requirements. Human triage is pending.
+
+Checks: Read-only document inspection. No commands or tests were run.
+
+Evidence: Full Claude Gap Check 2 response, containing 54 findings (G-01–G-25, C-01–C-10, P-01–P-11, U-01–U-08).
+
+Risk: Potential contradictions in retry rules, ACH scope, acceptance-test wording, and remaining implementation boundaries require triage before acceptance-test locking.
+
+### Entry 59 — S-6 Gap Check 2 Triage (Prompt 70)
+
+Artifact: agent-patches/AGENT-06-S6-gap-triage.patch and Gap Check 2 triage findings.
+
+Tool: Claude Code, main agent (read-only analysis and patch preparation).
+
+Prompts: prompts/70-Milestone-2-Gap-Check.md
+
+Review: Reviewed the findings and approved the recommended decisions for AC-18, ACH scope, future-month payments, replay counting, documentation clarifications, and deferred limitations.
+
+Checks: Claude inspected the design, requirements, code, and tests. No application tests or shell commands were run. Documentation changes require separate verification.
+
+Evidence: docs/design/S-6-gap-check-2.md; human decisions recorded in LEDGER.md. The Prompt 70 response was reviewed in the Claude Code session but has not been saved as a separate evidence file.
+
+Risk: Approved documentation changes still require application and verification. Acceptance tests must be audited before locking.
+
+### Entry 60 — Finalize S-6 Gap Check Decisions (Prompt 71)
+
+Artifact: S-6 design and requirements documentation updates for approved Gap Check 2 decisions.
+
+Tool: Claude Code, main agent (read-only inspection and patch preparation).
+
+Prompts: prompts/71-Finalize-S-6-Gap-Check-Decisions.md
+
+Review: Reviewed the proposed AC-18 amendment, ACH scope limitation, future-month payment behavior, replay counting limitation, and remaining design clarifications. All recommended policy decisions were approved by the human on November 23, 2026.
+
+Checks: Claude inspected relevant documentation and code. No application tests or shell commands were executed. The AGENT-07 patch requires human verification before application.
+
+Evidence: Prompt 71 Claude Code response and approved decisions recorded in LEDGER.md.
+
+Risk: The proposed patch may contain an incorrect hunk header. Traceability documentation may still reference the original AC-18 wording. Acceptance tests have not yet been locked.
