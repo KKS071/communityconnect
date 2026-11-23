@@ -1020,3 +1020,19 @@ Checks: GitHub confirms that the traceability correction was committed in 6bf470
 Evidence: docs/requirements/traceability.md (committed with Entry 61 in 6bf470969b2c0e4cc2ccb0ac34f5c9cc1b8cdaba). The local proposed patch is agent-patches/AGENT-08-S6-traceability-v2.patch; its GitHub commit status was not verified.
 
 Risk: Acceptance tests have not yet been moved to tests/acceptance/ or locked. Test execution and final Milestone 2 evidence remain pending.
+
+### Entry 62 — Milestone 2 Agent Configuration (AGENT-09)
+
+Artifact: `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.claude/agents/test-writer.md`, `.claude/agents/reviewer.md`, and `requirements.txt`.
+
+Tool: Claude Code main agent (patch preparation); human (patch application and verification).
+
+Prompts: `prompts/73-Milestone-2-Agent-Config-Audit.md` and `prompts/74-Prepare-Milestone-2-Agent-Config-patch.md`.
+
+Review: Human reviewed the configuration audit and approved the bounded AGENT-09 patch. The corrected v2 patch was verified as already applied using `git apply --reverse --check` (exit code 0). The configuration preserves the patch-only workflow and adds test and coverage commands, explicit permission restrictions, and two required subagents.
+
+Checks: `git diff --check` passed. `python -m pytest` passed 197/197 tests in 678.02 seconds. Coverage run passed 197/197 tests in 470.64 seconds, with 93.55% total branch-aware coverage, exceeding the 80% requirement. One nonblocking Starlette deprecation warning occurred.
+
+Evidence: Terminal test and coverage outputs; AGENT-09-v2 patch; configuration files. Commit SHA, 6b42c67d9ade772ec864bffb76b0d67023d5281c
+
+Risk: Fresh-clone verification and runtime permission-denial evidence remain outstanding. Acceptance tests have not yet been audited and locked.

@@ -7,3 +7,6 @@ env/
 *.db
 .pytest_cache/
 /agent-patches
+.coverage
+.coverage.*
+htmlcov/
