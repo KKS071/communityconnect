@@ -997,13 +997,13 @@ Tool: Claude Code, main agent (read-only inspection and patch preparation).
 
 Prompts: prompts/71-Finalize-S-6-Gap-Check-Decisions.md
 
-Review: Reviewed the proposed AC-18 amendment, ACH scope limitation, future-month payment behavior, replay counting limitation, and remaining design clarifications. All recommended policy decisions were approved by the human on November 23, 2026.
+Review: Reviewed the proposed AC-18 amendment, ACH scope limitation, future-month payment behavior, replay counting limitation, and remaining design clarifications. All recommended policy decisions were approved by the human during the Prompt 70–71 review; the exact local calendar date should be confirmed before assigning a date, because related records use November 23, 2026.
 
 Checks: Claude inspected relevant documentation and code; no application tests or shell commands were run by Claude. The resulting S-6 design and backlog changes are present in commit 71e0faa7dfa37348e1e45ba37b08e5f1c52b2026. Local patch-validation output was not independently captured.
 
 Evidence: docs/audits/Prompt-71-Claude-reply.md and human decisions in LEDGER.md. Design/backlog updates: commit 71e0faa7dfa37348e1e45ba37b08e5f1c52b2026. Saved Prompt 71 reply and ledger updates: commit c964c2f3aea320db48d2626533b4297dbec4410b.
 
-Risk: The historical patch-format concern was resolved by the committed documentation changes. Acceptance tests remain unlocked; test execution and Milestone 2 evidence are outstanding.
+Risk: The historical patch-format concern was resolved by the committed documentation changes. Acceptance tests have not yet been moved to tests/acceptance/ or locked.; test execution and Milestone 2 evidence are outstanding.
 
 ### Entry 61 — S-6 Traceability Documentation Update (Prompt 72)
 
