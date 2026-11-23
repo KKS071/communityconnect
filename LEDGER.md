@@ -1062,3 +1062,26 @@ Evidence: `agent-patches/AGENT-10-S6-acceptance-organization.patch`, `agent-patc
 Risk: The acceptance tests pass but are not yet locked at `m2-tests-locked`. The historical pre-implementation red-run evidence has not been captured. Runtime permission-denial verification and the reviewer-subagent conflict remain outstanding. The shared `tests/conftest.py` dependency must also be protected when the acceptance-test lock is established.
 
 Decision: Accept the AGENT-10 acceptance-test relocation and AGENT-11 documentation synchronization based on the successful human test results. Proceed with evidence preservation and acceptance-test locking after completing the remaining checks.
+
+### Entry 64 — Milestone 2 Historical RED Reconstruction (Prompt 78)
+
+Artifact: `evidence/red.txt`; isolated Git worktree `../cc-red-bd558d4`.
+
+Tool: Claude Code main agent (read-only historical audit); ChatGPT GPT-6 (review and procedure guidance); human reviewer (Git verification, isolated worktree preparation and test execution).
+
+Prompt: `prompts/78-Milestone-2-Historical-Red-Test-Evidence-Audit`.
+
+Review: The historical commit `bd558d45f96689eb6e774426e580a038c4fa113d` was verified as the pre-implementation S-6 baseline. Git ancestry confirmed that `6b1317f` was the first subsequent S-6 implementation commit. The baseline lacked the S-6 feature modules, including `app/clock.py`. The current acceptance-test files from commit `7104eed` were used for a retrospective reconstruction against this baseline.
+
+Checks:
+- `git rev-parse --verify 'bd558d4^{commit}'` — succeeded.
+- `git log --oneline --ancestry-path bd558d4..6b1317f` — returned only `6b1317f`.
+- `git ls-tree -r --name-only bd558d4 -- app tests pytest.ini requirements.txt` — confirmed the historical application file listing did not contain `app/clock.py`, `app/processor.py` or `app/payments.py`.
+- `git diff --stat bd558d4 7104eed -- tests/conftest.py tests/helpers.py tests/__init__.py pytest.ini` — no differences reported.
+- `python -m pytest -v tests/acceptance/test_s6_acceptance.py` — 5 setup errors, 1 warning, in 9.45 seconds.
+
+Evidence: `evidence/red.txt` contains the captured pytest output. All five tests encountered `ImportError: cannot import name 'clock' from 'app'` during fixture setup. The test bodies and their assertions were not executed.
+
+Risk: This is retrospective reconstruction, not a historical test-first RED run. The five results are setup errors rather than failed acceptance assertions, so the reconstruction does not establish that the original development followed RED–GREEN–REFACTOR. The acceptance-test lock remains pending.
+
+Decision: Retain the raw reconstruction output as accurately labeled historical evidence. Do not report the five errors as five failed assertions or claim that the required RED–GREEN development order was followed.

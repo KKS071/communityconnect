@@ -1,0 +1,59 @@
+# Prompt 78 — Milestone 2 Historical Red-Test Evidence Audit
+
+Project: CommunityConnect — CS690 Milestone 2
+
+Current verified commit: `7104eed`
+
+Authorization: READ-ONLY INVESTIGATION ONLY.
+
+Do not modify tracked files, create patches, run tests, create worktrees, commit, push, or create Git tags.
+
+## Objective
+
+Identify a genuine pre-implementation Git commit suitable for reconstructing the RED phase of the S-6 acceptance tests.
+
+## Tasks
+
+1. Inspect the Git history of S-6 development.
+
+2. Investigate historical commit `bd558d4` as a possible pre-implementation baseline.
+
+3. Identify:
+   - The last commit before S-6 implementation began.
+   - The first commit containing S-6 implementation.
+   - Which application modules existed at the historical baseline.
+   - Whether the current five acceptance tests can be executed against that baseline.
+   - Any required test infrastructure that did not exist at that time.
+
+4. Determine whether failures would represent genuine unmet acceptance criteria rather than import errors, missing fixtures, database setup failures, or collection errors.
+
+5. Propose a safe, reproducible worktree procedure for the human to execute.
+
+6. Explain how to preserve the current acceptance-test assertions without modifying them.
+
+7. Clearly distinguish:
+   - Genuine historical RED evidence.
+   - Retrospective reconstruction.
+   - Infrastructure or collection failures.
+
+## Constraints
+
+- Do not alter `main`.
+- Do not edit acceptance tests.
+- Do not weaken assertions.
+- Do not fabricate historical test results.
+- Do not claim RED until a human executes the tests and supplies the output.
+- Do not create a worktree or execute tests.
+
+## Output
+
+Provide:
+
+1. Recommended historical commit SHA.
+2. Evidence supporting the selection.
+3. Compatibility assessment.
+4. Exact human-executable commands.
+5. Expected limitations.
+6. Recommended evidence filename.
+
+Stop for human review.
