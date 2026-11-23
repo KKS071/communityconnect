@@ -1110,3 +1110,25 @@ Evidence: Claude Code returned `<tool_use_error>File is in a directory that is d
 Risk: Claude Code permission rules do not protect against human edits, externally applied patches or every possible indirect modification. The reviewer-agent naming conflict also requires final confirmation.
 
 Decision: Accept the observed Edit-tool denial as evidence that the configured restriction is enforced for the tested path. Complete the remaining integrity and reviewer checks before creating `m2-tests-locked`.
+
+### Entry 66 — Milestone 2 GREEN Evidence Audit and Verification (Prompt 80)
+
+Artifact: `evidence/green.txt`; `prompts/80-Milestone-2-GREEN-REFACTOR-Evidence-Audit.md`; `LEDGER.md`.
+
+Tool: Claude Code main agent (read-only historical audit); ChatGPT GPT-6 (review guidance); human reviewer (test execution and verification).
+
+Prompt: `prompts/80-Milestone-2-GREEN-REFACTOR-Evidence-Audit.md`.
+
+Review: AGENT-14 examined the S-6 implementation history, acceptance-test lock, and existing RED/GREEN/REFACTOR evidence. The audit found that the implementation was already complete before the acceptance-test lock and that no historical commit cleanly established a separately tested, behavior-preserving production refactor. The human approved capturing fresh GREEN evidence against the locked implementation.
+
+Checks:
+- `python -m pytest tests/acceptance -v` — 5 passed, 1 warning, 12.58 seconds.
+- `python -m pytest --cov=app --cov-branch --cov-report=term-missing --cov-fail-under=80` — 197 passed, 1 warning, 446.59 seconds.
+- Branch-aware coverage — 93.55%, exceeding the 80% threshold.
+- Acceptance-test integrity comparison against `m2-tests-locked` — to be verified before tagging.
+
+Evidence: `evidence/green.txt` contains the raw pytest output from both successful verification runs.
+
+Risk: GREEN verification confirms that the already implemented system passes the locked tests. It does not establish that the implementation was developed after the lock. Historical RED reconstruction produced setup errors rather than failing assertions. REFACTOR evidence remains incomplete.
+
+Decision: Accept the successful tests and coverage as GREEN verification evidence. Preserve the locked acceptance tests without modification. Commit the evidence and ledger entry, verify protected-file integrity, and create `m2-green` after the checks pass. Perform any approved refactor separately afterward.
