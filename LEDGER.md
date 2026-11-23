@@ -1157,3 +1157,28 @@ Evidence: `evidence/refactor.txt` contains the raw pytest output for the focused
 Risk: The refactor replaces separate integer counters with a dictionary, creating a small risk of counter-key errors. The successful regression and acceptance tests provide evidence that the expected behavior is preserved. The refactor does not establish that the earlier GREEN implementation was developed after the acceptance-test lock.
 
 Decision: Accept the behavior-preserving refactor and its successful verification. Commit the implementation, patch, prompt, evidence and ledger entry without changing either existing milestone tag.
+
+### Entry 68 — Milestone 2 Hypothesis Property-Based Testing (Prompt 82)
+
+Artifact: `tests/test_s6_properties.py`; `requirements.txt`; `evidence/properties.txt`; `agent-patches/AGENT-16-M2-hypothesis-properties.patch`; `agent-patches/AGENT-16-M2-hypothesis-dependency.patch`; `prompts/82-Milestone-2-Hypothesis-Properties.md`.
+
+Tool: Claude Code main agent (patch preparation); ChatGPT GPT-6 (patch review); human reviewer (patch application, test execution and verification).
+
+Prompt: `prompts/82-Milestone-2-Hypothesis-Properties.md`.
+
+Review: AGENT-16 prepared two Hypothesis property-based tests for existing S-6 payment behavior. The first verifies payment idempotency across generated due dates, residents and repeated payment-processing runs within a billing month. The second verifies retry timing across generated delay values, due dates and early-run offsets. Each generated example uses an isolated PostgreSQL schema, deterministic fake processor and restored application settings. The human reviewed and applied the patches. Hypothesis was added to requirements.txt for reproducibility.
+
+Checks:
+- Both patch applicability checks passed.
+- Payment idempotency property — 10 passing examples, 0 failing, 0 invalid.
+- Retry timing property — 10 passing examples, 0 failing, 0 invalid.
+- Focused property tests — 2 passed, 1 warning, 32.72 seconds.
+- Full test suite — 199 passed, 1 warning, 390.59 seconds.
+- Branch-aware coverage — 94.34%, exceeding the required 80%.
+- Protected-file comparison against m2-tests-locked — passed (PROTECTED-UNCHANGED).
+
+Evidence: `evidence/properties.txt` contains the raw focused Hypothesis statistics and full-suite coverage output.
+
+Risk: Each Hypothesis example creates a database schema, increasing test runtime and requiring an available PostgreSQL test database. The tests exercise bounded generated examples rather than exhaustively proving the properties.
+
+Decision: Accept the two property-based tests and their successful verification. Preserve the locked acceptance tests and existing GREEN/REFACTOR tags. Commit the property tests, dependency, prompts, patches, evidence and ledger entry as a separate milestone activity.
