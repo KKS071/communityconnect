@@ -1036,3 +1036,29 @@ Checks: `git diff --check` passed. `python -m pytest` passed 197/197 tests in 67
 Evidence: Terminal test and coverage outputs; AGENT-09-v2 patch; configuration files. Commit SHA, 6b42c67d9ade772ec864bffb76b0d67023d5281c
 
 Risk: Fresh-clone verification and runtime permission-denial evidence remain outstanding. Acceptance tests have not yet been audited and locked.
+
+### Entry 63 — Milestone 2 S-6 Acceptance-Test Relocation and Verification (Prompts 75–77)
+
+**Artifact:** `tests/acceptance/__init__.py`, `tests/acceptance/s6_support.py`, `tests/acceptance/test_s6_acceptance.py`, `tests/test_s6_payments.py`, `docs/design/S-6.md`, `docs/requirements/traceability.md`, `AGENTS.md`, and `CLAUDE.md`.
+
+**Tool:** Claude Code main agent (read-only audit, patch preparation and static verification); `test-writer` subagent (read-only acceptance-test audit); ChatGPT GPT-6 (review and workflow guidance); human reviewer (patch application and test execution).
+
+**Prompts:** `prompts/75-Milestone-2-Acceptance-Test-Audit.md`, `prompts/76-Prepare-S-6-Acceptance-Test.md`, and Prompt 76A verification follow-up. Prompt 77 prepared the documentation synchronization patch.
+
+**Review:** The Prompt 75 audit confirmed that all 11 S-1 and S-6 acceptance criteria had corresponding tests without skip or xfail markers. The human approved moving only the five S-6 acceptance tests (AC-18 through AC-22) into `tests/acceptance/`. AGENT-10 preserved their assertions and expected values, corrected the outdated AC-18 comment, and introduced processor-state cleanup in the shared `s6` fixture. All S-6 regression tests remained in `tests/test_s6_payments.py`. AGENT-11 synchronized the documentation and traceability paths without changing requirements or business rules. The tests have not yet been locked.
+
+**Checks:**
+- `git apply --check agent-patches/AGENT-10-S6-acceptance-organization.patch` — passed.
+- `python -m pytest --collect-only -q tests/acceptance` — 5 tests collected in 0.45 seconds.
+- `python -m pytest tests/acceptance -v` — 5 passed, 1 warning, in 13.02 seconds.
+- `python -m pytest` — 197 passed, 1 warning, in 415.98 seconds.
+- `python -m pytest --cov=app --cov-branch --cov-report=term-missing --cov-fail-under=80` — 197 passed, 1 warning, in 458.07 seconds.
+- Total branch-aware coverage: 93.55%, exceeding the required 80%.
+- `git grep -n "test_s6_payments.py::test_ac" -- docs AGENTS.md CLAUDE.md` — no matches.
+- Documentation lock-status search confirmed that acceptance tests are described as not yet locked.
+
+**Evidence:** `agent-patches/AGENT-10-S6-acceptance-organization.patch`, `agent-patches/AGENT-11-S6-acceptance-docs.patch`, human-provided pytest outputs, and `evidence/m2-acceptance-relocation-tests.md`. The agent prepared the patches; all reported test results came from human-executed commands. Commit SHA: PENDING HUMAN COMMIT.
+
+**Risk:** The acceptance tests pass but are not yet locked at `m2-tests-locked`. The historical pre-implementation red-run evidence has not been captured. Runtime permission-denial verification and the reviewer-subagent conflict remain outstanding. The shared `tests/conftest.py` dependency must also be protected when the acceptance-test lock is established.
+
+**Decision:** Accept the AGENT-10 acceptance-test relocation and AGENT-11 documentation synchronization based on the successful human test results. Proceed with evidence preservation and acceptance-test locking after completing the remaining checks.

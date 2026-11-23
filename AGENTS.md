@@ -30,8 +30,8 @@ The tests need a running PostgreSQL server. Each test gets its own schema.
   routes in `main.py`; membership and roles in `access.py`.
 - `docs/design/<story ID>.md`: design docs, the source of truth. `docs/plans/<story ID>-plan.md`: plans.
 - `docs/requirements/`: evidence log, backlog with the acceptance criteria, traceability.
-- `tests/acceptance/`: acceptance tests, one per AC with the AC ID in the test name, locked at the
-  tag `m2-tests-locked`. Other tests live elsewhere under `tests/`.
+- `tests/acceptance/`: acceptance tests, one per AC with the AC ID in the test name, to be locked
+  at the tag `m2-tests-locked`. Other tests live elsewhere under `tests/`.
 - `prompts/`: every prompt referenced from `LEDGER.md`. `evidence/`: tool output only.
 
 ## Workflow rules
@@ -82,8 +82,8 @@ that does not exist: `{"detail": "Not found"}` (S-1 R2, D3).
 
 - S-1 (maintenance requests): built in Milestone 1. `docs/design/S-1.md`, `tests/test_s1_requests.py`.
 - S-6 (scheduled dues payment): the Milestone 2 story. AC-18 to AC-22 are implemented and merged
-  (LEDGER.md Entry 54). Design `docs/design/S-6.md`, plan `docs/plans/S-6-plan.md`; its tests are
-  in `tests/test_s6_payments.py` until they move to `tests/acceptance/`.
+  (LEDGER.md Entry 54). Design `docs/design/S-6.md`, plan `docs/plans/S-6-plan.md`; acceptance
+  tests in `tests/acceptance/test_s6_acceptance.py`, regression tests in `tests/test_s6_payments.py`.
 - S-6 open questions OQ1–OQ5 are settled by human decisions in `docs/design/S-6.md` §8: residents
   pay no card fee; ACH is not charged or settled automatically; a run charges only the current
   month; board members still get 404 on the payments list; a manual payment is refused while a

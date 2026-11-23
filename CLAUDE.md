@@ -31,7 +31,7 @@ If instructions conflict, stop and ask the human reviewer.
 
 AC-18 through AC-22 are implemented, tested and merged into `main` (merge commit `5c87562`). AC-22 was implemented under Prompts 54–59; see LEDGER.md Entry 54 (implementation commit `719aecc`, documentation commit `1f820df`).
 
-The S-6 acceptance tests have not yet been moved to `tests/acceptance/` or locked.
+The five S-6 acceptance tests (AC-18 to AC-22) are in `tests/acceptance/test_s6_acceptance.py`, and the S-6 regression tests are in `tests/test_s6_payments.py`. The acceptance tests have not yet been locked.
 
 Do not modify application code, tests, requirements,
 design documents, plans, prompts, or LEDGER.md.

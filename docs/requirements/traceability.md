@@ -2,7 +2,7 @@
 
 The test names for S-1 and S-6 are the names in each design doc’s section 9. All eleven existed in the repository at the Milestone 1 submitted commit (checked then with `python -m pytest --collect-only -q`); this check has not been repeated for Milestone 2.
 
-**S-6 Milestone 2 status:** The six S-1 AC tests concern the Milestone 1 story. S-6 is implemented, and its five AC-18–AC-22 test functions are no longer skipped; whether they pass is recorded only by human test runs in LEDGER.md, so this matrix proves traceability, not passing payment behavior. The acceptance tests have not yet been moved to `tests/acceptance/` or locked, so the test paths below are unchanged. Open questions OQ1–OQ5 are settled by documented human decisions (`docs/design/S-6.md` §8). AC-18 was amended by human approval on 2026-11-23 to verify the JSON response of `GET .../payment-schedules/mine` (`method` "ach", `day_of_month` 5, `active` true) instead of display text (`docs/requirements/backlog.md`, AC-18; S-6 D10). AC-18 covers ACH scheduling and display only; automatic ACH charging and settlement are deferred, and D34 uses debit schedules for AC-19–AC-22. Existing AC IDs, evidence references and test paths below remain unchanged. `docs/reviews/S-6-requirements-finalization.md` is the Step 1 review record.
+**S-6 Milestone 2 status:** The six S-1 AC tests concern the Milestone 1 story. S-6 is implemented, and its five AC-18–AC-22 test functions are no longer skipped; whether they pass is recorded only by human test runs in LEDGER.md, so this matrix proves traceability, not passing payment behavior. The five S-6 acceptance tests were moved to `tests/acceptance/test_s6_acceptance.py` with their assertions unchanged, and their paths below are updated; the S-6 regression tests remain in `tests/test_s6_payments.py` and are not acceptance criteria. The acceptance tests have not yet been locked. Open questions OQ1–OQ5 are settled by documented human decisions (`docs/design/S-6.md` §8). AC-18 was amended by human approval on 2026-11-23 to verify the JSON response of `GET .../payment-schedules/mine` (`method` "ach", `day_of_month` 5, `active` true) instead of display text (`docs/requirements/backlog.md`, AC-18; S-6 D10). AC-18 covers ACH scheduling and display only; automatic ACH charging and settlement are deferred, and D34 uses debit schedules for AC-19–AC-22. Existing AC IDs and evidence references below remain unchanged. `docs/reviews/S-6-requirements-finalization.md` is the Step 1 review record.
 
 | Evidence ID      | Story ID | AC ID | Test name                                                                           |
 |------------------|----------|-------|-------------------------------------------------------------------------------------|
@@ -23,11 +23,11 @@ The test names for S-1 and S-6 are the names in each design doc’s section 9. A
 | E-6              | S-4      | AC-15 | Not yet written                                                                     |
 | E-4, E-13        | S-5      | AC-16 | Not yet written                                                                     |
 | E-4              | S-5      | AC-17 | Not yet written                                                                     |
-| E-21             | S-6      | AC-18 | tests/test_s6_payments.py::test_ac18_schedule_shown_on_payments_page                |
-| E-21             | S-6      | AC-19 | tests/test_s6_payments.py::test_ac19_due_day_charges_exactly_once                   |
-| E-9              | S-6      | AC-20 | tests/test_s6_payments.py::test_ac20_restart_mid_run_keeps_one_payment              |
-| E-9              | S-6      | AC-21 | tests/test_s6_payments.py::test_ac21_manual_payment_prevents_scheduled_charge       |
-| E-21             | S-6      | AC-22 | tests/test_s6_payments.py::test_ac22_declined_charge_retried_after_delay            |
+| E-21             | S-6      | AC-18 | tests/acceptance/test_s6_acceptance.py::test_ac18_schedule_shown_on_payments_page |
+| E-21             | S-6      | AC-19 | tests/acceptance/test_s6_acceptance.py::test_ac19_due_day_charges_exactly_once |
+| E-9              | S-6      | AC-20 | tests/acceptance/test_s6_acceptance.py::test_ac20_restart_mid_run_keeps_one_payment |
+| E-9              | S-6      | AC-21 | tests/acceptance/test_s6_acceptance.py::test_ac21_manual_payment_prevents_scheduled_charge |
+| E-21             | S-6      | AC-22 | tests/acceptance/test_s6_acceptance.py::test_ac22_declined_charge_retried_after_delay |
 | E-7, E-17        | S-7      | AC-23 | Not yet written                                                                     |
 | E-16             | S-7      | AC-24 | Not yet written                                                                     |
 | E-7              | S-7      | AC-25 | Not yet written                                                                     |
