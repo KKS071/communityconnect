@@ -1,0 +1,8 @@
+[tool.mutmut]
+source_paths = ["app"]
+only_mutate = ["app/payments.py", "app/db.py"]
+also_copy = ["pytest.ini"]
+pytest_add_cli_args_test_selection = [
+    "tests/test_s6_payments.py",
+    "tests/acceptance",
+]

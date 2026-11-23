@@ -10,3 +10,4 @@ env/
 .coverage
 .coverage.*
 htmlcov/
+mutants/
