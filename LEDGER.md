@@ -1404,3 +1404,19 @@ checks: Executed `python -m scripts.demo_s6`. All five acceptance scenarios, AC-
 evidence: `evidence/demo-s6.txt`, `evidence/screens/AC-18-schedule.png`, `evidence/screens/AC-19-exactly-once.png`, `evidence/screens/AC-20-restart.png`, `evidence/screens/AC-21-manual-payment.png`, and `evidence/screens/AC-22-retry.png`.
 
 risk: The demonstration screenshots establish successful acceptance-test execution rather than displaying individual API response bodies. Payment processing uses FakeProcessor and synthetic test data. AC-20 simulates an interruption and replay rather than an actual operating-system process restart. No real payments are processed. No locked acceptance-test modifications were required.
+
+### Entry 80 — Fresh-Clone Reproduction and Final Verification
+
+artifact: `evidence/final-verification.txt`, `AGENTS.md`, `README.md`, and `MILESTONE2.md`. Verified repository commit: `a999f8104c7552ff245ca7e522c35c06d4b8d5f9`. Verification evidence commit: 3dad87623baf385133a85e604aedfb5028e56533.
+
+tool: Git, Python 3.12.3, pytest 9.2.0, pytest-cov 7.1.0, Hypothesis 6.170.17, PostgreSQL, Uvicorn, and ChatGPT-assisted verification guidance. Human-executed verification on November 23, 2026.
+
+prompts: ChatGPT guidance for fresh-clone installation, dependency verification, application startup, complete regression execution, and branch-aware coverage verification.
+
+review: The human cloned the remote repository into a separate directory and created a new Python virtual environment. All required dependencies installed successfully. PostgreSQL connectivity and both required databases were verified. The application started successfully, and Swagger documentation and OpenAPI requests returned HTTP 200. The application was subsequently shut down cleanly.
+
+checks: Executed `python -m pytest --cov=app --cov-branch --cov-report=term-missing --cov-fail-under=80` from the fresh clone. All 202 tests passed with one deprecation warning. Combined statement and branch coverage was 94.34%, exceeding the required threshold of 80%. Execution completed in 516.30 seconds with exit status 0. The results independently reproduced the earlier regression and coverage results.
+
+evidence: `evidence/final-verification.txt` contains the fresh-clone commit SHA, execution timestamp, Python version, PostgreSQL connectivity status, regression results, uncovered statements, partial branches, and successful coverage threshold verification.
+
+risk: The fresh clone used an existing local PostgreSQL installation rather than a newly provisioned database server. Dependency versions are not fully pinned, although the newly installed versions reproduced the recorded results. The Starlette TestClient deprecation warning remains a future maintenance consideration. The verification does not establish live payment-provider integration or resolve previously disclosed historical evidence limitations.

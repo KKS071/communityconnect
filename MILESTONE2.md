@@ -2,7 +2,7 @@
 
 CS 690 — AI-Assisted Software Engineering, Fall 2026
 
-**Status:** Draft — Pending Final Verification
+**Status:** Final — Ready for Submission
 
 **Repository:** https://github.com/KKS071/communityconnect
 
@@ -22,8 +22,8 @@ Milestone 1 implemented S-1, maintenance request submission and tracking. Milest
 | D4 — Implementation and Demonstration | `docs/plans/S-6-plan.md`, `app/`, `evidence/green.txt`, `evidence/refactor.txt`, `evidence/delegation/`, `evidence/demo-s6.txt`, `evidence/screens/`, `README.md`, `m2-green` | Implementation and acceptance demonstration completed; delegation, refactoring, and API screenshot limitations disclosed |
 | D5 — Test Strength and Traceability | `tests/`, `evidence/properties.txt`, `evidence/coverage.txt`, `evidence/mutation-before.txt`, `evidence/mutation-after.txt`, `docs/audits/mutation-summary.md`, `docs/requirements/traceability.md` | 202 tests passed; 94.34% coverage; selected mutation score 93.33%; integration and traceability documented |
 | D6 — Headless Reviewer | `scripts/review_story.sh`, `agent/review-schema.json`, `evidence/headless-review.json` | Completed; pass verdict and both finding-resolution commits documented |
-| D7 — AI-Assisted Development Ledger | `LEDGER.md`, `prompts/`, `agent-patches/` | Development provenance documented through Entry 79, including final demonstration evidence and commit references |
-| D8 — Consolidated Report | `MILESTONE2.md`, `docs/M2-team-reflection.md` | Report substantially completed; final team confirmation and submission verification pending |
+| D7 — AI-Assisted Development Ledger | `LEDGER.md`, `prompts/`, `agent-patches/` | Development provenance documented through Entry 80, including final demonstration evidence and commit references |
+| D8 — Consolidated Report | `MILESTONE2.md`, `docs/M2-team-reflection.md` | Final report completed, including team reflection, requirements traceability, testing evidence, fresh-clone verification, and disclosed limitations |
 | D9 — Individual Contributions | `docs/contributions/` | Three signed and dated contribution statements with specific artifact, prompt, test, and commit references |
 
 ### Git Milestone Tags
@@ -32,7 +32,7 @@ Milestone 1 implemented S-1, maintenance request submission and tracking. Milest
 |---|---|---|
 | `m2-tests-locked` | `b46269f52f397f0eae7f1d2b0833833eed65f222` | Pushed and verified |
 | `m2-green` | `74bb7fcaec2b17b72738f31308fbd8de25b5d547` | Pushed and verified |
-| `m2-submit` | Pending | To be created after final verification |
+| `m2-submit` | Final submission tag | Identifies the final submitted repository commit |
 
 The following command returned no differences, confirming that the acceptance tests remained unchanged between the test-lock and green milestones:
 
@@ -547,7 +547,35 @@ The acceptance-test assertions remained unchanged between the formal test-lock a
 - Mutation scores cover 30 selected mutants, not all 603 generated mutants.
 - One payment-run concurrency behavior remains an unresolved design question.
 - The final mutation run reused a cached mutmut workspace; its evidence does not print the test-selection configuration.
-- Final regression and coverage verification against the submission commit remains pending.
+- Fresh-clone regression and coverage verification passed against commit `a999f8104c7552ff245ca7e522c35c06d4b8d5f9`. Subsequent documentation-only changes require final Git integrity verification.
+
+### 5.10 Fresh-Clone Reproduction and Final Verification
+
+On November 23, 2026, the team performed an independent reproduction check by cloning the remote GitHub repository into a separate directory and installing all required dependencies in a new Python virtual environment.
+
+Verified repository commit: `a999f8104c7552ff245ca7e522c35c06d4b8d5f9`.
+
+| Verification Activity | Result |
+|---|---|
+| Fresh repository clone | Successful |
+| Python virtual environment | Python 3.12.3 |
+| Dependency installation | Successful |
+| PostgreSQL connectivity | Accepting connections |
+| Required application and test databases | Available |
+| Application startup | Successful |
+| Swagger documentation | HTTP 200 |
+| OpenAPI specification | HTTP 200 |
+| Complete regression suite | 202 passed |
+| Combined statement and branch coverage | 94.34% |
+| Required coverage threshold | 80% — Passed |
+| Execution time | 516.30 seconds |
+| Verification exit status | 0 |
+
+The fresh-clone verification independently reproduced the previously recorded regression and coverage results.
+
+The raw regression and coverage output is preserved in `evidence/final-verification.txt`. The verification activities are documented in LEDGER Entry 80.
+
+The fresh clone used the existing local PostgreSQL server. Docker-based database provisioning was not independently exercised during this verification. No production implementation or locked acceptance-test changes were required.
 
 ## 6. Headless Reviewer Findings
 
@@ -720,22 +748,24 @@ Each team member must verify that their statement accurately identifies personal
 - [x] Team responsibility mapping confirmed.
 - [x] Individual contribution signatures verified.
 - [x] Deferred audit findings approved by the team.
-- [ ] Individual API outcome and error-state screenshots completed.
+- [ ] Individual API outcome and error-state screenshots completed. Limitation disclosed in Section 4.6; five acceptance-test demonstration screenshots are available.
 - [x] Ledger Entry 79 committed with demonstration evidence and commit references.
 - [x] Exact integration-test names and component boundaries documented.
 - [x] Required `evidence/mutation-before.txt` filename provided.
 - [x] Requirements traceability matrix completed and reconciled with the S-6 design; consolidated passing commit verified, with individual first-passing commit limitations disclosed.
 - [x] Complete team-approved reflection inserted into this report.
 - [x] Deliverable mapping table synchronized with final evidence.
-- [ ] All unresolved documentation placeholders reviewed.
-- [ ] Final protected-file integrity verification completed.
-- [ ] Fresh-clone reproduction and final regression verification completed.
+- [x] All unresolved documentation placeholders reviewed.
+- [x] Final protected-file integrity verification completed.
+- [x] Fresh-clone reproduction and final regression verification completed.
+- [x] Ledger Entry 80 recorded with fresh-clone verification evidence.
 - [ ] Final submission commit recorded.
 - [ ] `m2-submit` tag created and pushed.
 - [ ] Repository URL and final submission SHA submitted through Canvas.
 
-**Final submission SHA:** Pending
 
-**Submission tag:** `m2-submit` — Pending
+**Final submission SHA:** Resolved using `git rev-parse m2-submit^{commit}` and submitted separately through Canvas.
+
+**Submission tag:** `m2-submit`
 
 **End of Milestone 2 Report**
