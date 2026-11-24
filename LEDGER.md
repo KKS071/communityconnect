@@ -1323,3 +1323,36 @@ Evidence: Documentation commit SHA: `f4402b1`. Earlier artifact commits: `9474ad
 Risk: The AGENT-23 v2 patch represents the original agent-generated proposal; the committed ledger also includes subsequent human corrections.
 
 Decision: Accept the expanded ledger and its verified commit references as the final mutation-testing traceability record.
+
+## Entry 76 — AGENT-24: Milestone 2 Headless Reviewer
+
+artifact: `scripts/review_story.sh`, `agent/review-schema.json`, `evidence/headless-review.json`, `prompts/90-AGENT-24-M2-Headless-Reviewer.md`, and two comment corrections in `app/payments.py`.
+
+- Headless-review artifact commit: 4f1e47c195288f2f9c91f63fc9df349488933f59
+- Finding-resolution commit: 7063e9ee80dc70579c70762459b69159db5a51b1
+
+tool: Claude Code 2.1.331, claude-opus-5-5, 2026-11-23, subagent reviewer. ChatGPT assisted with script and schema preparation, troubleshooting, and review of the returned findings.
+
+prompts: Prompt 90 — execute the reviewer subagent headlessly against the S-6 application files changed since `m2-tests-locked`, using a structured JSON schema. See `prompts/90-AGENT-24-M2-Headless-Reviewer.md`.
+
+review: The headless reviewer returned a pass verdict with zero blocking findings and two minor findings at `app/payments.py:81` and `app/payments.py:92`. Both identified outdated comments suggesting that ACH settlement remained an open question. The findings were accepted because OQ2 had already been settled in the design document. The human corrected both comments to reference D34 and the settled OQ2 decision. No payment-processing logic or acceptance tests were changed.
+
+checks:
+
+- Initial execution failed because Claude Code did not resolve the JSON Schema Draft 2020-12 declaration.
+- Removed the `$schema` declaration while retaining the required validation fields.
+- `time bash scripts/review_story.sh` completed in 50.146 seconds.
+- `python -m json.tool evidence/headless-review.json` successfully parsed the output.
+- `is_error`: false.
+- `subtype`: success.
+- Structured verdict: pass.
+- Reviewer subagents spawned: 1.
+- Reviewer subagents completed: 1.
+- Permission denials: 0.
+- Blocking findings: 0.
+- Minor findings: 2.
+- Reported cost: $0.4735198.
+
+evidence: Milestone 2 Deliverable 6a–6c; S-6; AC-18 through AC-22; D26; D34; settled OQ2. Original structured output preserved in `evidence/headless-review.json`.
+
+risk: The headless review is an AI-assisted static review, not proof of complete correctness. The reviewer examined the application files changed since `m2-tests-locked`. The original report predates the two comment corrections. The final regression and coverage checks remain to be completed against the submission commit.
