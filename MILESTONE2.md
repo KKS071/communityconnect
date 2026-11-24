@@ -271,27 +271,70 @@ The application integrates scheduled payment-processing logic with PostgreSQL-ba
 
 The integration-test names, two participating components, and confirmation that no mock replaces the boundary between those components will be recorded after final test inspection.
 
-### 5.4 Coverage Verification
+### 5.4 Test Coverage and Quality Gate
 
-The application test suite can be executed using:
+The final test suite was executed on November 23, 2026, using Python 3.12.3, pytest 9.2.0, pytest-cov 7.1.0, and Hypothesis 6.170.15.
 
-```bash
-python -m pytest
-```
-
-Branch-aware coverage can be checked using:
+The following command was used to measure statement and branch coverage and enforce the minimum coverage threshold:
 
 ```bash
 python -m pytest --cov=app --cov-branch --cov-report=term-missing --cov-fail-under=80
 ```
 
-The tests require a running PostgreSQL test database.
+The original execution output is preserved in `evidence/coverage.txt`.
 
-The recorded combined coverage result of 94.34% exceeds the configured 80% threshold used in the recorded command.
+#### Final Test Results
 
-The final coverage evidence will be preserved in `evidence/coverage.txt`.
+| Metric | Result |
+|---|---|
+| Total tests collected | 202 |
+| Tests passed | 202 |
+| Tests failed | 0 |
+| Tests skipped | 0 |
+| Warnings | 1 |
+| Execution time | 539.40 seconds |
+| Statement coverage | 95.76% |
+| Combined statement and branch coverage | 94.34% |
+| Minimum required coverage | 80% |
+| Coverage quality gate | PASS |
 
-**Uncovered line or branch analysis:** Pending inspection of the final coverage report.
+#### Module-Level Coverage
+
+| Module | Statements | Missing | Branches | Partial Branches | Coverage |
+|---|---:|---:|---:|---:|---:|
+| `app/__init__.py` | 0 | 0 | 0 | 0 | 100% |
+| `app/access.py` | 19 | 0 | 8 | 0 | 100% |
+| `app/auth.py` | 14 | 0 | 4 | 0 | 100% |
+| `app/clock.py` | 3 | 1 | 0 | 0 | 67% |
+| `app/db.py` | 91 | 4 | 30 | 4 | 93% |
+| `app/main.py` | 134 | 3 | 36 | 1 | 96% |
+| `app/payments.py` | 83 | 2 | 42 | 2 | 97% |
+| `app/processor.py` | 32 | 1 | 4 | 0 | 97% |
+| `app/seed.py` | 42 | 7 | 16 | 5 | 79% |
+| `app/settings.py` | 7 | 0 | 0 | 0 | 100% |
+| Total | 425 | 18 | 140 | 12 | 94.34% |
+
+The overall coverage exceeds the required threshold by 14.34 percentage points. All five S-6 acceptance tests, S-1 regression tests, S-6 regression tests, and both property-based tests passed.
+
+#### Uncovered Code Analysis
+
+One uncovered statement is `app/clock.py:7`, which returns the current UTC timestamp using `datetime.now(timezone.utc)`.
+
+The S-6 acceptance tests replace this clock function with a deterministic timestamp using pytest's monkeypatch fixture. This allows payment scheduling, billing-month selection, and retry timing to be tested reproducibly without depending on the actual system date.
+
+The uncovered statement is acceptable for the current milestone because the application clock is intentionally controlled during these tests. Direct verification of the production clock wrapper could be added as a separate unit test in a future iteration.
+
+Another uncovered statement is `app/processor.py:46`, which raises `ProcessorUnavailable` in the placeholder Stripe processor. Real Stripe integration is explicitly deferred under the approved S-6 scope. Payment behavior is instead tested using FakeProcessor.
+
+#### Test Execution Warning
+
+The test suite reported one StarletteDeprecationWarning concerning the use of httpx with Starlette's TestClient. The warning did not affect test execution or the coverage quality gate. Dependency compatibility should be reviewed in a future maintenance task.
+
+#### Coverage Conclusion
+
+The final execution demonstrates that the complete test suite passes and exceeds the required coverage threshold. Coverage alone does not establish assertion strength or complete business-rule correctness. Mutation testing and property-based testing provide additional evidence of test effectiveness, as discussed in the following sections.
+
+Evidence: `evidence/coverage.txt`.
 
 ### 5.5 Mutation Testing
 

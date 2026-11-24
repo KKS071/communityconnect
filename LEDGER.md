@@ -1372,3 +1372,20 @@ checks: Verified the acceptance-test relocation commit `7104eed` and test-lock c
 evidence: `evidence/test-audit.md`, `evidence/delegation/test-writer-call.json`, `evidence/delegation/test-writer-metadata.json`, `evidence/delegation/ac22-code-review-v2.txt`, `evidence/delegation/ac22-code-review-v2-metadata.json`, `tests/acceptance/test_s6_acceptance.py`, `tests/acceptance/s6_support.py`, `.claude/settings.json`, and audit finding dispositions in `MILESTONE2.md`.
 
 risk: The historical audit occurred after the original S-6 implementation but before the formal acceptance-test lock. Recovered session records are not native `/export` transcripts. Several optional assertion-strengthening recommendations remain deferred, subject to team approval. Explicit protection of `tests/helpers.py` is a post-lock safety improvement and must not be represented as an original permission control.
+
+### Entry 78 — Final Test Suite and Coverage Verification
+
+artifact: `evidence/coverage.txt` and the coverage section of `MILESTONE2.md`. Coverage evidence commit: `7f613c4a2e83e66d98a538767b1823086a035306`.
+
+tool: Python 3.12.3, pytest 9.2.0, pytest-cov 7.1.0, and Hypothesis 6.170.15. Human-executed test run on November 23, 2026. ChatGPT assisted with coverage analysis and documentation.
+
+prompts: ChatGPT guidance for final Milestone 2 coverage verification and interpretation of uncovered statements. No agent-generated implementation changes.
+
+review: The human executed the complete test suite with statement and branch coverage enabled and an enforced minimum coverage threshold of 80%. The coverage report was reviewed to identify uncovered statements and evaluate whether they represented material gaps in the approved S-6 scope.
+
+checks: Executed `python -m pytest --cov=app --cov-branch --cov-report=term-missing --cov-fail-under=80`. All 202 tests passed, including five S-6 acceptance tests and two property-based tests. Combined coverage was 94.34%, exceeding the required threshold by 14.34 percentage points. Execution completed in 539.40 seconds with one deprecation warning.
+
+evidence: `evidence/coverage.txt` contains the original test execution output, module-level coverage, missing statements, partial branches, and successful coverage threshold verification.
+
+risk: Coverage does not prove complete business-rule correctness or assertion strength. The production clock wrapper remains uncovered because tests use a deterministic clock. The placeholder Stripe processor remains uncovered because live payment-provider integration is outside the approved scope. The Starlette dependency warning remains a future maintenance consideration.
+
