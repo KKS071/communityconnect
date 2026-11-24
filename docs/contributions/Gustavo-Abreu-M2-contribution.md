@@ -3,12 +3,41 @@
 Name / UCID: Gustavo Abreu / GA424
 
 ## Personal authorship
-As project lead, I helped coordinate Milestone 2 deliverables and review team documentation. I focused on how the S-6 payment workflow was described, especially **AC-22: declined-payment retry behavior**—a failed payment remains eligible for retry according to the configured delay rather than being treated as paid. Relevant files to identify or confirm my edits in are `docs/design/S-6.md`, `docs/requirements/backlog.md`, and `README.md`. I will name the exact sections I personally authored before signing.
+
+As project lead, I contributed to Milestone 2 coordination, requirements documentation, and review of the S-6 scheduled monthly payment workflow. My primary area of focus was AC-22, which defines declined-payment handling and retry behavior according to the configured retry delay.
+
+My documentation and review activities focused on the following project artifacts:
+
+- `docs/design/S-6.md` — payment failure handling, retry rules, and design decisions.
+- `docs/requirements/backlog.md` — AC-22 acceptance criterion.
+- `docs/requirements/traceability.md` — requirements-to-test mapping.
+- `README.md` — application documentation and demonstration instructions.
 
 ## AI-assisted authorship
-I helped evaluate AI-assisted proposals concerning payment behavior and documentation. Relevant project prompts include `prompts/75-Milestone-2-Acceptance-Test-Audit.md`, `prompts/77-Milestone-2-Acceptance-Test-Doc-Sync.md`, and `prompts/80-Milestone-2-GREEN-REFACTOR-Evidence-Audit.md`. 
+
+I participated in evaluating AI-assisted documentation and implementation proposals, particularly those concerning failed-payment processing, retry eligibility, and alignment between the implementation and approved requirements.
+
+Relevant AI-assisted development records include:
+
+- `prompts/75-Milestone-2-Acceptance-Test-Audit.md`
+- `prompts/77-Milestone-2-Acceptance-Test-Doc-Sync.md`
+- `prompts/80-Milestone-2-GREEN-REFACTOR-Evidence-Audit.md`
+- `evidence/delegation/ac22-code-review-v2.txt`
+
+These records provide supporting context for the team's implementation and review activities.
 
 ## Review
-I reviewed selected S-6 documentation or patch proposals against the intended retry behavior in AC-22 and the corresponding acceptance test in `tests/acceptance/test_s6_acceptance.py`.
 
-Signed: Gustavo Abreu   Date: 11/23/2026
+I reviewed selected S-6 documentation and patch proposals against the intended AC-22 retry behavior. My review focused on ensuring that a declined payment remains Failed, that a retry does not occur before the configured delay, and that the subsequent attempt is recorded separately.
+
+Relevant implementation and verification artifacts include:
+
+- `app/payments.py`
+- `app/db.py`
+- `app/settings.py`
+- `tests/acceptance/test_s6_acceptance.py::test_ac22_declined_charge_retried_after_delay`
+- AC-22 implementation commit `719aecc`
+
+Signed: [Gustavo Abreu]
+
+Date: [23 Nov 2026]

@@ -22,7 +22,7 @@ Milestone 1 implemented S-1, maintenance request submission and tracking. Milest
 | D4 — Implementation and Demonstration | `docs/plans/S-6-plan.md`, `app/`, `evidence/green.txt`, `evidence/refactor.txt`, `evidence/delegation/`, `evidence/demo-s6.txt`, `evidence/screens/`, `README.md`, `m2-green` | Implementation and acceptance demonstration completed; delegation, refactoring, and API screenshot limitations disclosed |
 | D5 — Test Strength and Traceability | `tests/`, `evidence/properties.txt`, `evidence/coverage.txt`, `evidence/mutation-before.txt`, `evidence/mutation-after.txt`, `docs/audits/mutation-summary.md`, `docs/requirements/traceability.md` | 202 tests passed; 94.34% coverage; selected mutation score 93.33%; integration and traceability documented |
 | D6 — Headless Reviewer | `scripts/review_story.sh`, `agent/review-schema.json`, `evidence/headless-review.json` | Completed; pass verdict and both finding-resolution commits documented |
-| D7 — AI-Assisted Development Ledger | `LEDGER.md`, `prompts/`, `agent-patches/` | Development provenance recorded; final demonstration entry and ledger verification pending |
+| D7 — AI-Assisted Development Ledger | `LEDGER.md`, `prompts/`, `agent-patches/` | Development provenance documented through Entry 79, including final demonstration evidence and commit references |
 | D8 — Consolidated Report | `MILESTONE2.md`, `docs/M2-team-reflection.md` | Report substantially completed; final team confirmation and submission verification pending |
 | D9 — Individual Contributions | `docs/contributions/` | Contribution statements committed; individual approval and signatures require confirmation |
 
@@ -60,21 +60,27 @@ The reflection and contribution documents were committed in `54db6d3`.
 
 ### Milestone 2 Responsibility Mapping
 
-| Activity | Responsible Team Member(s) |
-|---|---|
-| Agent configuration and safety setup | Pending team confirmation |
-| Acceptance-test preparation and review | Pending team confirmation |
-| Implementation and agent task management | Pending team confirmation |
-| Test strengthening and mutation testing | Pending team confirmation |
-| Documentation and final submission review | Pending team confirmation |
+| Activity | Responsible Team Member(s) | Responsibilities and Supporting Evidence |
+|---|---|---|
+| Project coordination and deliverable management | Gustavo Abreu (Lead); Kundan Singh and Sandeep Garg (Support) | Coordinating project activities, reviewing documentation, and monitoring Milestone 2 deliverables. References: `MILESTONE2.md`, `README.md`. |
+| Agent configuration and safety setup | Sandeep Garg (Lead) | Coordinating agent configuration, permission restrictions, acceptance-test protection, and safety verification. References: `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.claude/agents/`, `evidence/permission-denied.md`. |
+| Requirements and acceptance-test preparation | Kundan Singh (Lead); Gustavo Abreu and Sandeep Garg (Support) | Reviewing requirements, acceptance criteria, design decisions, and test alignment. References: `docs/requirements/backlog.md`, `docs/design/S-6.md`, `docs/requirements/traceability.md`, `evidence/test-audit.md`. |
+| AC-18 through AC-21 requirements and implementation review | Kundan Singh (Lead) | Reviewing schedule creation, exactly-once payment processing, interruption recovery, and manual-payment duplicate prevention. Reference: `tests/acceptance/test_s6_acceptance.py`. |
+| AC-22 requirements and implementation review | Gustavo Abreu (Lead) | Reviewing declined-payment handling, retry eligibility, configured retry delays, and payment-history verification. References: `docs/design/S-6.md`, `app/payments.py`, `app/settings.py`, `evidence/delegation/ac22-code-review-v2.txt`, commit `719aecc`. |
+| Implementation and AI-agent task management | Sandeep Garg (Lead); Gustavo Abreu and Kundan Singh (Supporting Review) | Coordinating bounded agent prompts, implementation proposals, patch reviews, and Git traceability. References: `prompts/`, `agent-patches/`, `LEDGER.md`, `docs/plans/S-6-plan.md`. |
+| Test strengthening and mutation testing | Sandeep Garg (Lead) | Conducting mutation-testing comparisons, survivor analysis, regression-test strengthening, and coverage verification. References: `docs/audits/mutation-summary.md`, `evidence/mutation-before.txt`, `evidence/mutation-after.txt`, `evidence/coverage.txt`, LEDGER Entries 69–75. |
+| Independent review and final quality verification | Sandeep Garg, Kundan Singh, and Gustavo Abreu | Reviewing AI-generated proposals, acceptance-test integrity, requirements consistency, and final verification evidence. References: `evidence/headless-review.json`, `evidence/test-audit.md`, `evidence/green.txt`, `tests/acceptance/`. |
+| Documentation and final submission preparation | All team members | Gustavo coordinated project documentation; Kundan reviewed requirements and acceptance-criterion alignment; Sandeep maintained the development ledger, Git traceability, testing evidence, and consolidated report. References: `MILESTONE2.md`, `LEDGER.md`, `README.md`, `docs/M2-team-reflection.md`, `docs/contributions/`. |
+
+The responsibility mapping distinguishes primary ownership from supporting review activities. All team members participated in reviewing AI-assisted work within their respective areas of responsibility.
+
+Detailed personal authorship, AI-assisted authorship, and review activities are documented in the individual contribution statements. Referenced project artifacts provide supporting evidence and do not imply exclusive personal authorship of every listed file.
 
 ## 3. Milestone 1 Follow-up and Selected Story
 
 ### 3.1 Milestone 1 Feedback
 
-Pending confirmation of professor feedback and the corresponding team responses.
-
-Each feedback item will be documented together with the action taken to address it.
+No items.
 
 ### 3.2 Selected Story — S-6
 
@@ -678,15 +684,15 @@ Each team member must verify that their statement accurately identifies personal
 - [x] Mutation survivor dispositions verified against the mutation-testing summary.
 - [x] Mutation score improved from 83.33% to 93.33% across 30 selected mutants.
 - [ ] Milestone 1 feedback responses completed.
-- [ ] Team responsibility mapping confirmed.
+- [x] Team responsibility mapping confirmed.
+- [x] Individual contribution signatures verified.
 - [ ] Deferred audit findings approved by the team.
 - [ ] Individual API outcome and error-state screenshots completed.
-- [ ] Ledger Entry 79 committed with demonstration evidence and commit references.
+- [x] Ledger Entry 79 committed with demonstration evidence and commit references.
 - [x] Exact integration-test names and component boundaries documented.
 - [x] Required `evidence/mutation-before.txt` filename provided.
 - [x] Requirements traceability matrix completed and reconciled with the S-6 design; consolidated passing commit verified, with individual first-passing commit limitations disclosed.
 - [x] Complete team-approved reflection inserted into this report.
-- [ ] Individual contribution signatures verified.
 - [x] Deliverable mapping table synchronized with final evidence.
 - [ ] All unresolved documentation placeholders reviewed.
 - [ ] Final protected-file integrity verification completed.
