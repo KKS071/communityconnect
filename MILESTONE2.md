@@ -275,16 +275,66 @@ These results describe recorded runs and do not represent a new verification per
 |---|---|---|
 | Acceptance tests | Verify AC-18 through AC-22 | `tests/acceptance/test_s6_acceptance.py` |
 | Unit and regression tests | Verify payment behavior and edge cases | `tests/test_s6_payments.py` |
-| Integration tests | Verify interactions between application components | Exact test names pending verification |
+| Integration tests | Verify actual FastAPI, payment-processing, and PostgreSQL interactions | Five S-6 acceptance tests documented in Section 5.3 |
 | Property-based tests | Verify payment invariants across generated inputs | `evidence/properties.txt` |
 | Mutation tests | Evaluate the ability of tests to detect introduced defects | `evidence/mutation-baseline.txt`, `evidence/mutation-after.txt` |
 | Refactoring verification | Verify behavior after post-green refactoring | `evidence/refactor.txt` |
 
 ### 5.3 Integration Testing
 
-The application integrates scheduled payment-processing logic with PostgreSQL-backed persistence.
+The S-6 integration tests verify interactions between the FastAPI application, scheduled payment-processing logic, and PostgreSQL persistence.
 
-The integration-test names, two participating components, and confirmation that no mock replaces the boundary between those components will be recorded after final test inspection.
+The tests use the actual application created through `app.main.create_app()` and communicate with its API through FastAPI's TestClient. Database operations are executed against a real PostgreSQL test database using psycopg.
+
+#### Integrated Components
+
+| Component | Responsibility |
+|---|---|
+| `app/main.py` | API request handling, schedule creation, and payment-history retrieval |
+| `app/payments.py` | Scheduled payment processing, duplicate prevention, recovery, and retry behavior |
+| `app/db.py` | Database operations, transaction handling, and persistent payment records |
+| PostgreSQL | Storage and retrieval of schedules, units, communities, and payment records |
+
+#### Verified Integration Tests
+
+The following tests are located in `tests/acceptance/test_s6_acceptance.py`.
+
+| Integration Test | Integrated Components | Verified Behavior |
+|---|---|---|
+| `test_ac18_schedule_shown_on_payments_page` | FastAPI and PostgreSQL | Creates and retrieves a persisted ACH schedule through the API, verifies schedule attributes, and confirms the payment token is not exposed. |
+| `test_ac19_due_day_charges_exactly_once` | Payment runner, PostgreSQL, and FastAPI | Processes a scheduled debit payment, verifies the persisted payment history, and confirms that a second run does not create a duplicate payment. |
+| `test_ac20_restart_mid_run_keeps_one_payment` | Payment runner, PostgreSQL, and FastAPI | Simulates interrupted payment processing and verifies that replay preserves a single Paid payment and consistent idempotency keys. |
+| `test_ac21_manual_payment_prevents_scheduled_charge` | Manual payment recording, payment runner, and PostgreSQL | Verifies that a recorded manual payment prevents a subsequent scheduled charge and remains visible in payment history. |
+| `test_ac22_declined_charge_retried_after_delay` | Payment runner, PostgreSQL, and FastAPI | Verifies persisted failed-payment history, enforcement of the configured retry delay, and creation of the subsequent retry attempt. |
+
+#### Integration Boundary and Test Isolation
+
+The `db_schema` fixture in `tests/conftest.py` establishes a real PostgreSQL connection. Each test receives an isolated database schema, which is removed after execution.
+
+The `world` fixture initializes the FastAPI application and creates representative communities, users, units, and memberships using `app/seed.py`.
+
+The S-6 fixtures and API helpers in `tests/acceptance/s6_support.py` provide deterministic dates, test payment schedules, and payment-history retrieval.
+
+No mock replaces the database boundary between the application and PostgreSQL. FakeProcessor substitutes only for the external payment provider. The clock is controlled to make scheduling and retry behavior reproducible.
+
+Therefore, these tests establish integration between actual application components and persistent database storage without requiring a live payment provider.
+
+#### Execution Results
+
+All five integration scenarios passed during the final regression execution and individual acceptance demonstration.
+
+Supporting evidence:
+
+- `tests/conftest.py`
+- `tests/acceptance/s6_support.py`
+- `tests/acceptance/test_s6_acceptance.py`
+- `evidence/green.txt`
+- `evidence/coverage.txt`
+- `evidence/demo-s6.txt`
+
+The final regression execution reported 202 passing tests and 94.34% combined statement and branch coverage.
+
+Live payment-provider integration, actual operating-system process restart, and concurrent payment-run orchestration remain outside the verified integration scope.
 
 ### 5.4 Test Coverage and Quality Gate
 
@@ -608,7 +658,7 @@ Each team member must verify that their statement accurately identifies personal
 - [ ] Deferred audit findings approved by the team.
 - [ ] Individual API outcome and error-state screenshots completed.
 - [ ] Ledger Entry 79 committed with demonstration evidence and commit references.
-- [ ] Exact integration-test names and component boundaries documented.
+- [x] Exact integration-test names and component boundaries documented.
 - [ ] Required `evidence/mutation-before.txt` filename provided.
 - [x] Requirements traceability matrix completed and reconciled with the S-6 design; consolidated passing commit verified, with individual first-passing commit limitations disclosed.
 - [ ] Complete team-approved reflection inserted into this report.
