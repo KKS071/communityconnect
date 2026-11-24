@@ -1,0 +1,80 @@
+I found no blockers. The patch should apply with `git apply` at the expected positions. Two items should be fixed first: the §5 hunk in S-6.md has no leading context, and the Step 1 clarification paragraph in S-6.md is now stale. Further human approval is required before the patch is applied. I only read files: nothing was run, edited or applied, and nothing in this review shows the tests pass.
+
+**Files reviewed**
+- /home/garsande/CommunityConnect/agent-patches/AGENT-03-AC22-retry-v2.patch
+- Baselines: /home/garsande/CommunityConnect/app/settings.py, /home/garsande/CommunityConnect/app/db.py, /home/garsande/CommunityConnect/app/payments.py, /home/garsande/CommunityConnect/docs/design/S-6.md, /home/garsande/CommunityConnect/tests/test_s6_payments.py
+- For context: /home/garsande/CommunityConnect/app/processor.py, /home/garsande/CommunityConnect/AGENTS.md, CLAUDE.md, /home/garsande/CommunityConnect/docs/plans/S-6-plan.md, /home/garsande/CommunityConnect/prompts/55-AC-22-Approved-Implementation.md, /home/garsande/CommunityConnect/prompts/56-AC-22-Retry-v2-Review.md
+- I also searched `app/` for payments SQL, including `app/main.py:196`.
+
+**1. Does the patch apply?**
+
+I checked every hunk against the committed files.
+
+- **Removed and context lines:** they match the baseline exactly in all 17 hunks. That includes the curly apostrophe in "community’s" in the §5 row, the "UTC |" ending of that row, the blank context lines, and the three blank lines after `finish_payment` (db.py 167–169).
+- **Line counts:** every hunk header agrees with its body:
+  - settings: 3/8
+  - db: 5/6, 6/17, 7/11, 8/8, 45/94, 7/7
+  - payments: 13/13, 74/91
+  - S-6.md: 5/5, 3/3, 5/6, 4/4
+  - tests: 10/10, 7/6, 3/488
+- **New-file start lines:** they follow from the earlier hunks' offsets.
+  - db.py runs +1, +12, +16, +65, giving starts at 82, 101, 124, 141 and 260.
+  - payments.py has no offset (+0).
+  - S-6.md runs 0, 0, 0, then +1, giving a start of 97.
+  - The tests file runs 0, −1, giving a start of 773.
+
+**2. File scope:** the patch touches only the five approved files. It has no changes to LEDGER.md, prompts/, AGENTS.md, CLAUDE.md or .claude/.
+
+**Findings**
+
+**SHOULD FIX 1: the S-6.md §5 hunk `@@ -38,3 +38,3 @@` has no leading context.**
+- **Under `git apply`:** a hunk must be anchored to the start of the file only when its old start line is 0 or 1. It must be anchored to the end only when it has no trailing context. Neither applies here (start line 38, two trailing lines), so git tries the exact position first. The S-6.md offset is still 0 at that point, so line 38 matches and the hunk should apply without `--unidiff-zero`. I am reasoning from git's source here, not from running it.
+- **Elsewhere it is fragile:** `git diff` never produces uneven context in the middle of a file, so this hunk was clearly edited by hand. GNU `patch` may treat a hunk with less leading than trailing context as anchored to the start of the file and then reject it or apply it with fuzz. If the file drifts, there is no leading context to locate it.
+- **Correction:** regenerate the hunk with balanced context, `@@ -36,5 +36,5 @@`. Lines 36 (Community row) and 37 (Schedule row) become leading context, then −/+ the Payment row, then the blank line and `## 6. Rules`. Have the human run `git apply --check` before applying.
+
+**SHOULD FIX 2: the Step 1 review clarification in S-6.md (line 84, not touched by the patch) is now stale.**
+- It still says "Since AGENT-03 F-01, a run's attempt 1 and `record_manual_payment` lock the same unit row … assumes PostgreSQL's default READ COMMITTED isolation".
+- After the patch, retries take the same lock (D35), and READ COMMITTED is set explicitly (D32 and `connect_read_committed`). Line 12 of the same document points readers to this paragraph.
+- **Correction:** add a hunk, for example "a run's scheduled attempt (attempt 1 or a retry) and `record_manual_payment` lock … and use READ COMMITTED set explicitly before the first query (D32)".
+
+**ACCEPTABLE items**
+
+- **Attempt-1 path is unchanged in effect.** The old check was any Paid → 'Paid', any row → 'Exists'. The new check is Paid → 'Paid', Pending → 'Exists', then attempt 1 with any row → 'Exists'. The key, amount, lock and commit-before-charge behaviour are the same. Behaviour from earlier fixes is kept:
+  - F-01: the race and during-charge tests are unchanged.
+  - F-02: `has_paid_payment` still runs first.
+  - F-03: the replay key and amount are unchanged.
+  - F-04/F-05: no API change. `main.py:196` lists explicit columns, so `failed_on` does not leak into `PaymentOut`.
+  - ACH: both `continue` guards remain.
+- **D16 counting:** `'Unchanged'` and waiting or exhausted retries are not counted, which matches Prompt 55 decision 4 and Prompt 56 decision 2.
+- **`finish_payment` stays compatible.** `failed_on` is optional and the return value is a bool. `_record_attempt` (tests line 179) ignores the return value and stores `failed_on = NULL`. That is what the legacy-row test relies on, and the F-02 tests still hold because of the Paid check.
+- **Production code always passes the date:** `_charge_pending` passes `today.isoformat()` for both scheduled charges and the D26 replay, which satisfies Prompt 56 decision 5.
+- **`record_manual_payment`** now goes through `connect_read_committed`. Its `RETURNING *` now includes `failed_on: None`; Prompt 56 decision 4 approved this and §5 documents it. No test compares the returned keys.
+- **`latest_payment`** now returns three columns. Its only production caller reads `status` and `attempt`. The F-01 monkeypatch wrappers pass the dict through unchanged.
+- **Migration:** it adds a column (`ADD COLUMN IF NOT EXISTS … CHECK`) and can be re-run, following the existing `dues_amount_cents` pattern. The CHECK constraint only applies when the column is first created. The regex accepts impossible dates such as `2026-13-45`; such a value would make `date.fromisoformat` raise and stop the run. The column can only be written by this code, so this is acceptable.
+- **`connect_read_committed`:** setting `isolation_level` on a fresh, idle psycopg 3 connection takes effect at the next `BEGIN`, before the first query, which satisfies Prompt 56 decision 1. If the assignment itself raised, the connection would not be closed; that is negligible.
+- **AGENTS.md compliance:**
+  - All SQL is in db.py and uses `%s` placeholders.
+  - Settings are read as `settings.NAME` at call time and passed into the db layer; no hard-coded values were added in `app/`.
+  - The test constants (31, `+2`) are calendar arithmetic, not policy.
+  - Only the AC-22 skip marker was removed, and its assertions are unchanged.
+- **New public db functions:** `connect_read_committed` and `payment_status` are clear names. The eligibility logic (`_retry_allowed`) lives in db.py because it must run inside the locked transaction, which is what D35 requires.
+- **Style nits:** db.py new line 60 is about 101 characters, and the baseline already has three blank lines before `pending_payments`. Neither matters.
+- **Documentation:**
+  - Line 12, line 98, the §5 row, D32 and D35 match the patched code.
+  - None of them claims the tests have passed; they defer results to a human run recorded in LEDGER.md.
+  - D35 stays within Prompts 55 and 56: OQ3 and OQ5 stay open and ACH is unchanged.
+- **Plan out of date (not in scope to fix):** S-6-plan.md still says "D1–D34" and lists no `app/db.py` for AC-22. The prompts approve the change, but the plan now lags the design.
+
+**Design references:** R1–R5, D4, D15–D17, D25–D27, D30–D32, D34, the new D35, and AGENT-03 F-01, F-02, F-03 and F-11.
+
+**Suggested corrections**
+1. Regenerate the S-6.md §5 hunk as `@@ -36,5 +36,5 @@` with two lines of context on each side, then run `git apply --check`.
+2. Add a hunk updating the Step 1 clarification paragraph (line 84) to cover retries and the explicit READ COMMITTED.
+
+**Remaining risks**
+- **Possible double charge on a conflict (F-11):** when the run stops on a conflicting result (stored as Failed, processor reports success), money may have been taken while the row says Failed with `failed_on` set. A later run could then retry with key `:2` and charge again. This only matters if D32 (single runner) is broken, but the case calls for manual handling.
+- **Concurrency is not really tested:** the READ COMMITTED test checks the connection's isolation setting before the first query, not the server's behaviour, and all race tests run in one process.
+- **Some guarantees rest on D32:** `payment_status` is read in its own transaction, so the agree/conflict decision relies on the single-runner assumption.
+- **Not verified:** whether empty lines in the patch are bare (git accepts them as blank context) and whether the file ends with a newline. The read tool does not show trailing whitespace.
+
+**Human approval:** Required. A human needs to approve the patch (ideally after the two fixes), run `git apply --check`, apply it, run `python -m pytest`, and record the results in LEDGER.md. The out-of-date plan is a separate decision for the human.

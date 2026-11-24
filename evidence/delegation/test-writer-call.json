@@ -1,0 +1,15 @@
+[
+  {
+    "type": "tool_use",
+    "id": "toolu_01Qk4MWCPKX79QFVyEdS2GkA",
+    "name": "Agent",
+    "input": {
+      "description": "Read-only acceptance-test audit",
+      "subagent_type": "test-writer",
+      "prompt": "READ-ONLY AUDIT. Do not edit or write any file, do not create patches, and do not run any command (do not use Bash, Edit or Write at all). Use only Read, Grep and Glob.\n\nProject: CommunityConnect (/home/garsande/CommunityConnect). Audit the existing acceptance tests for S-1 AC-1..AC-6 and S-6 AC-18..AC-22 before they are moved to tests/acceptance/ and locked.\n\nSources: docs/requirements/backlog.md (AC wording; note AC-18 was amended by human decision on 2026-11-23 to check the JSON response of GET .../payment-schedules/mine: method \"ach\", day_of_month 5, active true), docs/design/S-1.md, docs/design/S-6.md (sections 4-9, including settled OQ1-OQ5 and D10 defining \"payment history\" as GET /communities/{id}/payments?month= for R1), docs/requirements/traceability.md, tests/test_s1_requests.py, tests/test_s6_payments.py, tests/conftest.py, tests/helpers.py, pytest.ini.\n\nTask 1: For each of the 11 ACs, give story, AC ID, test function name, file:line, design/backlog reference, any skip/xfail marker, and whether its assertions match the approved AC wording.\n\nTask 2: For each of the 11 acceptance tests, check: expected values follow from the AC (not implementation); observable behavior; assertions specific enough (flag asserts that only check type or length); needed positive/negative/authorization/boundary coverage for that AC; fixture/setup appropriateness (note s6 fixture calls processor.set_processor and never restores it, F-16); no weakening of the AC; independence and repeatability. For S-6 specifically check AC-18 JSON fields, AC-19 exactly-once and DUES_AMOUNT_CENTS, AC-20 restart/idempotency key reuse, AC-21 manual payment prevents charge, AC-22 decline, retry delay (settings-driven) and retry attempts. Respect OQ1-OQ5 decisions; do not invent policy.\n\nTask 3: Identify which helpers/fixtures/constants the 11 acceptance tests depend on (names and file:line), so they can be moved to tests/acceptance/ without changing assertions. Note anything shared with non-acceptance tests in the same file and any pytest collection issues (conftest location, tests/__init__.py, rootdir/testpaths, duplicate module basenames).\n\nReturn findings in this format: file, line, AC ID, severity (blocking or minor), problem, recommended correction. Then a one-paragraph summary. Stop after one pass."
+    },
+    "caller": {
+      "type": "direct"
+    }
+  }
+]
