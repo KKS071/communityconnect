@@ -25,7 +25,8 @@
       "Edit(./tests/__init__.py)",
       "Edit(./conftest.py)",
       "Edit(./pytest.ini)",
-      "NotebookEdit"
+      "NotebookEdit",
+      "Edit(./tests/helpers.py)"
     ]
   }
 }
