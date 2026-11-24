@@ -16,7 +16,7 @@ Milestone 1 implemented S-1, maintenance request submission and tracking. Milest
 
 | Deliverable | Repository Artifact / Evidence | Status |
 |---|---|---|
-| D1 — Requirements and Design | `docs/design/S-6.md`, `docs/requirements/backlog.md`, `docs/design/S-6-gap-check-2.md` | Design and open-question decisions documented; M1 feedback confirmation pending |
+| D1 — Requirements and Design | `docs/design/S-6.md`, `docs/requirements/backlog.md`, `docs/design/S-6-gap-check-2.md` | Selected story, stakeholder evidence, acceptance criteria, and design decisions documented; no M1 feedback items reported |
 | D2 — Agent Configuration and Safety | `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.claude/agents/`, `evidence/permission-denied.md` | Configuration and permission enforcement documented |
 | D3 — Acceptance Tests and Test Lock | `tests/acceptance/`, `evidence/test-audit.md`, `evidence/red.txt`, `m2-tests-locked` | Audit and lock evidence available; historical chronology and deferred findings disclosed |
 | D4 — Implementation and Demonstration | `docs/plans/S-6-plan.md`, `app/`, `evidence/green.txt`, `evidence/refactor.txt`, `evidence/delegation/`, `evidence/demo-s6.txt`, `evidence/screens/`, `README.md`, `m2-green` | Implementation and acceptance demonstration completed; delegation, refactoring, and API screenshot limitations disclosed |
@@ -24,7 +24,7 @@ Milestone 1 implemented S-1, maintenance request submission and tracking. Milest
 | D6 — Headless Reviewer | `scripts/review_story.sh`, `agent/review-schema.json`, `evidence/headless-review.json` | Completed; pass verdict and both finding-resolution commits documented |
 | D7 — AI-Assisted Development Ledger | `LEDGER.md`, `prompts/`, `agent-patches/` | Development provenance documented through Entry 79, including final demonstration evidence and commit references |
 | D8 — Consolidated Report | `MILESTONE2.md`, `docs/M2-team-reflection.md` | Report substantially completed; final team confirmation and submission verification pending |
-| D9 — Individual Contributions | `docs/contributions/` | Contribution statements committed; individual approval and signatures require confirmation |
+| D9 — Individual Contributions | `docs/contributions/` | Three signed and dated contribution statements with specific artifact, prompt, test, and commit references |
 
 ### Git Milestone Tags
 
@@ -84,23 +84,54 @@ No items.
 
 ### 3.2 Selected Story — S-6
 
-**Story:** Scheduled Monthly HOA Dues Payments
+**Story ID:** S-6
 
-**User Story:** As a homeowner, I want to schedule monthly HOA dues payments so that I can pay my community dues conveniently and avoid duplicate or missed payments.
+**Story Title:** Scheduled monthly dues payment
 
-The authoritative story, evidence IDs, and acceptance criteria are maintained in `docs/requirements/backlog.md` and `docs/design/S-6.md`.
+**User Story:**
+
+As a resident, I want my monthly HOA fee paid automatically by ACH, debit card or credit card on a day I choose, so that I do not miss a due date.
+
+**Stakeholder Evidence IDs:** E-9, E-21.
+
+**Requirements Source:** `docs/requirements/backlog.md`
+
+**Design Specification:** `docs/design/S-6.md`
+
+**Requirements Finalization:** `docs/reviews/S-6-requirements-finalization.md`
+
+**Requirements Traceability:** `docs/requirements/traceability.md`
+
+#### Implementation Scope
+
+In Milestone 1, S-6 was a design-and-test-only story, and all five acceptance tests were skipped. In Milestone 2, S-6 was implemented, and all five acceptance tests passed.
+
+AC-18 covers ACH schedule creation and display only. AC-19 through AC-22 use debit schedules with FakeProcessor to verify scheduled payment processing, duplicate prevention, interruption recovery, and retry behavior.
+
+Automatic ACH settlement and real payment-provider integration remain outside the implemented scope.
 
 ### 3.3 Acceptance Criteria
 
-| Criterion | Functionality |
-|---|---|
-| AC-18 | Create and display a monthly ACH payment schedule through the API |
-| AC-19 | Process a scheduled debit payment and record its payment history |
-| AC-20 | Prevent duplicate monthly charges after an interrupted or restarted run |
-| AC-21 | Avoid charging a unit already paid manually |
-| AC-22 | Record a failed charge and support the defined retry behavior |
+The following acceptance criteria reproduce the approved requirements maintained in `docs/requirements/backlog.md`.
 
-ACH schedule creation is supported, but automatic ACH settlement is outside the implemented scope. Real bank-account integration is not included.
+| AC ID | Given | When | Then |
+|---|---|---|---|
+| AC-18 | R1 has saved a test bank account | R1 schedules payment on day 5 of each month by ACH | The JSON response of R1's `GET .../payment-schedules/mine` shows `method` `"ach"`, `day_of_month` `5` and `active` `true`. |
+| AC-19 | R1's payment is scheduled for day 5 and unit 12 has no payment for the month | The daily payment run happens on day 5 | R1's payment history shows exactly one payment for that month, marked Paid, for Mountain Ridge's DUES_AMOUNT_CENTS. |
+| AC-20 | The payment run on day 5 is interrupted and restarted after R1 was charged | The restarted run finishes | R1's payment history still shows exactly one payment for that month. |
+| AC-21 | The manager recorded a check payment for unit 12 for this month | The payment run happens on day 5 | No scheduled charge is made and the history shows one payment for the month. |
+| AC-22 | The test processor declines R1's charge on day 5 | RETRY_DELAY_DAYS have passed | R1's payment history shows the first attempt as Failed and one retry attempt. |
+
+#### Acceptance-Criterion Clarifications
+
+- AC-18 was amended by human decision on November 23, 2026, to replace the original Payments page display-text requirement with the implemented API response contract.
+- AC-18 uses an opaque test token rather than a real bank account.
+- AC-19 verifies exactly-once payment persistence, including repeated execution of the payment runner.
+- AC-20 simulates interruption and replay using the same fake processor and idempotency key rather than restarting an operating-system process.
+- AC-21 verifies that an existing manual payment prevents a duplicate scheduled charge.
+- AC-22 uses the named policy settings `RETRY_DELAY_DAYS` and `MAX_PAYMENT_ATTEMPTS`.
+
+All five acceptance criteria are mapped to automated tests and implementation commits in Section 5.8. Their consolidated passing results are recorded in `evidence/green.txt`, `evidence/coverage.txt`, and `evidence/demo-s6.txt`.
 
 ### 3.4 Design Decisions and Open Questions
 
@@ -191,6 +222,8 @@ The command returned no differences.
 The original audit also identified a reviewer-agent naming conflict. The subsequent headless review successfully delegated to the configured reviewer subagent, as documented in Section 6.
 
 The red-to-green evidence is a historical reconstruction because the original S-6 implementation preceded the formal Milestone 2 acceptance-test lock. This limitation is disclosed rather than presented as an original chronological red-to-green development sequence.
+
+The team reviewed the acceptance-test audit findings and approved the documented dispositions on November 23, 2026. Deferred recommendations remain documented as potential future test-strengthening activities. The team agreed not to modify or weaken the formally locked acceptance tests solely to address optional assertion improvements. The historical audit chronology and remaining verification limitations are explicitly disclosed.
 
 ### 4.3 Test Lock and Red-to-Green Development
 
@@ -683,10 +716,10 @@ Each team member must verify that their statement accurately identifies personal
 - [x] Uncovered coverage statements analyzed and documented.
 - [x] Mutation survivor dispositions verified against the mutation-testing summary.
 - [x] Mutation score improved from 83.33% to 93.33% across 30 selected mutants.
-- [ ] Milestone 1 feedback responses completed.
+- [x] Milestone 1 feedback responses completed; no items reported.
 - [x] Team responsibility mapping confirmed.
 - [x] Individual contribution signatures verified.
-- [ ] Deferred audit findings approved by the team.
+- [x] Deferred audit findings approved by the team.
 - [ ] Individual API outcome and error-state screenshots completed.
 - [x] Ledger Entry 79 committed with demonstration evidence and commit references.
 - [x] Exact integration-test names and component boundaries documented.
