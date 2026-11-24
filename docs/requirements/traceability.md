@@ -1,37 +1,55 @@
 # Deliverable 7: Traceability matrix
 
-The test names for S-1 and S-6 are the names in each design doc’s section 9. All eleven existed in the repository at the Milestone 1 submitted commit (checked then with `python -m pytest --collect-only -q`); this check has not been repeated for Milestone 2.
+The test names for S-1 and S-6 are the names in each design doc’s section 9. All eleven existed in the repository at the Milestone 1 submitted commit (checked then with `python -m pytest --collect-only -q`); Milestone 2 execution results are recorded in `evidence/coverage.txt` and `evidence/demo-s6.txt`.
 
-**S-6 Milestone 2 status:** The six S-1 AC tests concern the Milestone 1 story. S-6 is implemented, and its five AC-18–AC-22 test functions are no longer skipped; whether they pass is recorded only by human test runs in LEDGER.md, so this matrix proves traceability, not passing payment behavior. The five S-6 acceptance tests were moved to `tests/acceptance/test_s6_acceptance.py` with their assertions unchanged, and their paths below are updated; the S-6 regression tests remain in `tests/test_s6_payments.py` and are not acceptance criteria. The acceptance tests have not yet been locked. Open questions OQ1–OQ5 are settled by documented human decisions (`docs/design/S-6.md` §8). AC-18 was amended by human approval on 2026-11-23 to verify the JSON response of `GET .../payment-schedules/mine` (`method` "ach", `day_of_month` 5, `active` true) instead of display text (`docs/requirements/backlog.md`, AC-18; S-6 D10). AC-18 covers ACH scheduling and display only; automatic ACH charging and settlement are deferred, and D34 uses debit schedules for AC-19–AC-22. Existing AC IDs and evidence references below remain unchanged. `docs/reviews/S-6-requirements-finalization.md` is the Step 1 review record.
+**S-6 Milestone 2 status:** The six S-1 AC tests concern the Milestone 1 story. S-6 is implemented, and its five AC-18–AC-22 test functions are no longer skipped; whether they pass is recorded only by human test runs in LEDGER.md, so this matrix proves traceability, not passing payment behavior. The five S-6 acceptance tests were moved to `tests/acceptance/test_s6_acceptance.py` with their assertions unchanged, and their paths below are updated; the S-6 regression tests remain in `tests/test_s6_payments.py` and are not acceptance criteria. The S-6 acceptance tests were formally locked at commit `b46269f` using the `m2-tests-locked` tag. Open questions OQ1–OQ5 are settled by documented human decisions (`docs/design/S-6.md` §8). AC-18 was amended by human approval on 2026-11-23 to verify the JSON response of `GET .../payment-schedules/mine` (`method` "ach", `day_of_month` 5, `active` true) instead of display text (`docs/requirements/backlog.md`, AC-18; S-6 D10). AC-18 covers ACH scheduling and display only; automatic ACH charging and settlement are deferred, and D34 uses debit schedules for AC-19–AC-22. Existing AC IDs and evidence references below remain unchanged. `docs/reviews/S-6-requirements-finalization.md` is the Step 1 review record.
 
-| Evidence ID      | Story ID | AC ID | Test name                                                                           |
-|------------------|----------|-------|-------------------------------------------------------------------------------------|
-| E-1, E-2, E-12   | S-1      | AC-1  | tests/test_s1_requests.py::test_ac1_resident_submits_request_shown_as_open          |
-| E-1, E-12        | S-1      | AC-2  | tests/test_s1_requests.py::test_ac2_blank_description_rejected_and_list_unchanged   |
-| E-1, E-12        | S-1      | AC-3  | tests/test_s1_requests.py::test_ac3_other_community_resident_does_not_see_request   |
-| E-1, E-12        | S-1      | AC-4  | tests/test_s1_requests.py::test_ac4_other_community_direct_id_returns_not_found     |
-| E-1, E-12        | S-1      | AC-5  | tests/test_s1_requests.py::test_ac5_neighbor_in_same_community_does_not_see_request |
-| E-2, E-12        | S-1      | AC-6  | tests/test_s1_requests.py::test_ac6_resident_sees_in_progress_status                |
-| E-1, E-12        | S-2      | AC-7  | Not yet written                                                                     |
-| E-2              | S-2      | AC-8  | Not yet written                                                                     |
-| E-1              | S-2      | AC-9  | Not yet written                                                                     |
-| E-3              | S-2      | AC-10 | Not yet written                                                                     |
-| E-3              | S-3      | AC-11 | Not yet written                                                                     |
-| E-3              | S-3      | AC-12 | Not yet written                                                                     |
-| E-5, E-20        | S-4      | AC-13 | Not yet written                                                                     |
-| E-5              | S-4      | AC-14 | Not yet written                                                                     |
-| E-6              | S-4      | AC-15 | Not yet written                                                                     |
-| E-4, E-13        | S-5      | AC-16 | Not yet written                                                                     |
-| E-4              | S-5      | AC-17 | Not yet written                                                                     |
-| E-21             | S-6      | AC-18 | tests/acceptance/test_s6_acceptance.py::test_ac18_schedule_shown_on_payments_page |
-| E-21             | S-6      | AC-19 | tests/acceptance/test_s6_acceptance.py::test_ac19_due_day_charges_exactly_once |
-| E-9              | S-6      | AC-20 | tests/acceptance/test_s6_acceptance.py::test_ac20_restart_mid_run_keeps_one_payment |
-| E-9              | S-6      | AC-21 | tests/acceptance/test_s6_acceptance.py::test_ac21_manual_payment_prevents_scheduled_charge |
-| E-21             | S-6      | AC-22 | tests/acceptance/test_s6_acceptance.py::test_ac22_declined_charge_retried_after_delay |
-| E-7, E-17        | S-7      | AC-23 | Not yet written                                                                     |
-| E-16             | S-7      | AC-24 | Not yet written                                                                     |
-| E-7              | S-7      | AC-25 | Not yet written                                                                     |
-| E-14, E-15       | S-8      | AC-26 | Not yet written                                                                     |
-| E-11             | S-9      | AC-27 | Not yet written                                                                     |
-| E-19             | S-10     | AC-28 | Not yet written                                                                     |
-| A-5 (Assumption) | S-11     | AC-29 | Not yet written                                                                     |
+| Evidence ID      | Story ID | AC ID | Test name                                                                           | Implementation commit |
+|------------------|----------|-------|-------------------------------------------------------------------------------------|-----------------------|
+| E-1, E-2, E-12   | S-1      | AC-1  | tests/test_s1_requests.py::test_ac1_resident_submits_request_shown_as_open          | — |
+| E-1, E-12        | S-1      | AC-2  | tests/test_s1_requests.py::test_ac2_blank_description_rejected_and_list_unchanged   | — |
+| E-1, E-12        | S-1      | AC-3  | tests/test_s1_requests.py::test_ac3_other_community_resident_does_not_see_request   | — |
+| E-1, E-12        | S-1      | AC-4  | tests/test_s1_requests.py::test_ac4_other_community_direct_id_returns_not_found     | — |
+| E-1, E-12        | S-1      | AC-5  | tests/test_s1_requests.py::test_ac5_neighbor_in_same_community_does_not_see_request | — |
+| E-2, E-12        | S-1      | AC-6  | tests/test_s1_requests.py::test_ac6_resident_sees_in_progress_status                | — |
+| E-1, E-12        | S-2      | AC-7  | Not yet written                                                                     | — |
+| E-2              | S-2      | AC-8  | Not yet written                                                                     | — |
+| E-1              | S-2      | AC-9  | Not yet written                                                                     | — |
+| E-3              | S-2      | AC-10 | Not yet written                                                                     | — |
+| E-3              | S-3      | AC-11 | Not yet written                                                                     | — |
+| E-3              | S-3      | AC-12 | Not yet written                                                                     | — |
+| E-5, E-20        | S-4      | AC-13 | Not yet written                                                                     | — |
+| E-5              | S-4      | AC-14 | Not yet written                                                                     | — |
+| E-6              | S-4      | AC-15 | Not yet written                                                                     | — |
+| E-4, E-13        | S-5      | AC-16 | Not yet written                                                                     | — |
+| E-4              | S-5      | AC-17 | Not yet written                                                                     | — |
+| E-21             | S-6      | AC-18 | tests/acceptance/test_s6_acceptance.py::test_ac18_schedule_shown_on_payments_page | `6b1317f` |
+| E-21             | S-6      | AC-19 | tests/acceptance/test_s6_acceptance.py::test_ac19_due_day_charges_exactly_once | `ce8671e` |
+| E-9              | S-6      | AC-20 | tests/acceptance/test_s6_acceptance.py::test_ac20_restart_mid_run_keeps_one_payment | `caa65a8` |
+| E-9              | S-6      | AC-21 | tests/acceptance/test_s6_acceptance.py::test_ac21_manual_payment_prevents_scheduled_charge | `456802f` |
+| E-21             | S-6      | AC-22 | tests/acceptance/test_s6_acceptance.py::test_ac22_declined_charge_retried_after_delay | `719aecc` |
+| E-7, E-17        | S-7      | AC-23 | Not yet written                                                                     | — |
+| E-16             | S-7      | AC-24 | Not yet written                                                                     | — |
+| E-7              | S-7      | AC-25 | Not yet written                                                                     | — |
+| E-14, E-15       | S-8      | AC-26 | Not yet written                                                                     | — |
+| E-11             | S-9      | AC-27 | Not yet written                                                                     | — |
+| E-19             | S-10     | AC-28 | Not yet written                                                                     | — |
+| A-5 (Assumption) | S-11     | AC-29 | Not yet written                                                                     | — |
+
+## Milestone 2 passing evidence
+
+The implementation commits identify the corresponding
+acceptance-criterion development activities. Individual
+first-passing commits have not been independently reconstructed.
+
+All five S-6 acceptance tests passed at the consolidated
+green milestone (`m2-green`, commit `74bb7fc`).
+
+Final execution evidence is available in:
+
+- `evidence/green.txt`
+- `evidence/coverage.txt`
+- `evidence/demo-s6.txt`
+
+The final regression execution reported 202 passed
+and 94.34% combined statement and branch coverage.

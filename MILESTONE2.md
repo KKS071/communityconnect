@@ -394,15 +394,38 @@ The mutation-testing activities are documented in LEDGER Entries 69–75.
 
 ### 5.8 Requirements Traceability
 
-| Evidence ID | Story ID | AC ID | Verified Behavior | Acceptance Test Name | Passing Commit |
-|---|---|---|---|---|---|
-| Pending | S-6 | AC-18 | ACH schedule creation and display | Pending exact name | Pending |
-| Pending | S-6 | AC-19 | Scheduled debit payment processing | Pending exact name | Pending |
-| Pending | S-6 | AC-20 | Restart-safe duplicate prevention | Pending exact name | Pending |
-| Pending | S-6 | AC-21 | Manual payment prevents scheduled charge | Pending exact name | Pending |
-| Pending | S-6 | AC-22 | Failed charge and retry behavior | Pending exact name | Pending |
+The following matrix connects stakeholder evidence, the selected S-6 user story, acceptance criteria, automated acceptance tests, and implementation commits.
 
-The final traceability matrix will use the exact evidence IDs, test names, and commits that made each acceptance test pass. These entries will be reconciled with Section 9 of `docs/design/S-6.md`.
+| Evidence ID | Story ID | AC ID | Acceptance Test Name | Implementation Commit |
+|---|---|---|---|---|
+| E-21 | S-6 | AC-18 | `test_ac18_schedule_shown_on_payments_page` | `6b1317f` |
+| E-21 | S-6 | AC-19 | `test_ac19_due_day_charges_exactly_once` | `ce8671e` |
+| E-9 | S-6 | AC-20 | `test_ac20_restart_mid_run_keeps_one_payment` | `caa65a8` |
+| E-9 | S-6 | AC-21 | `test_ac21_manual_payment_prevents_scheduled_charge` | `456802f` |
+| E-21 | S-6 | AC-22 | `test_ac22_declined_charge_retried_after_delay` | `719aecc` |
+
+All five acceptance tests are located in `tests/acceptance/test_s6_acceptance.py`. Their shared fixtures and supporting functions are located in `tests/acceptance/s6_support.py`.
+
+The implementation commits identify the corresponding acceptance-criterion development activities. The first passing execution at each individual implementation commit has not been independently reconstructed.
+
+The consolidated passing milestone is verified through the following evidence:
+
+| Verification Artifact | Reference |
+|---|---|
+| Acceptance-test relocation | `7104eed` |
+| Acceptance-test lock | `b46269f52f397f0eae7f1d2b0833833eed65f222` |
+| Green milestone commit | `74bb7fcaec2b17b72738f31308fbd8de25b5d547` |
+| Green milestone tag | `m2-green` |
+| Initial failing-test evidence | `evidence/red.txt` |
+| Passing-test evidence | `evidence/green.txt` |
+| Final coverage evidence | `evidence/coverage.txt` |
+| Acceptance demonstration | `evidence/demo-s6.txt` |
+
+All five acceptance criteria passed in the final regression and coverage execution, which reported 202 passing tests and 94.34% combined statement and branch coverage. All five scenarios also passed during the individual acceptance demonstration.
+
+The traceability matrix is consistent with `docs/requirements/traceability.md` and Section 9 of `docs/design/S-6.md`.
+
+The acceptance-test assertions remained unchanged between the formal test-lock and green milestones. The historical reconstruction of the red-to-green sequence is disclosed in Section 4.
 
 ### 5.9 Known Limitations
 
@@ -587,7 +610,7 @@ Each team member must verify that their statement accurately identifies personal
 - [ ] Ledger Entry 79 committed with demonstration evidence and commit references.
 - [ ] Exact integration-test names and component boundaries documented.
 - [ ] Required `evidence/mutation-before.txt` filename provided.
-- [ ] Requirements traceability matrix completed and reconciled with the S-6 design.
+- [x] Requirements traceability matrix completed and reconciled with the S-6 design; consolidated passing commit verified, with individual first-passing commit limitations disclosed.
 - [ ] Complete team-approved reflection inserted into this report.
 - [ ] Individual contribution signatures verified.
 - [ ] Deliverable mapping table synchronized with final evidence.
