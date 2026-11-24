@@ -1356,3 +1356,19 @@ checks:
 evidence: Milestone 2 Deliverable 6a–6c; S-6; AC-18 through AC-22; D26; D34; settled OQ2. Original structured output preserved in `evidence/headless-review.json`.
 
 risk: The headless review is an AI-assisted static review, not proof of complete correctness. The reviewer examined the application files changed since `m2-tests-locked`. The original report predates the two comment corrections. The final regression and coverage checks remain to be completed against the submission commit.
+
+### Entry 77 — Historical Test-Writer Audit Recovery and Safety Verification
+
+artifact: `evidence/test-audit.md`, `evidence/delegation/`, `.claude/settings.json`, and `MILESTONE2.md`. Historical evidence recovery commit: `6f79ce31e58b2a78a485571c503f105fa42dc1c3`. Shared-helper protection commit: `0ee2a1ee6bd4ee1f2c77d4edb59884d7274428c1`.
+
+tool: Claude Code, claude-opus-5-5, historical test-writer and code-reviewer subagents. ChatGPT assisted with evidence-recovery commands, audit disposition analysis, and documentation preparation on November 23, 2026.
+
+prompts: `prompts/75-Milestone-2-Acceptance-Test-Audit.md`; historical AC-22 implementation and review prompts 54–59.
+
+review: The human recovered the original acceptance-test audit and historical delegation records from the Claude Code session. The audit identified corresponding tests for all 11 acceptance criteria, one blocking fixture-protection finding, and several minor assertion and organization findings. The current acceptance tests, shared fixtures, and permission configuration were reviewed against those findings. A missing explicit deny rule for `tests/helpers.py` was identified for correction.
+
+checks: Verified the acceptance-test relocation commit `7104eed` and test-lock commit `b46269f`. Confirmed that the five S-6 acceptance tests and shared support file remain unchanged since the lock. Verified processor fixture restoration, the amended AC-18 comment, and acceptance package organization. No locked acceptance tests were modified during evidence recovery.
+
+evidence: `evidence/test-audit.md`, `evidence/delegation/test-writer-call.json`, `evidence/delegation/test-writer-metadata.json`, `evidence/delegation/ac22-code-review-v2.txt`, `evidence/delegation/ac22-code-review-v2-metadata.json`, `tests/acceptance/test_s6_acceptance.py`, `tests/acceptance/s6_support.py`, `.claude/settings.json`, and audit finding dispositions in `MILESTONE2.md`.
+
+risk: The historical audit occurred after the original S-6 implementation but before the formal acceptance-test lock. Recovered session records are not native `/export` transcripts. Several optional assertion-strengthening recommendations remain deferred, subject to team approval. Explicit protection of `tests/helpers.py` is a post-lock safety improvement and must not be represented as an original permission control.

@@ -145,17 +145,46 @@ The configuration restricts sensitive operations, including protected acceptance
 
 ### 4.2 Acceptance-Test Audit
 
-The acceptance tests for S-6 are located in:
+The original acceptance-test audit was performed through Prompt 75 using the configured `test-writer` subagent. The audit was conducted before the acceptance-test relocation and lock, but after the original S-6 implementation.
 
-`tests/acceptance/test_s6_acceptance.py`
+The historical audit report and delegation records were subsequently recovered from the original Claude Code session.
 
-The tests cover AC-18 through AC-22.
+The audit identified corresponding tests for all 11 acceptance criteria across S-1 and S-6. No acceptance tests were skipped or marked xfail. The reviewer confirmed that expected values were derived from approved acceptance criteria, design decisions, settings, and fixture data.
 
-The test-writer audit report, individual findings, and corresponding resolutions will be included after verification of the required audit evidence.
+#### Audit Finding Dispositions
 
-| Finding | Acceptance Criterion | Disposition | Commit SHA |
+| Finding | Issue | Disposition | Evidence / Commit |
 |---|---|---|---|
-| Pending audit evidence | Pending | Pending | Pending |
+| F1 | AC-1 uses a configured category instead of literal Plumbing | Retained because S-1 D8 specifies settings-driven categories. | S-1 D8 |
+| F2 | AC-2 setup assertion could be strengthened | Deferred; no correction established by the available evidence. | S-1 acceptance tests |
+| F3 | AC-3 setup assertion could be strengthened | Deferred; no correction established by the available evidence. | S-1 acceptance tests |
+| F4 | AC-5 setup assertion could be strengthened | Deferred; no correction established by the available evidence. | S-1 acceptance tests |
+| F5 | Outdated AC-18 comment | Fixed. Comment now references amended AC-18 and D10. | `7104eed` |
+| F6 | AC-19 does not explicitly assert empty initial payment history | Deferred. Existing test verifies the resulting payment; explicit initial-state verification remains an improvement opportunity. | Locked AC-19 test |
+| F7 | AC-19 second-run assertion checks only history length | Deferred in the acceptance test. Stronger regression coverage should be evaluated separately. | Locked AC-19 test |
+| F8 | Processor state leaks between tests | Fixed through fixture teardown that restores the previous processor, including after AC-20. | `7104eed` |
+| F9 | AC-20 checks unique-key count rather than exact key and call sequence | Deferred in the acceptance test. Existing test verifies a single Paid payment and consistent observed idempotency keys. | Locked AC-20 test |
+| F10 | Manual-payment test cannot verify manager authorization or check-payment type | Retained as a known scope limitation. The test verifies manual payment recording and prevention of a subsequent scheduled charge. | AC-21, P-05 |
+| F11 | AC-22 does not explicitly verify retry date remains in December | Deferred. The existing test uses the configured retry delay; explicit month-boundary verification remains an improvement opportunity. | Locked AC-22 test |
+| F12 | Before-delay assertion checks only payment count | Deferred. The test verifies the initial Failed payment and subsequent retry attempt, but the intermediate assertion could be strengthened. | Locked AC-22 test |
+| F13 | Regression tests could be incorrectly relocated with acceptance tests | Fixed. Only the five designated S-6 acceptance tests were relocated. | `7104eed` |
+| F14 | Shared fixtures and helpers could weaken locked acceptance tests | Addressed through relocation of S-6 support files, protection of the acceptance directory and conftest, and subsequent explicit protection of `tests/helpers.py`. | `7104eed`, `b46269f`, `0ee2a1ee6bd4ee1f2c77d4edb59884d7274428c1` |
+| F15 | Acceptance-test package organization | Fixed through creation of `tests/acceptance/__init__.py` and distinct test modules. | `7104eed` |
+| F16 | AC-18 amendment date discrepancy | The repository records November 23, 2026. Human confirmation of the historical date is required. | `docs/requirements/backlog.md` |
+
+The team preserved the original acceptance-test assertions during relocation. Optional strengthening recommendations that were not implemented before the lock are documented rather than silently applied afterward.
+
+The following command confirms that the acceptance directory remains unchanged:
+
+```bash
+git diff --stat m2-tests-locked HEAD -- tests/acceptance/
+```
+
+The command returned no differences.
+
+The original audit also identified a reviewer-agent naming conflict. The subsequent headless review successfully delegated to the configured reviewer subagent, as documented in Section 6.
+
+The red-to-green evidence is a historical reconstruction because the original S-6 implementation preceded the formal Milestone 2 acceptance-test lock. This limitation is disclosed rather than presented as an original chronological red-to-green development sequence.
 
 ### 4.3 Test Lock and Red-to-Green Development
 
@@ -169,16 +198,24 @@ The acceptance-test comparison between these tags returned an empty diff, confir
 
 ### 4.4 Implementation Plan and Human Corrections
 
-The implementation plan is maintained in:
+The original team-approved implementation plan is maintained in `docs/plans/S-6-plan.md`, committed as `bd558d4`.
 
-`docs/plans/S-6-plan.md`
+During AC-22 development, AGENT-01 delegated independent analysis to the test-analyst, security-reviewer, and code-reviewer subagents. AGENT-02 subsequently investigated the retry-date design gap.
 
-The plan provides a structured approach to implementing the S-6 acceptance criteria and associated business rules.
+These reviews identified two significant corrections to the original implementation approach.
 
-| Plan Correction | Reason for Human Intervention | Evidence |
-|---|---|---|
-| Pending verification of first actual plan correction | Pending | Pending |
-| Pending verification of second actual plan correction | Pending | Pending |
+| Correction | Original Problem | Revised Implementation Approach | Evidence |
+|---|---|---|---|
+| P-01 — Retry-date persistence | The original design lacked a persisted date from which the required retry delay could be calculated. | Introduce persisted failure-date information so retry eligibility can be evaluated against the configured delay. | AGENT-01, AGENT-02, `719aecc` |
+| P-02 — Implementation file scope | The original AC-22 task omitted `app/db.py`, although retry-date persistence required database changes. | Expand the task scope to include database schema and payment-state operations. | Prompts 54–59, `719aecc` |
+
+The corrected AC-22 implementation includes changes to `app/settings.py`, `app/db.py`, `app/payments.py`, and the associated regression tests.
+
+The original plan document was not amended. The corrections were instead incorporated into the subsequent task-specific implementation and review workflow.
+
+The supporting AC-22 prompts and implementation evidence were recorded in commit `1f820df`, with post-merge documentation finalized in `17f5efc`.
+
+These corrections demonstrate the value of reviewing design completeness and implementation scope before authorizing a bounded agent task.
 
 ### 4.5 Delegation Evidence
 
