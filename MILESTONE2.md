@@ -219,11 +219,26 @@ These corrections demonstrate the value of reviewing design completeness and imp
 
 ### 4.5 Delegation Evidence
 
-The team configured specialized test-writer and reviewer subagents to separate implementation, test auditing, and review responsibilities.
+The team used specialized subagents to separate acceptance-test auditing, implementation analysis, and code review.
 
-The headless reviewer execution independently confirmed successful delegation to the reviewer subagent.
+The historical test-writer delegation performed a read-only acceptance-test audit covering the implemented S-1 and S-6 acceptance criteria. The historical code-reviewer delegation reviewed the AC-22 v2 implementation.
 
-Additional evidence demonstrating delegation during the implementation phase must be verified and included separately. The headless review does not, by itself, establish that delegation occurred during the original build phase.
+Both subagent metadata records confirm completed execution using claude-opus-5-5.
+
+| Delegation | Evidence |
+|---|---|
+| Acceptance-test audit | `evidence/test-audit.md` |
+| Test-writer invocation | `evidence/delegation/test-writer-call.json` |
+| Test-writer execution metadata | `evidence/delegation/test-writer-metadata.json` |
+| AC-22 v2 code review | `evidence/delegation/ac22-code-review-v2.txt` |
+| Code-reviewer execution metadata | `evidence/delegation/ac22-code-review-v2-metadata.json` |
+| Final headless reviewer | `evidence/headless-review.json` |
+
+The historical delegation evidence was recovered from the original Claude Code session and committed in `6f79ce31e58b2a78a485571c503f105fa42dc1c3`.
+
+These recovered records are not native Claude Code `/export` transcripts. The historical build-phase code-reviewer is also distinct from the configured reviewer used during the final headless review. These limitations are explicitly disclosed.
+
+The final headless review independently confirmed successful delegation to the configured reviewer subagent, as documented in Section 6.
 
 ### 4.6 Refactoring and Demonstration
 
@@ -511,16 +526,19 @@ The successful review provides additional confidence in the consistency of the S
 
 ### 7.1 Team Reflection
 
-**Insert the complete team-authored 300–500-word reflection from `docs/M2-team-reflection.md` here before final submission.**
+During Milestone 2, our team implemented the S-6 scheduled monthly HOA dues feature using an AI-assisted development workflow. We learned that successful implementation involves more than producing working code. It requires alignment with approved requirements, reliable acceptance tests, controlled agent permissions, human review, and traceable development decisions.
 
-The reflection must address:
+One important lesson involved protecting acceptance tests from unauthorized agent modifications. During AGENT-13, Prompt 79, Claude Code attempted a harmless Edit operation on `tests/acceptance/test_s6_acceptance.py`. The configured permission restrictions rejected the operation, and subsequent SHA-256 and Git diff checks confirmed that the file remained unchanged. This incident is documented in `evidence/permission-denied.md`. Without these restrictions, an agent could potentially weaken an assertion instead of correcting the implementation, creating misleading passing results. The formal acceptance-test lock at commit `b46269f` provided an additional integrity checkpoint. Although the original implementation preceded the formal lock, preserving this limitation in our documentation helped maintain transparency.
 
-- Where permission restrictions or the acceptance-test lock prevented unauthorized agent actions, and what could have happened without those controls.
-- What mutation testing revealed about weaknesses in the existing test suite.
-- What the team would change about subagent configuration and delegation in future development.
-- At least two specific references to repository evidence files or Git commits.
+Mutation testing provided another valuable lesson. Our initial regression and acceptance tests killed 25 of 30 selected mutants, achieving an 83.33% mutation score. Adding Hypothesis property-based tests did not improve this result. Analysis of the surviving mutants revealed weaknesses in outcome counting and processing multiple units. Three additional deterministic regression tests increased the score to 93.33%, as documented in `evidence/mutation-baseline.txt`, `evidence/mutation-after.txt`, and commit `0f000db`. Conventional coverage remained at 94.34%, demonstrating that high coverage does not necessarily establish strong assertions or complete business-rule verification.
 
-The reflection was committed in `54db6d3`.
+We also recognized opportunities to improve subagent configuration and delegation. In future projects, we would configure specialized test-writer and read-only reviewer agents before implementation begins, verify their permissions, and resolve agent naming conflicts during setup. We would require independent reviews after each bounded implementation task and immediately preserve native delegation transcripts. Recovering historical delegation evidence later, as documented in Ledger Entry 77, required additional effort that could have been avoided through better evidence management.
+
+The final headless review further demonstrated the value of independent verification. It returned a passing verdict with two minor findings concerning outdated ACH comments. Both findings were corrected in commit `7063e9e` without changing payment-processing behavior or acceptance tests.
+
+Finally, the complete test suite passed all 202 tests with 94.34% combined statement and branch coverage, as recorded in `evidence/coverage.txt`. We also learned to communicate limitations honestly, including deferred ACH settlement, unresolved concurrency-policy questions, and the restricted mutation-testing sample.
+
+Overall, Milestone 2 reinforced that AI can accelerate software engineering, but accountability remains with the development team. In future projects, we would establish safety controls earlier, strengthen independent reviews, preserve evidence continuously, and evaluate test effectiveness beyond conventional coverage metrics.
 
 ### 7.2 Individual Contribution Statements
 
