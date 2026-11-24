@@ -78,7 +78,7 @@ def run_due_payments(today: date) -> RunResult:
         if db.has_paid_payment(p["unit_id"], p["billing_month"]):
             continue
         if p["method"] == "ach":
-            continue  # ACH settlement remains OQ2.
+            continue  # D34 (settled OQ2): ACH is not charged automatically.
         status = _charge_pending(p["id"], p["token"], p["amount_cents"],
                                  p["idempotency_key"], today)
         _count_outcome(counts, status)
@@ -89,7 +89,7 @@ def run_due_payments(today: date) -> RunResult:
         if today < scheduled_day or scheduled_day <= created_day:
             continue
         if s["method"] == "ach":
-            continue  # ACH settlement remains OQ2.
+            continue  # D34 (settled OQ2): ACH is not charged automatically.
         if db.has_paid_payment(s["unit_id"], month):
             counts["skipped"] += 1  # D25: the month is Paid (R1, R3); AGENT-03 F-02.
             continue
