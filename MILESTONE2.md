@@ -383,8 +383,8 @@ The structured output explicitly confirmed that the reviewer subagent was spawne
 
 | Finding | File and Line | AC ID | Severity | Disposition | Resolution Commit |
 |---|---|---|---|---|---|
-| F-01 | `app/payments.py:81` | None | Minor | Accepted. Update the outdated ACH replay comment to reference settled OQ2 and D34. | `<COMMENT_FIX_COMMIT_SHA>` |
-| F-02 | `app/payments.py:92` | None | Minor | Accepted. Update the outdated ACH schedule-processing comment to reference settled OQ2 and D34. | `<COMMENT_FIX_COMMIT_SHA>` |
+| F-01 | `app/payments.py:81` | None | Minor | Accepted. Update the outdated ACH replay comment to reference settled OQ2 and D34. | `7063e9ee80dc70579c70762459b69159db5a51b1` |
+| F-02 | `app/payments.py:92` | None | Minor | Accepted. Update the outdated ACH schedule-processing comment to reference settled OQ2 and D34. | `7063e9ee80dc70579c70762459b69159db5a51b1` |
 
 #### Finding F-01 — ACH Replay Comment
 
@@ -417,8 +417,8 @@ Both findings require comment-only corrections. No payment-processing logic or a
 | Item | Reference |
 |---|---|
 | Reviewed repository commit | `54db6d3` |
-| Headless review artifact commit | `<HEADLESS_REVIEW_COMMIT_SHA>` |
-| Finding-resolution commit | `<COMMENT_FIX_COMMIT_SHA>` |
+| Headless review artifact commit | `4f1e47c195288f2f9c91f63fc9df349488933f59` |
+| Finding-resolution commit | `7063e9ee80dc70579c70762459b69159db5a51b1` |
 | Prompt reference | Prompt 90 — AGENT-24 |
 | Ledger reference | Entry 76 |
 | Original review output | `evidence/headless-review.json` |
@@ -464,8 +464,8 @@ Each team member must verify that their statement accurately identifies personal
 - [x] Structured review returned a pass verdict.
 - [x] Reviewer subagent delegation confirmed.
 - [x] Team reflection and contribution files committed.
-- [ ] Headless review findings resolved and commit SHAs recorded.
-- [ ] Ledger Entry 76 committed and verified.
+- [x] Headless review findings resolved and commit SHAs recorded.
+- [x] Ledger Entry 76 committed and verified.
 - [ ] Milestone 1 feedback responses completed.
 - [ ] Team responsibility mapping confirmed.
 - [ ] Test-writer audit findings and resolutions documented.
