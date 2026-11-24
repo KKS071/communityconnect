@@ -558,28 +558,51 @@ Each team member must verify that their statement accurately identifies personal
 - [x] `m2-tests-locked` tag pushed and verified.
 - [x] `m2-green` tag pushed and verified.
 - [x] Acceptance-test lock verified between milestone tags.
+- [x] Agent permission restrictions configured and enforcement evidence recorded.
+- [x] Shared acceptance-test helper protection configured.
 - [x] Headless reviewer successfully executed.
 - [x] Structured review returned a pass verdict.
 - [x] Reviewer subagent delegation confirmed.
 - [x] Team reflection and contribution files committed.
 - [x] Headless review findings resolved and commit SHAs recorded.
 - [x] Ledger Entry 76 committed and verified.
+- [x] Ledger Entry 77 committed with historical audit and delegation evidence.
+- [x] Ledger Entry 78 committed with final coverage evidence.
+- [x] Test-writer audit findings and dispositions documented.
+- [x] Two implementation-plan corrections documented.
+- [x] Historical build-phase delegation evidence recovered and verified, with limitations disclosed.
+- [x] README updated with the required Try the story section.
+- [x] All five S-6 acceptance demonstration scenarios passed.
+- [x] Five acceptance-test demonstration screenshots committed and verified in the remote repository.
+- [x] Final coverage evidence generated and committed.
+- [x] Complete regression suite passed all 202 tests.
+- [x] Combined statement and branch coverage of 94.34% exceeded the required 80% threshold.
+- [x] Uncovered coverage statements analyzed and documented.
+- [x] Mutation survivor dispositions verified against the mutation-testing summary.
+- [x] Mutation score improved from 83.33% to 93.33% across 30 selected mutants.
 - [ ] Milestone 1 feedback responses completed.
 - [ ] Team responsibility mapping confirmed.
-- [ ] Test-writer audit findings and resolutions documented.
-- [ ] Two actual implementation-plan corrections documented.
-- [ ] Build-phase delegation evidence verified.
-- [ ] Demonstration instructions and screenshots completed.
-- [ ] Final coverage evidence generated.
-- [ ] Integration-test names and uncovered coverage analysis documented.
-- [ ] Mutation survivor dispositions verified.
-- [ ] Requirements traceability matrix completed.
-- [ ] Complete team-authored reflection inserted into this report.
+- [ ] Deferred audit findings approved by the team.
+- [ ] Individual API outcome and error-state screenshots completed.
+- [ ] Ledger Entry 79 committed with demonstration evidence and commit references.
+- [ ] Exact integration-test names and component boundaries documented.
+- [ ] Required `evidence/mutation-before.txt` filename provided.
+- [ ] Requirements traceability matrix completed and reconciled with the S-6 design.
+- [ ] Complete team-approved reflection inserted into this report.
 - [ ] Individual contribution signatures verified.
+- [ ] Deliverable mapping table synchronized with final evidence.
+- [ ] All unresolved documentation placeholders reviewed.
+- [ ] Final protected-file integrity verification completed.
 - [ ] Fresh-clone reproduction and final regression verification completed.
 - [ ] Final submission commit recorded.
 - [ ] `m2-submit` tag created and pushed.
 - [ ] Repository URL and final submission SHA submitted through Canvas.
+
+**Final submission SHA:** Pending
+
+**Submission tag:** `m2-submit` — Pending
+
+**End of Milestone 2 Report**
 
 **Final submission SHA:** Pending
 
