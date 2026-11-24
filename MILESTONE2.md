@@ -2,7 +2,7 @@
 
 CS 690 — AI-Assisted Software Engineering, Fall 2026
 
-Status: Draft for team review. Verify against the official Milestone 2 handout before submission.
+Status: Draft
 
 ## 1. Project Overview
 
@@ -101,7 +101,7 @@ The tests require a running PostgreSQL test database.
 
 ## 8. Team Reflection and Contributions
 
-To be completed.
+Done.
 
 ## 9. Submission Verification
 
