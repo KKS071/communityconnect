@@ -1,0 +1,40 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.2.0, pluggy-1.7.0
+rootdir: /home/garsande/CommunityConnect
+configfile: pytest.ini
+testpaths: tests
+plugins: hypothesis-6.170.15, anyio-4.16.0, cov-7.1.0, platformdirs-4.14.7
+collected 202 items
+
+tests/acceptance/test_s6_acceptance.py .....                             [  2%]
+tests/test_s1_requests.py .............................................. [ 25%]
+............................................                             [ 47%]
+tests/test_s6_payments.py .............................................. [ 69%]
+...........................................................              [ 99%]
+tests/test_s6_properties.py ..                                           [100%]
+
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /home/garsande/CommunityConnect/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.12.3-final-0 ________________
+
+Name               Stmts   Miss Branch BrPart  Cover   Missing
+--------------------------------------------------------------
+app/__init__.py        0      0      0      0   100%
+app/access.py         19      0      8      0   100%
+app/auth.py           14      0      4      0   100%
+app/clock.py           3      1      0      0    67%   7
+app/db.py             91      4     30      4    93%   73, 165, 174, 177
+app/main.py          134      3     36      1    96%   219-221
+app/payments.py       83      2     42      2    97%   46, 81
+app/processor.py      32      1      4      0    97%   46
+app/seed.py           42      7     16      5    79%   19-20, 25, 31, 43, 61, 69
+app/settings.py        7      0      0      0   100%
+--------------------------------------------------------------
+TOTAL                425     18    140     12    94%
+Required test coverage of 80% reached. Total coverage: 94.34%
+================== 202 passed, 1 warning in 539.40s (0:08:59) ==================
