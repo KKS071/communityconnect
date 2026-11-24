@@ -85,7 +85,7 @@ python -m pytest --cov=app --cov-branch --cov-report=term-missing --cov-fail-und
 
 The recorded Milestone 2 regression run reported **202 passed** and **94.34% branch-aware
 coverage**, exceeding the 80% threshold. These are recorded results, not a fresh test run
-performed for this README. See `evidence/mutation-regression-tests.txt`.
+performed for this README. See `evidence/coverage.txt`.
 
 ## Run the API locally (optional)
 

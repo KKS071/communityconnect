@@ -16,15 +16,15 @@ Milestone 1 implemented S-1, maintenance request submission and tracking. Milest
 
 | Deliverable | Repository Artifact / Evidence | Status |
 |---|---|---|
-| D1 — Requirements and Design | `docs/design/S-6.md`, `docs/requirements/backlog.md`, `docs/design/S-6-gap-check-2.md` | Artifacts available; final verification pending |
-| D2 — Agent Configuration and Safety | `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.claude/agents/`, `evidence/permission-denied.md` | Artifacts available |
-| D3 — Acceptance Tests and Test Lock | `tests/acceptance/test_s6_acceptance.py`, `evidence/red.txt`, `m2-tests-locked` | Test lock verified; audit evidence pending |
-| D4 — Implementation and Demonstration | `docs/plans/S-6-plan.md`, `app/`, `evidence/green.txt`, `evidence/refactor.txt`, `m2-green` | Implementation complete; demonstration and delegation evidence pending |
-| D5 — Test Strength and Traceability | `tests/`, `evidence/properties.txt`, `docs/audits/mutation-summary.md`, mutation evidence files | Recorded tests complete; final evidence verification pending |
-| D6 — Headless Reviewer | `scripts/review_story.sh`, `agent/review-schema.json`, `evidence/headless-review.json` | Execution successful; disposition commits to be recorded |
-| D7 — AI-Assisted Development Ledger | `LEDGER.md`, `prompts/`, `agent-patches/` | Final verification pending |
-| D8 — Consolidated Report | `MILESTONE2.md` | Draft |
-| D9 — Individual Contributions | `docs/contributions/` | Committed; signature and content verification required |
+| D1 — Requirements and Design | `docs/design/S-6.md`, `docs/requirements/backlog.md`, `docs/design/S-6-gap-check-2.md` | Design and open-question decisions documented; M1 feedback confirmation pending |
+| D2 — Agent Configuration and Safety | `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.claude/agents/`, `evidence/permission-denied.md` | Configuration and permission enforcement documented |
+| D3 — Acceptance Tests and Test Lock | `tests/acceptance/`, `evidence/test-audit.md`, `evidence/red.txt`, `m2-tests-locked` | Audit and lock evidence available; historical chronology and deferred findings disclosed |
+| D4 — Implementation and Demonstration | `docs/plans/S-6-plan.md`, `app/`, `evidence/green.txt`, `evidence/refactor.txt`, `evidence/delegation/`, `evidence/demo-s6.txt`, `evidence/screens/`, `README.md`, `m2-green` | Implementation and acceptance demonstration completed; delegation, refactoring, and API screenshot limitations disclosed |
+| D5 — Test Strength and Traceability | `tests/`, `evidence/properties.txt`, `evidence/coverage.txt`, `evidence/mutation-before.txt`, `evidence/mutation-after.txt`, `docs/audits/mutation-summary.md`, `docs/requirements/traceability.md` | 202 tests passed; 94.34% coverage; selected mutation score 93.33%; integration and traceability documented |
+| D6 — Headless Reviewer | `scripts/review_story.sh`, `agent/review-schema.json`, `evidence/headless-review.json` | Completed; pass verdict and both finding-resolution commits documented |
+| D7 — AI-Assisted Development Ledger | `LEDGER.md`, `prompts/`, `agent-patches/` | Development provenance recorded; final demonstration entry and ledger verification pending |
+| D8 — Consolidated Report | `MILESTONE2.md`, `docs/M2-team-reflection.md` | Report substantially completed; final team confirmation and submission verification pending |
+| D9 — Individual Contributions | `docs/contributions/` | Contribution statements committed; individual approval and signatures require confirmation |
 
 ### Git Milestone Tags
 
@@ -242,13 +242,31 @@ The final headless review independently confirmed successful delegation to the c
 
 ### 4.6 Refactoring and Demonstration
 
-Post-green refactoring evidence is preserved in:
+Regression evidence associated with the refactoring verification is preserved in `evidence/refactor.txt`. The recorded evidence confirms successful regression-test execution. However, the historical commit sequence does not independently establish a distinct behavior-preserving production refactor performed after the formal green milestone.
 
-`evidence/refactor.txt`
+The README contains a dedicated Try the story section with application startup instructions, a reproducible acceptance demonstration command, and screenshot references.
 
-Application setup and demonstration instructions are maintained in `README.md`.
+The demonstration is executed using:
 
-The demonstration screenshots and their mapping to the acceptance criteria are pending final verification.
+```bash
+python -m scripts.demo_s6
+```
+
+All five S-6 acceptance scenarios passed.
+
+| Acceptance Criterion | Demonstrated Behavior | Screenshot Evidence |
+|---|---|---|
+| AC-18 | ACH schedule creation and retrieval | `evidence/screens/AC-18-schedule.png` |
+| AC-19 | Exactly-once scheduled payment | `evidence/screens/AC-19-exactly-once.png` |
+| AC-20 | Simulated interruption and recovery | `evidence/screens/AC-20-restart.png` |
+| AC-21 | Manual payment prevents duplicate charging | `evidence/screens/AC-21-manual-payment.png` |
+| AC-22 | Failed payment and delayed retry | `evidence/screens/AC-22-retry.png` |
+
+The original demonstration output is preserved in `evidence/demo-s6.txt`.
+
+The demonstration script, output, README instructions, and all five screenshot files were verified in the remote GitHub repository.
+
+The screenshots document successful acceptance-test execution rather than individual API response bodies or browser-based payment screens. This limitation is disclosed. The demonstration uses synthetic test data and FakeProcessor; no real payments are processed.
 
 ## 5. Testing, Quality Assurance, and Traceability
 
@@ -417,19 +435,25 @@ The three additional regression tests increased the selected mutation score by 1
 
 ### 5.6 Mutation Survivor Dispositions
 
-| Mutant | Disposition | Test or Reason |
-|---|---|---|
-| `_count_outcome__mutmut_5` | Killed | `test_d16_two_units_charged_in_one_run_are_both_counted` |
-| `_count_outcome__mutmut_20` | Killed | `test_d16_two_unavailable_charges_are_both_counted_as_skipped` |
-| `run_due_payments__mutmut_89` | Killed | `test_r4_paid_unit_does_not_stop_the_run_for_a_later_unit` |
-| `run_due_payments__mutmut_109` | Survived | Unresolved concurrency-policy question involving payment-processing behavior |
-| `_charge_pending__mutmut_38` | Survived | Considered equivalent through the reviewed public API |
+| Mutant | Mutation Change | Disposition | Test or Reason | Commit |
+|---|---|---|---|---|
+| `_count_outcome__mutmut_5` | Charged counter assigned 1 instead of incremented | Killed | `test_d16_two_units_charged_in_one_run_are_both_counted` | `0f000db` |
+| `_count_outcome__mutmut_20` | Skipped counter assigned 1 instead of incremented | Killed | `test_d16_two_unavailable_charges_are_both_counted_as_skipped` | `0f000db` |
+| `run_due_payments__mutmut_89` | Paid-unit continue replaced with break | Killed | `test_r4_paid_unit_does_not_stop_the_run_for_a_later_unit` | `0f000db` |
+| `run_due_payments__mutmut_109` | Maximum-attempt comparison changed from less than to less than or equal | Survived | Unresolved concurrency-policy question involving exhausted attempts and overlapping manual payments. A test was not added because the expected outcome requires a design decision. | Not applicable |
+| `_charge_pending__mutmut_38` | Private Unchanged return marker modified | Survived | Equivalent through the reviewed public API because neither return marker affects payment outcome counts or persisted payment history. | Not applicable |
 
-The regression tests and associated mutation evidence were recorded in commit `0f000db`. The exact individual mutant-to-test mappings should be checked against `docs/audits/mutation-summary.md` before submission.
+All five baseline survivor dispositions were reconciled against `docs/audits/mutation-summary.md`.
 
-Mutation testing revealed weaknesses that were not apparent from the high conventional coverage percentage, demonstrating that executing code does not necessarily mean that the tests detect incorrect behavior.
+The final mutation run killed 28 of 30 selected mutants, compared with 25 of 30 in the baseline run.
+
+Conventional combined statement and branch coverage remained at 94.34%, while the selected mutation score increased from 83.33% to 93.33%. This demonstrates that high coverage alone does not guarantee that assertions detect incorrect behavior.
+
+The experiment evaluated 30 selected mutants from 603 generated mutants. The reported mutation scores must not be interpreted as scores for the entire generated population.
 
 ### 5.7 Mutation Evidence
+
+`evidence/mutation-before.txt` is a byte-for-byte copy of the original `evidence/mutation-baseline.txt`, provided under the required submission filename. It does not represent a separate mutation run.
 
 The supporting evidence includes:
 
@@ -659,23 +683,17 @@ Each team member must verify that their statement accurately identifies personal
 - [ ] Individual API outcome and error-state screenshots completed.
 - [ ] Ledger Entry 79 committed with demonstration evidence and commit references.
 - [x] Exact integration-test names and component boundaries documented.
-- [ ] Required `evidence/mutation-before.txt` filename provided.
+- [x] Required `evidence/mutation-before.txt` filename provided.
 - [x] Requirements traceability matrix completed and reconciled with the S-6 design; consolidated passing commit verified, with individual first-passing commit limitations disclosed.
-- [ ] Complete team-approved reflection inserted into this report.
+- [x] Complete team-approved reflection inserted into this report.
 - [ ] Individual contribution signatures verified.
-- [ ] Deliverable mapping table synchronized with final evidence.
+- [x] Deliverable mapping table synchronized with final evidence.
 - [ ] All unresolved documentation placeholders reviewed.
 - [ ] Final protected-file integrity verification completed.
 - [ ] Fresh-clone reproduction and final regression verification completed.
 - [ ] Final submission commit recorded.
 - [ ] `m2-submit` tag created and pushed.
 - [ ] Repository URL and final submission SHA submitted through Canvas.
-
-**Final submission SHA:** Pending
-
-**Submission tag:** `m2-submit` — Pending
-
-**End of Milestone 2 Report**
 
 **Final submission SHA:** Pending
 

@@ -1389,3 +1389,18 @@ evidence: `evidence/coverage.txt` contains the original test execution output, m
 
 risk: Coverage does not prove complete business-rule correctness or assertion strength. The production clock wrapper remains uncovered because tests use a deterministic clock. The placeholder Stripe processor remains uncovered because live payment-provider integration is outside the approved scope. The Starlette dependency warning remains a future maintenance consideration.
 
+### Entry 79 — S-6 Acceptance Demonstration and Screenshot Evidence
+
+artifact: `scripts/demo_s6.py`, `README.md`, `evidence/demo-s6.txt`, and `evidence/screens/`. Demonstration commit: `3864f0d443c11ed56b657d962c855ef9f93e2035`. README commit: `f0c91a8af3cc813b5ae50185b58c949c1f1d6849`.
+
+tool: ChatGPT, Python 3.12.3, pytest 9.2.0, Windows Snipping Tool, and Git. Human-executed demonstration on November 23, 2026.
+
+prompts: ChatGPT-assisted creation of a reproducible acceptance-test demonstration runner, screenshot capture instructions, and README documentation.
+
+review: The human executed each locked S-6 acceptance test individually and captured screenshots of the successful execution results. The README was updated with the required Try the story section, application startup instructions, demonstration command, and acceptance-criterion screenshot references. Duplicate screenshot filename extensions were corrected before committing.
+
+checks: Executed `python -m scripts.demo_s6`. All five acceptance scenarios, AC-18 through AC-22, passed. Verified that the demonstration output, script, README instructions, and five screenshot files were present in the remote GitHub repository.
+
+evidence: `evidence/demo-s6.txt`, `evidence/screens/AC-18-schedule.png`, `evidence/screens/AC-19-exactly-once.png`, `evidence/screens/AC-20-restart.png`, `evidence/screens/AC-21-manual-payment.png`, and `evidence/screens/AC-22-retry.png`.
+
+risk: The demonstration screenshots establish successful acceptance-test execution rather than displaying individual API response bodies. Payment processing uses FakeProcessor and synthetic test data. AC-20 simulates an interruption and replay rather than an actual operating-system process restart. No real payments are processed. No locked acceptance-test modifications were required.
