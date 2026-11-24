@@ -192,6 +192,40 @@ and one is equivalent through the reviewed public API. See
 - The mutation after-run reused a cached mutmut workspace; the evidence documents
   the associated configuration and reproducibility limitations.
 
+## Try the story
+
+Story S-6 demonstrates scheduled monthly dues payments through the CommunityConnect API and payment-processing functions.
+
+### Start the application
+
+With PostgreSQL running and the virtual environment activated:
+
+```bash
+uvicorn app.main:app --reload
+```
+
+The API documentation is available at http://127.0.0.1:8000/docs.
+
+### Run the acceptance demonstration
+
+```bash
+python -m scripts.demo_s6
+```
+
+The demonstration executes each of the five locked acceptance tests individually using the test database and pauses after each successful scenario for inspection.
+
+| Acceptance Criterion | Demonstrated Behavior | Screenshot |
+|---|---|---|
+| AC-18 | ACH schedule creation and retrieval | [Screenshot](evidence/screens/AC-18-schedule.png) |
+| AC-19 | Exactly-once scheduled payment | [Screenshot](evidence/screens/AC-19-exactly-once.png) |
+| AC-20 | Simulated interruption and idempotent recovery | [Screenshot](evidence/screens/AC-20-restart.png) |
+| AC-21 | Manual payment prevents duplicate scheduled charging | [Screenshot](evidence/screens/AC-21-manual-payment.png) |
+| AC-22 | Declined payment and delayed retry | [Screenshot](evidence/screens/AC-22-retry.png) |
+
+The demonstration uses FakeProcessor and synthetic test data. No real payments are processed. The screenshots document acceptance-test execution rather than individual API response bodies or browser-based payment screens.
+
+The recorded demonstration output is available in [evidence/demo-s6.txt](evidence/demo-s6.txt).
+
 ## Layout
 
 ```
